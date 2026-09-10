@@ -1,0 +1,3 @@
+enabled,name,cfgs,sequence_cfg,input,qps,frames,extra_args,decode_md5,decoder_args,xlsm_tag
+1,AI_BasketballPass,cfg/encoder_intra_nx2.cfg,cfg/per-sequence/BasketballPass.cfg,BasketballPass_416x240_50.yuv,"32",8,"--PrintHexPSNR=1 --SEIDecodedPictureHash=1",1,"-dph 1",ai
+1,RA_BQMall,cfg/encoder_randomaccess_nx2.cfg,cfg/per-sequence/BQMall.cfg,BQMall_832x480_60.yuv,"27,32",16,"--PrintHexPSNR=1 --SEIDecodedPictureHash=1",1,"-dph 1",ra
