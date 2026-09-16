@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import json
 import os
 import re
 import shlex
@@ -92,6 +94,9 @@ class TestJob:
     encode_log: Path
     decode_log: Path
     overwrite: bool
+    ts_stats: Path | None = None
+    fixed_predictor: str | None = None
+    no_recon: bool = False
 
 
 @dataclass(frozen=True)
@@ -323,6 +328,8 @@ def _detect_experiment_line(exe: Path, cwd: Path) -> str | None:
     if not exe.is_file() or not os.access(exe, os.X_OK):
         return None
     try:
+        probe_env = os.environ.copy()
+        probe_env.pop("TS_FIXED_PREDICTOR", None)  # Probe compiled default, not ambient shell override.
         proc = subprocess.run(
             [str(exe), "-h"],
             cwd=str(cwd),
@@ -331,6 +338,7 @@ def _detect_experiment_line(exe: Path, cwd: Path) -> str | None:
             text=True,
             check=False,
             timeout=5,
+            env=probe_env,
         )
     except Exception:
         return None
@@ -435,10 +443,23 @@ def _write_log_header(log_file, cmd: list[str], cwd: Path) -> None:
     log_file.flush()
 
 
+def _job_env(job: TestJob) -> dict[str, str]:
+    env = os.environ.copy()
+    env.pop("TS_FIXED_PREDICTOR", None)
+    if job.fixed_predictor:
+        env["TS_FIXED_PREDICTOR"] = job.fixed_predictor
+        # The legacy observer describes different modes and must not run here.
+        for key in list(env):
+            if key.startswith("TS_PRED_"):
+                del env[key]
+    return env
+
+
 def _run_decode(job: TestJob) -> dict:
     _safe_mkdir(job.decode_log.parent)
-    cmd = [str(job.decoder), "-b", str(job.bitstream), "-o", "/dev/null"]
+    cmd = [str(job.decoder), "-b", str(job.bitstream)]
     cmd.extend(job.decoder_args)
+    cmd.extend(["-o", "" if job.no_recon else os.devnull])
     start = time.time()
     with job.decode_log.open("w", encoding="utf-8") as logf:
         _write_log_header(logf, cmd, job.cwd)
@@ -448,6 +469,7 @@ def _run_decode(job: TestJob) -> dict:
             stdout=logf,
             stderr=subprocess.STDOUT,
             check=False,
+            env=_job_env(job),
         )
         logf.write(f"\nEND: {time.asctime(time.localtime())}\n")
         logf.write(f"RETURNCODE: {proc.returncode}\n")
@@ -458,6 +480,10 @@ def _run_decode(job: TestJob) -> dict:
     except OSError:
         text = ""
     status = "failed" if proc.returncode != 0 else _parse_decode_status(text)
+    if job.fixed_predictor:
+        expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
+        if expected not in text or (job.frames and text.count("(OK)") != job.frames):
+            status = "failed"
     result = {
         "decode_status": status,
         "decode_returncode": proc.returncode,
@@ -473,7 +499,7 @@ def _run_decode(job: TestJob) -> dict:
 def _run_one(job: TestJob) -> dict:
     _safe_mkdir(job.out_dir)
     if job.overwrite:
-        for stale in (job.bitstream, job.recon):
+        for stale in ((job.bitstream,) if job.no_recon else (job.bitstream, job.recon)):
             try:
                 if stale.exists():
                     stale.unlink()
@@ -483,20 +509,52 @@ def _run_one(job: TestJob) -> dict:
     base = {
         "order": job.order,
         "name": job.name,
+        "fixed_predictor": job.fixed_predictor or "",
         "sequence": job.sequence_cfg.stem,
         "sequence_cfg": str(job.sequence_cfg),
         "input": str(job.input_path),
         "qp": job.qp,
         "frames": job.frames if job.frames is not None else "",
         "bitstream": str(job.bitstream),
-        "recon": str(job.recon),
+        "recon": "" if job.no_recon else str(job.recon),
         "encode_log": str(job.encode_log),
         "decode_log": str(job.decode_log) if job.decode_md5 else "",
         "xlsm_tag": job.xlsm_tag or "",
         "time": time.asctime(time.localtime()),
     }
 
-    if job.bitstream.exists() and not job.overwrite:
+    ts_fingerprint = None
+    ts_done = job.ts_stats.with_suffix(".done.json") if job.ts_stats else job.bitstream.with_suffix(".done.json")
+    if ts_done:
+        def identity(path):
+            st = path.stat()
+            return [str(path), st.st_size, st.st_mtime_ns]
+        ts_fingerprint = hashlib.sha256(json.dumps({
+            "encoder": identity(job.encoder), "input": identity(job.input_path),
+            "cfgs": [(str(p), p.read_text(encoding="utf-8")) for p in [*job.cfgs, job.sequence_cfg]],
+            "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
+            "decode": job.decode_md5, "decoder_args": job.decoder_args,
+            "decoder": identity(job.decoder) if job.decode_md5 else None,
+            **({"fixed_predictor": job.fixed_predictor, "no_recon": job.no_recon}
+               if job.fixed_predictor or job.no_recon else {}),
+        }, sort_keys=True).encode()).hexdigest()
+    ts_complete = False
+    marker = {}
+    if ts_done.is_file():
+        try:
+            marker = json.loads(ts_done.read_text(encoding="utf-8"))
+            ts_complete = (marker.get("fingerprint") == ts_fingerprint
+                           and marker.get("bitstream_bytes") == job.bitstream.stat().st_size
+                           and job.bitstream.stat().st_size > 0
+                           and job.encode_log.is_file()
+                           and (not job.decode_md5 or job.decode_log.is_file()))
+            if job.ts_stats:
+                ts_complete = (ts_complete and job.ts_stats.stat().st_size > 0
+                               and marker.get("stats_bytes") == job.ts_stats.stat().st_size
+                               and marker.get("census_bytes") == Path(str(job.ts_stats) + ".tu.csv").stat().st_size)
+        except (OSError, ValueError):
+            pass
+    if job.bitstream.exists() and not job.overwrite and ts_complete:
         result = {
             **base,
             "encode_status": "skipped_exists",
@@ -510,6 +568,10 @@ def _run_one(job: TestJob) -> dict:
             "decode_seconds": 0.0 if job.decode_md5 else "",
             "error_info": "pass",
         }
+        # Preserve measured performance on resume; zero would fake a speed-up in XLSM.
+        for key in ("encode_seconds", "decode_seconds", "dec_vmpeak_kb"):
+            if key in marker.get("result", {}):
+                result[key] = marker["result"][key]
         return _enrich_result(job, result)
 
     cmd = [str(job.encoder)]
@@ -519,12 +581,22 @@ def _run_one(job: TestJob) -> dict:
     cmd.extend(["-i", str(job.input_path)])
     cmd.extend(["-q", str(job.qp)])
     cmd.extend(["-b", str(job.bitstream)])
-    cmd.extend(["-o", str(job.recon)])
     if job.frames is not None:
         cmd.extend(["-f", str(job.frames)])
     cmd.extend(job.extra_args)
+    # Last option overrides any ReconFile in cfg/extra_args. Empty disables I/O.
+    cmd.extend(["-o", "" if job.no_recon else str(job.recon)])
 
     start = time.time()
+    encode_env = _job_env(job)
+    if job.ts_stats:
+        job.ts_stats.parent.mkdir(parents=True, exist_ok=True)
+        encode_env.update(TS_PRED_STATS=str(job.ts_stats), TS_PRED_SEQUENCE=job.sequence_cfg.stem,
+                          TS_PRED_CONFIGURATION=job.xlsm_tag or job.cfgs[0].stem, TS_PRED_QP=str(job.qp))
+        if "TS_PRED_DEBUG" in encode_env:
+            encode_env["TS_PRED_DEBUG"] = str(job.ts_stats.with_suffix(".debug.csv"))
+    if ts_done.exists():
+        ts_done.unlink()  # Only this task's obsolete completion marker; outputs are retained.
     with job.encode_log.open("w", encoding="utf-8") as logf:
         _write_log_header(logf, cmd, job.cwd)
         proc = subprocess.run(
@@ -533,12 +605,16 @@ def _run_one(job: TestJob) -> dict:
             stdout=logf,
             stderr=subprocess.STDOUT,
             check=False,
+            env=encode_env,
         )
         logf.write(f"\nEND: {time.asctime(time.localtime())}\n")
         logf.write(f"RETURNCODE: {proc.returncode}\n")
     end = time.time()
 
     encode_status = "ok" if proc.returncode == 0 else "failed"
+    if job.ts_stats and (not job.ts_stats.is_file() or job.ts_stats.stat().st_size == 0
+                         or not Path(str(job.ts_stats) + ".tu.csv").is_file()):
+        encode_status = "failed"
     result = {
         **base,
         "encode_status": encode_status,
@@ -553,6 +629,14 @@ def _run_one(job: TestJob) -> dict:
         "error_info": "pass" if encode_status == "ok" else "fail",
     }
     result = _enrich_result(job, result)
+    if job.fixed_predictor:
+        enc_text = job.encode_log.read_text(encoding="utf-8", errors="replace")
+        expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
+        if (expected not in enc_text or not job.bitstream.is_file() or job.bitstream.stat().st_size == 0
+                or not result.get("encoded_frames")
+                or (job.frames and result.get("encoded_frames") != job.frames)):
+            encode_status = "failed"
+            result.update(encode_status="failed", status="failed", error_info="fail(mode/frames/bitstream)")
 
     if job.decode_md5 and encode_status == "ok":
         dec = _run_decode(job)
@@ -567,10 +651,23 @@ def _run_one(job: TestJob) -> dict:
                 "decode_seconds": "",
             }
         )
+    if ts_done and result["error_info"] == "pass":
+        ts_done.write_text(json.dumps({"fingerprint": ts_fingerprint, "command": cmd,
+                                      "sequence": job.sequence_cfg.stem,
+                                      "configuration": job.xlsm_tag or job.cfgs[0].stem,
+                                      "QP": job.qp,
+                                      "fixed_predictor": job.fixed_predictor,
+                                      "stats_bytes": job.ts_stats.stat().st_size if job.ts_stats else None,
+                                      "census_bytes": Path(str(job.ts_stats) + ".tu.csv").stat().st_size if job.ts_stats else None,
+                                      "bitstream_bytes": job.bitstream.stat().st_size,
+                                      "statistics": str(job.ts_stats) if job.ts_stats else None,
+                                      "result": result}, indent=2), encoding="utf-8")
     return result
 
 
 def _enrich_result(job: TestJob, result: dict) -> dict:
+    if job.bitstream.is_file():
+        result["bitstream_bytes"] = job.bitstream.stat().st_size
     try:
         text = job.encode_log.read_text(encoding="utf-8", errors="replace")
     except OSError:
@@ -596,12 +693,14 @@ def _write_summary(path: Path, rows: list[dict]) -> None:
     _safe_mkdir(path.parent)
     fieldnames = [
         "name",
+        "fixed_predictor",
         "sequence",
         "sequence_cfg",
         "input",
         "qp",
         "frames",
         "bitstream",
+        "bitstream_bytes",
         "recon",
         "encode_status",
         "status",
@@ -635,6 +734,14 @@ def _write_summary(path: Path, rows: list[dict]) -> None:
 
 
 def _write_xlsm_reports(*, repo_root: Path, out_dir: Path, rows: list[dict], args: argparse.Namespace) -> None:
+    modes = sorted({r.get("fixed_predictor") for r in rows if r.get("fixed_predictor")})
+    if modes:
+        # Never overwrite the same Test cells with several predictor conditions.
+        for mode in modes:
+            subset = [dict(r, fixed_predictor="") for r in rows if r.get("fixed_predictor") == mode]
+            _safe_mkdir(out_dir / mode)
+            _write_xlsm_reports(repo_root=repo_root, out_dir=out_dir / mode, rows=subset, args=args)
+        return
     template = args.xlsm_template.resolve() if args.xlsm_template is not None else _default_xlsm_template(repo_root)
     auto_xlsm = args.xlsm_report is None and template.is_file()
     want_xlsm = bool(args.xlsm_report is True or auto_xlsm)
@@ -1031,6 +1138,21 @@ def _check_tools(args: argparse.Namespace) -> int:
     return 2
 
 
+def _expand_fixed_predictors(jobs: list[TestJob], modes: list[str], root: Path) -> list[TestJob]:
+    """One queue, grouped submission order but NO barrier between groups."""
+    expanded = []
+    for mode in modes:
+        for job in jobs:
+            def relocate(path: Path) -> Path:
+                return root / mode / path.relative_to(root)
+            expanded.append(replace(job, order=len(expanded), name=f"{mode}__{job.name}",
+                                    fixed_predictor=mode, no_recon=True,
+                                    out_dir=relocate(job.out_dir), bitstream=relocate(job.bitstream),
+                                    recon=relocate(job.recon), encode_log=relocate(job.encode_log),
+                                    decode_log=relocate(job.decode_log)))
+    return expanded
+
+
 def main(argv: list[str]) -> int:
     repo_root = Path(__file__).resolve().parents[1]
 
@@ -1049,6 +1171,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--all-sequences", action="store_true", help="自动展开 cfg/per-sequence* 下全部序列")
     parser.add_argument("--qps", type=str, default=None, help="QP 列表；普通模式默认 22,27,32,37，HHI 模式默认读 Config*.ini")
     parser.add_argument("--frames", type=int, default=None, help="覆盖编码帧数，传给 EncoderApp -f")
+    parser.add_argument("--full-sequence", action="store_true", help="以 per-sequence cfg 的 FramesToBeEncoded 为准，覆盖 HHI INI 半帧 framecount；不能和 --frames 同用")
     parser.add_argument("--input-dir", type=Path, default=Path("/home/zhy/videos"), help="YUV/Y4M 测试序列根目录")
     parser.add_argument("--encoder", type=Path, default=repo_root / "bin" / "EncoderAppStatic", help="EncoderApp 路径")
     parser.add_argument("--decoder", type=Path, default=repo_root / "bin" / "DecoderAppStatic", help="DecoderApp 路径")
@@ -1059,6 +1182,10 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--hhi-ini", type=Path, default=None, help="自定义 HHI Config*.ini；仅单 preset 时使用")
     parser.add_argument("--class", dest="classes", type=str, default=None, help="HHI 模式按 Class 过滤，例如 C,D,E")
     parser.add_argument("--out-dir", type=Path, default=None, help="输出根目录；留空则使用 runs/batch_test/<timestamp>")
+    parser.add_argument("--ts-pred-stats-dir", type=Path, default=None,
+                        help="启用 TS predictor 统计；需 analysis 宏编译。每任务独立 CSV，成功标记用于断点续跑")
+    parser.add_argument("--fixed-predictors", help="强制覆盖编译时默认模式，逗号分隔 nopred,gradient,directional/current；省略时从实验二进制读取 TypeDef.h 默认。统一任务池，禁用重建输出")
+    parser.add_argument("--no-recon", action="store_true", help="不写编码/解码重建视频（空 ReconFile）；仍可校验 hash")
     parser.add_argument("--jobs", type=int, default=1, help="并行任务数")
     parser.add_argument("--retry-failed", type=int, default=0, help="失败任务结束后按单路重试次数")
     parser.add_argument("--extra-args", type=str, default="--PrintHexPSNR=1 --SEIDecodedPictureHash=1", help="EncoderApp 附加参数")
@@ -1078,6 +1205,16 @@ def main(argv: list[str]) -> int:
     parser.set_defaults(xlsm_report=None)
 
     args = parser.parse_args(argv)
+    modes = _split_csv_list(args.fixed_predictors)
+    if args.fixed_predictors is not None and (not modes or len(modes) != len(set(modes))
+            or any(m not in {"current", "nopred", "gradient", "directional"} for m in modes)):
+        parser.error("--fixed-predictors requires distinct current/nopred/gradient/directional modes")
+    if modes and args.ts_pred_stats_dir:
+        parser.error("fixed coding modes cannot use the legacy counterfactual statistics observer")
+    if args.jobs < 1:
+        parser.error("--jobs must be positive")
+    if args.full_sequence and args.frames is not None:
+        parser.error("--full-sequence and --frames are mutually exclusive")
     args.encoder = args.encoder.resolve()
     args.decoder = args.decoder.resolve()
     args.input_dir = args.input_dir.resolve()
@@ -1128,23 +1265,55 @@ def main(argv: list[str]) -> int:
         print("ERROR: no jobs planned", file=sys.stderr)
         return 2
 
+    if args.fixed_predictors is None:
+        compiled_defaults = set()
+        for exe in {job.encoder for job in jobs}:
+            banner = _detect_experiment_line(exe, repo_root) or ""
+            match = re.search(r"TS_FIXED_PREDICTOR=(current|nopred|gradient|directional); syntax=experimental-v1", banner)
+            compiled_defaults.add(match.group(1) if match else None)
+        if len(compiled_defaults) > 1:
+            parser.error("mixed encoder defaults; split the manifest or explicitly specify --fixed-predictors")
+        default = next(iter(compiled_defaults))
+        if default is not None:
+            modes = [default]
+    if modes and args.ts_pred_stats_dir:
+        parser.error("fixed coding modes cannot use the legacy counterfactual statistics observer")
+    if modes:
+        jobs = _expand_fixed_predictors(jobs, modes, args.out_dir)
+    elif args.no_recon:
+        jobs = [replace(job, no_recon=True) for job in jobs]
+    if args.full_sequence:
+        updated = []
+        for job in jobs:
+            matches = [_CFG_FRAMES_RE.match(line) for line in job.sequence_cfg.read_text(encoding="utf-8").splitlines()]
+            counts = [int(m.group(1)) for m in matches if m]
+            if not counts or counts[-1] <= 0:
+                parser.error(f"no positive FramesToBeEncoded in {job.sequence_cfg}")
+            updated.append(replace(job, frames=counts[-1]))
+        jobs = updated
+
+    if args.ts_pred_stats_dir:
+        stats_root = args.ts_pred_stats_dir.resolve()
+        jobs = [replace(job, ts_stats=(stats_root / job.bitstream.relative_to(args.out_dir)).with_suffix(".csv"))
+                for job in jobs]
+
     experiment = _detect_experiment_line(args.encoder, repo_root)
     print(experiment or "EXPERIMENT: none")
+    if modes:
+        print(f"Predictors : {','.join(modes)} ({'CLI override' if args.fixed_predictors is not None else 'compiled default'})")
     print(f"Repo       : {repo_root}")
     print(f"Input dir  : {args.input_dir}")
     print(f"Out dir    : {args.out_dir}")
     print(f"Jobs       : {len(jobs)} (parallel={max(1, args.jobs)})")
 
     if args.dry_run:
-        for job in jobs[:50]:
+        for job in jobs:
             cfg_text = " ".join(str(p.relative_to(repo_root) if p.is_relative_to(repo_root) else p) for p in job.cfgs)
             seq_text = str(job.sequence_cfg.relative_to(repo_root) if job.sequence_cfg.is_relative_to(repo_root) else job.sequence_cfg)
             frame_text = f", frames={job.frames}" if job.frames is not None else ""
             md5_text = ", decode-md5=on" if job.decode_md5 else ""
             xlsm_text = f", xlsm_tag={job.xlsm_tag}" if job.xlsm_tag else ""
-            print(f"- {job.name} QP{job.qp}: {cfg_text} + {seq_text}, input={job.input_path.name}{frame_text}{md5_text}{xlsm_text}")
-        if len(jobs) > 50:
-            print(f"... ({len(jobs) - 50} more)")
+            print(f"- {job.name} QP{job.qp}: {cfg_text} + {seq_text}, input={job.input_path.name}{frame_text}{md5_text}{xlsm_text}, recon={'off' if job.no_recon else 'on'}")
         return 0
 
     missing_inputs = [job.input_path for job in jobs if not job.input_path.is_file()]
@@ -1158,8 +1327,22 @@ def main(argv: list[str]) -> int:
     tool_check = _check_tools(args)
     if tool_check != 0:
         return tool_check
+    if modes:
+        for label, exe in (("encoder", args.encoder), ("decoder", args.decoder)):
+            if label == "decoder" and not args.decode_md5:
+                continue
+            banner = _detect_experiment_line(exe, repo_root) or ""
+            if "TS_FIXED_PREDICTOR=" not in banner or "syntax=experimental-v1" not in banner:
+                print(f"ERROR: {label} lacks fixed-predictor experiment support: {exe}", file=sys.stderr)
+                return 2
 
     _safe_mkdir(args.out_dir)
+    if modes:
+        plan = [{"order": j.order, "predictor": j.fixed_predictor, "sequence": j.sequence_cfg.stem,
+                 "qp": j.qp, "frames": j.frames, "cfgs": [str(p) for p in j.cfgs],
+                 "sequence_cfg": str(j.sequence_cfg), "input": str(j.input_path),
+                 "bitstream": str(j.bitstream), "reconstruction": None} for j in jobs]
+        (args.out_dir / "experiment_plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
     results_by_order: dict[int, dict] = {}
     interrupted = False
     with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
@@ -1173,13 +1356,14 @@ def main(argv: list[str]) -> int:
                     result = {
                         "order": job.order,
                         "name": job.name,
+                        "fixed_predictor": job.fixed_predictor or "",
                         "sequence": job.sequence_cfg.stem,
                         "sequence_cfg": str(job.sequence_cfg),
                         "input": str(job.input_path),
                         "qp": job.qp,
                         "frames": job.frames or "",
                         "bitstream": str(job.bitstream),
-                        "recon": str(job.recon),
+                        "recon": "" if job.no_recon else str(job.recon),
                         "encode_status": "exception",
                         "status": "exception",
                         "encode_returncode": "",
@@ -1232,6 +1416,9 @@ def main(argv: list[str]) -> int:
     summary_path = args.out_dir / "summary.csv"
     _write_summary(summary_path, rows)
     print(f"Summary    : {summary_path}")
+    _write_summary(args.out_dir / "failures.csv", [r for r in rows if r.get("error_info") != "pass"])
+    for mode in modes:
+        _write_summary(args.out_dir / mode / "summary.csv", [r for r in rows if r.get("fixed_predictor") == mode])
     _write_xlsm_reports(repo_root=repo_root, out_dir=args.out_dir, rows=rows, args=args)
 
     if interrupted:

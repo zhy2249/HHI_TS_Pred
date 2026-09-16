@@ -1298,7 +1298,8 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       int rightPixel, belowPixel, predPixel;
 
       cctx.neighTS(rightPixel, belowPixel, scanPos, dstCoeff);
-      predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false);
+      predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
+                                     cctx.magnitudePredictorTS(scanPos, dstCoeff));
 
       if (upAbsLevel != roundAbsLevel && upAbsLevel != minAbsLevel && predPixel == 1)
       {
@@ -1340,7 +1341,8 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       cLevel = xGetCodedLevelTSPred(costCoeff[scanPos], costCoeff0[scanPos], costSig[scanPos], levelDouble, qBits,
                                     errorScale, coeffLevels, coeffLevelError, &fracBitsSig, fracBitsPar, cctx, fracBits,
                                     fracBitsSign, fracBitsGr1, sign, rightPixel, belowPixel, goRiceParam, lastCoeff,
-                                    extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins);
+                                    extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
+                                    cctx.magnitudePredictorTS(scanPos, dstCoeff));
 
       cctx.remRegBins -= numUsedCtxBins;
       rdStats.iNumSbbCtxBins += numUsedCtxBins;
@@ -1572,7 +1574,8 @@ void QuantRDOQ::forwardBDPCM(TransformUnit &tu, const CompID &compID, const CCoe
       cLevel = xGetCodedLevelTSPred(costCoeff[scanPos], costCoeff0[scanPos], costSig[scanPos], levelDouble, qBits,
                                     errorScale, coeffLevels, coeffLevelError, &fracBitsSig, fracBitsPar, cctx, fracBits,
                                     fracBitsSign, fracBitsGr1, sign, rightPixel, belowPixel, goRiceParam, lastCoeff,
-                                    extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins);
+                                    extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
+                                    cctx.magnitudePredictorTS(scanPos, dstCoeff));
       cctx.remRegBins -= numUsedCtxBins;
       rdStats.iNumSbbCtxBins += numUsedCtxBins;
       if (cLevel > 0)
@@ -1686,7 +1689,7 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
                                                 const BinFracBits &fracBitsSign, const BinFracBits &fracBitsGt1,
                                                 const uint8_t sign, int rightPixel, int belowPixel, uint16_t ricePar,
                                                 bool isLast, bool useLimitedPrefixLength,
-                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins) const
+                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction) const
 {
   double   currCostSig  = 0;
   uint32_t bestAbsLevel = 0;
@@ -1742,7 +1745,7 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
     int modAbsLevel           = absLevel;
     if (cctx.remRegBins >= 4)
     {
-      modAbsLevel = cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE);
+      modAbsLevel = cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE, prediction);
     }
     int    numCtxBins = 0;
     double dCurrCost  = coeffLevelError[errorInd] +

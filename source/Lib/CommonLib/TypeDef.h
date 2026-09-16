@@ -54,6 +54,34 @@
 #include "CommonDef.h"
 
 // clang-format off
+// TS fixed-predictor experiment: edit this default when CMake uses AUTO.
+// Explicit CMake ON/OFF overrides this value via a compiler definition.
+#ifndef JVET_BJUT_TS_FIXED_PREDICTOR
+#define JVET_BJUT_TS_FIXED_PREDICTOR                       0
+#endif
+// Default runtime mode when no TS_FIXED_PREDICTOR override is supplied.
+// At most one may be 1; all zero selects the original Current predictor.
+#ifndef JVET_BJUT_TS_FIXED_NOPRED
+#define JVET_BJUT_TS_FIXED_NOPRED                          0
+#endif
+#ifndef JVET_BJUT_TS_FIXED_GRADIENT
+#define JVET_BJUT_TS_FIXED_GRADIENT                        0
+#endif
+#ifndef JVET_BJUT_TS_FIXED_DIRECTIONAL
+#define JVET_BJUT_TS_FIXED_DIRECTIONAL                     0
+#endif
+#if (JVET_BJUT_TS_FIXED_NOPRED != 0 && JVET_BJUT_TS_FIXED_NOPRED != 1) || \
+    (JVET_BJUT_TS_FIXED_GRADIENT != 0 && JVET_BJUT_TS_FIXED_GRADIENT != 1) || \
+    (JVET_BJUT_TS_FIXED_DIRECTIONAL != 0 && JVET_BJUT_TS_FIXED_DIRECTIONAL != 1)
+#error TS fixed predictor default macros must be 0 or 1
+#endif
+#if JVET_BJUT_TS_FIXED_NOPRED + JVET_BJUT_TS_FIXED_GRADIENT + JVET_BJUT_TS_FIXED_DIRECTIONAL > 1
+#error Enable at most one TS fixed predictor default (NoPred, gradient, directional)
+#endif
+#if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_PRED_ANALYSIS
+#error Fixed TS predictor coding and legacy counterfactual analysis cannot be enabled together
+#endif
+
 #define mod3va          0
 #define mod3_v2 0
 #define mod3_v2_sgpm 0

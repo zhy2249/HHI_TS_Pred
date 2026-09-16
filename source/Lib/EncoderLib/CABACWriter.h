@@ -218,6 +218,13 @@ public:
   void residual_coding_subblock(CoeffCodingContext &cctx, const TCoeff *coeff, const uint64_t stateTransTable,
                                 int &state);
   void residual_codingTS(const TransformUnit &tu, CompID compID);
+#if JVET_BJUT_TS_PRED_ANALYSIS
+  void analyseTsPrediction(const TransformUnit &tu, CompID compID);
+  int m_tsAnalysisMode = 1; // Only independent shadow writers change this value.
+  std::vector<uint64_t> *m_tsAnalysisCosts = nullptr;
+  std::vector<int> *m_tsAnalysisLevels = nullptr;
+  std::vector<int> *m_tsAnalysisActive = nullptr;
+#endif
   void residual_coding_subblockTS(CoeffCodingContext &cctx, const TCoeff *coeff, unsigned (&RiceBit)[8], int riceParam,
                                   bool ricePresentFlag);
   void joint_cb_cr(const TransformUnit &tu, const int cbfMask);

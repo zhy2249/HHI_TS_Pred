@@ -55,7 +55,7 @@ endif()
 #  add_dependencies( ${EXE_NAME} Install${PROJECT_NAME}LldbFiles )
 #endif()
 
-if( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+if( CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NX2_TOPLEVEL_OUTPUT_DIRS )
   add_custom_command( TARGET ${EXE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
                                                           $<$<CONFIG:Debug>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/EncoderApp>
                                                           $<$<CONFIG:Release>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/EncoderApp>
@@ -72,4 +72,3 @@ source_group( "Natvis Files" FILES ${NATVIS_FILES} )
 
 # set the folder where to place the projects
 set_target_properties( ${EXE_NAME}  PROPERTIES FOLDER app LINKER_LANGUAGE CXX )
-

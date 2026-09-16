@@ -45,6 +45,7 @@
 #include "Unit.h"
 #include "UnitPartitioner.h"
 #include "CodingStructure.h"
+#include "TsFixedPrediction.h"
 
 #include <bitset>
 
@@ -561,7 +562,24 @@ public:
     }
   }
 
-  int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm)
+  int magnitudePredictorTS(int scanPos, const TCoeff *coeff) const
+  {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    const int mode = TsFixedPrediction::mode();
+    if (mode == 0) { return 0; }
+    if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto a = [&](int dx, int dy) { return std::abs(int(coeff[pos + dx + dy * m_width])); };
+    const int l = x ? a(-1, 0) : 0, u = y ? a(0, -1) : 0;
+    const int d = x && y ? a(-1, -1) : 0;
+    const int ll = x >= 2 ? a(-2, 0) : 0, uu = y >= 2 ? a(0, -2) : 0;
+    return TsFixedPrediction::predict(mode, x, y, l, u, d, ll, uu);
+#else
+    return -1;
+#endif
+  }
+
+  int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm, int prediction = -1)
   {
 
     if (absCoeff == 0)
@@ -574,7 +592,7 @@ public:
 
     if (!bdpcm)
     {
-      pred1 = std::max(absBelow, absRight);
+      pred1 = prediction < 0 ? std::max(absBelow, absRight) : prediction;
 
       if (absCoeffMod == pred1)
       {
@@ -589,7 +607,7 @@ public:
     return (absCoeffMod);
   }
 
-  TCoeff decDeriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff)
+  TCoeff decDeriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, int prediction = -1)
   {
 
     if (absCoeff == 0)
@@ -598,7 +616,7 @@ public:
     }
 
     int pred1, absBelow = abs(belowPixel), absRight = abs(rightPixel);
-    pred1 = std::max(absBelow, absRight);
+    pred1 = prediction < 0 ? std::max(absBelow, absRight) : prediction;
 
     TCoeff absCoeffMod;
 

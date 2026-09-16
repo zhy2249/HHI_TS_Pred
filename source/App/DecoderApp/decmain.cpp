@@ -81,8 +81,10 @@ int getProcStatusValue(const char *key)
 #define ENABLE_TRY_CATCH 1
 #endif
 
+#include "CommonLib/TsFixedPrediction.h"
 int main(int argc, char *argv[])
 {
+  TsFixedPrediction::announce();
   int returnCode = EXIT_SUCCESS;
 
   // print information

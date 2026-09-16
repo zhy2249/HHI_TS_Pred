@@ -49,7 +49,7 @@ macro( define_DecoderXApp_target EXE_NAME LINK_LIBS )
   #  add_dependencies( ${EXE_NAME} Install${PROJECT_NAME}LldbFiles )
   #endif()
 
-  if( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+  if( CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NX2_TOPLEVEL_OUTPUT_DIRS )
     add_custom_command( TARGET ${EXE_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
                         $<$<CONFIG:Debug>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}/${EXE_NAME}>
                         $<$<CONFIG:Release>:${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}/${EXE_NAME}>

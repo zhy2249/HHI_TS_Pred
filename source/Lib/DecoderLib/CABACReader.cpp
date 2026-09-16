@@ -4642,7 +4642,7 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
       {
         int rightPixel, belowPixel;
         cctx.neighTS(rightPixel, belowPixel, scanPos, coeff);
-        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff);
+        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff, cctx.magnitudePredictorTS(scanPos, coeff));
       }
     }
   }

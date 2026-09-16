@@ -19,3 +19,6 @@ deploy
 /cmake-build-*/
 /source/Lib/CommonLib/version.h
 /source/Lib/CommonAnalyserLib/version.h
+
+# Generated TS predictor experiment data, bitstreams, and analysis outputs.
+/runs/ts_*/

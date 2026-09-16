@@ -50,6 +50,9 @@
 #include <map>
 #include <algorithm>
 #include <limits>
+#if JVET_BJUT_TS_PRED_ANALYSIS
+#include "TsPredAnalysis.h"
+#endif
 
 //! \ingroup EncoderLib
 //! \{
@@ -61,6 +64,9 @@ void CABACWriter::initCtxModels(const Slice &slice)
 #endif
 {
   int       qp               = slice.m_iSliceQp;
+#if JVET_BJUT_TS_PRED_ANALYSIS
+  if (isEncoding() && std::getenv("TS_PRED_STATS")) { TsPred::sink(); }
+#endif
   SliceType sliceType        = slice.m_eSliceType;
   SliceType encCABACTableIdx = slice.m_encCABACTableIdx;
   if (!slice.isIntra() && (encCABACTableIdx == B_SLICE || encCABACTableIdx == P_SLICE) &&
@@ -3443,6 +3449,12 @@ void CABACWriter::residual_coding_last(const TransformUnit &tu, CompID compID, C
 
   ts_flag(tu, compID);
 
+#if JVET_BJUT_TS_PRED_ANALYSIS
+  if (isEncoding() && std::getenv("TS_PRED_STATS") && tu.mtsIdx[compID] == MtsType::SKIP)
+  {
+    TsPred::census(tu, compID);
+  }
+#endif
   if (tu.mtsIdx[compID] == MtsType::SKIP && !tu.cs->slice->m_tsResidualCodingDisabledFlag)
   {
     return;
@@ -3980,6 +3992,12 @@ void CABACWriter::residual_coding_subblock(CoeffCodingContext &cctx, const TCoef
 
 void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
 {
+#if JVET_BJUT_TS_PRED_ANALYSIS
+  if (isEncoding() && std::getenv("TS_PRED_STATS"))
+  {
+    analyseTsPrediction(tu, compID);
+  }
+#endif
   DTRACE(g_trace_ctx, D_SYNTAX, "residual_codingTS() etype=%d pos=(%d,%d) size=%dx%d\n", tu.blocks[compID].compID,
          tu.blocks[compID].x, tu.blocks[compID].y, tu.blocks[compID].width, tu.blocks[compID].height);
 
@@ -4034,6 +4052,15 @@ void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
 void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCoeff *coeff, unsigned (&RiceBit)[8],
                                              const int riceParam, bool ricePresentFlag)
 {
+  const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
+#if JVET_BJUT_TS_PRED_ANALYSIS
+    if (m_tsAnalysisMode != 1)
+    {
+      return TsPred::remap(level, TsPred::predict(m_tsAnalysisMode, std::abs(left), std::abs(above)), disabled);
+    }
+#endif
+    return cctx.deriveModCoeff(left, above, level, disabled, cctx.magnitudePredictorTS(scanPos, coeff));
+  };
   //===== init =====
   const int minSubPos   = cctx.maxSubPos();
   int       firstSigPos = cctx.minSubPos();
@@ -4066,6 +4093,9 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
   int lastScanPosPass2 = -1;
   for (; nextSigPos <= minSubPos && cctx.remRegBins >= 4; nextSigPos++)
   {
+#if JVET_BJUT_TS_PRED_ANALYSIS
+    TsPred::CostScope costScope(m_binEncoder, m_tsAnalysisCosts, nextSigPos);
+#endif
     TCoeff   coeffVal = coeff[cctx.blockPos(nextSigPos)];
     unsigned sigFlag  = (coeffVal != 0);
     if (numNonZero || nextSigPos != inferSigPos)
@@ -4085,7 +4115,7 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
       cctx.remRegBins--;
       numNonZero++;
       cctx.neighTS(rightPixel, belowPixel, nextSigPos, coeff);
-      modAbsCoeff = cctx.deriveModCoeff(rightPixel, belowPixel, abs(coeffVal), cctx.bdpcm() != BdpcmMode::NONE);
+      modAbsCoeff = remap(nextSigPos, rightPixel, belowPixel, abs(coeffVal), cctx.bdpcm() != BdpcmMode::NONE);
       remAbsLevel = modAbsCoeff - 1;
 
       unsigned       gt1      = !!remAbsLevel;
@@ -4109,10 +4139,13 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
   int numGtBins = 4;
   for (int scanPos = firstSigPos; scanPos <= minSubPos && cctx.remRegBins >= 4; scanPos++)
   {
+#if JVET_BJUT_TS_PRED_ANALYSIS
+    TsPred::CostScope costScope(m_binEncoder, m_tsAnalysisCosts, scanPos);
+#endif
     unsigned absLevel;
     cctx.neighTS(rightPixel, belowPixel, scanPos, coeff);
     absLevel =
-      cctx.deriveModCoeff(rightPixel, belowPixel, abs(coeff[cctx.blockPos(scanPos)]), cctx.bdpcm() != BdpcmMode::NONE);
+      remap(scanPos, rightPixel, belowPixel, abs(coeff[cctx.blockPos(scanPos)]), cctx.bdpcm() != BdpcmMode::NONE);
     cutoffVal = 2;
     for (int i = 0; i < numGtBins; i++)
     {
@@ -4133,11 +4166,21 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
   //===== coeff bypass ====
   for (int scanPos = firstSigPos; scanPos <= minSubPos; scanPos++)
   {
+#if JVET_BJUT_TS_PRED_ANALYSIS
+    TsPred::CostScope costScope(m_binEncoder, m_tsAnalysisCosts, scanPos);
+#endif
     unsigned absLevel;
     cctx.neighTS(rightPixel, belowPixel, scanPos, coeff);
     cutoffVal = (scanPos <= lastScanPosPass2 ? 10 : (scanPos <= lastScanPosPass1 ? 2 : 0));
-    absLevel  = cctx.deriveModCoeff(rightPixel, belowPixel, abs(coeff[cctx.blockPos(scanPos)]),
+    absLevel  = remap(scanPos, rightPixel, belowPixel, abs(coeff[cctx.blockPos(scanPos)]),
                                     cctx.bdpcm() != BdpcmMode::NONE || cutoffVal == 0);
+#if JVET_BJUT_TS_PRED_ANALYSIS
+    if (m_tsAnalysisLevels)
+    {
+      (*m_tsAnalysisLevels)[scanPos] = absLevel;
+      (*m_tsAnalysisActive)[scanPos] = cutoffVal != 0 && cctx.bdpcm() == BdpcmMode::NONE;
+    }
+#endif
 
     if (absLevel >= cutoffVal)
     {

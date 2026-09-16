@@ -119,7 +119,7 @@ private:
                                        const FracBitsAccess &fracBitsAccess, const BinFracBits &fracBitsSign,
                                        const BinFracBits &fracBitsGt1, const uint8_t sign, int rightPixel,
                                        int belowPixel, uint16_t ricePar, bool isLast, bool useLimitedPrefixLength,
-                                       const int maxLog2TrDynamicRange, int &numUsedCtxBins) const;
+                                       const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction) const;
 
   inline int xGetICRateTS(const uint32_t absLevel, const BinFracBits &fracBitsPar, const CoeffCodingContext &cctx,
                           const FracBitsAccess &fracBitsAccess, const BinFracBits &fracBitsSign,

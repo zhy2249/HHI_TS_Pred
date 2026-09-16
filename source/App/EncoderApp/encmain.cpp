@@ -113,8 +113,10 @@ int getProcStatusValue(const char *key)
 // Main function
 // ====================================================================================================================
 
+#include "CommonLib/TsFixedPrediction.h"
 int main(int argc, char *argv[])
 {
+  TsFixedPrediction::announce();
   // print information
   fprintf(stdout, "\n");
   fprintf(stdout, "NextSoftware2: Encoder Version %s ", NX2_VERSION);
