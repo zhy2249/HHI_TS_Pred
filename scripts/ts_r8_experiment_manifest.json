@@ -1,0 +1,511 @@
+{
+  "schema": "ts_r8_design_v1",
+  "revision": "R8-DESIGN-20260925-v1",
+  "status": "design_only",
+  "warning": "Not an executable batch manifest. R8 macros and runtime modes are not yet implemented.",
+  "primary_anchor": "Current",
+  "incremental_reference": "R3-1",
+  "component_scope": "YUV",
+  "tu_sizes": "all natively legal transform-skip sizes",
+  "exclude_bdpcm": true,
+  "macro_reserved": "JVET_BJUT_TS_R8_MODE",
+  "macro_default": 0,
+  "tie_rule": "Current-equivalent, then identity, then smallest magnitude",
+  "qp": [
+    22,
+    27,
+    32,
+    37
+  ],
+  "preset": "LBeu",
+  "frame_policy": "ConfigLB.ini half-frame counts, no --full-sequence",
+  "sequence_weighting": "equal sequences; BD per component, then (6Y+U+V)/8",
+  "first_batch": [
+    "A01",
+    "A04",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "B01",
+    "B03",
+    "B05",
+    "B07"
+  ],
+  "smoke": {
+    "sequences": [
+      "PartyScene",
+      "BQMall",
+      "KristenAndSara",
+      "Johnny"
+    ],
+    "qp": [
+      22,
+      37
+    ],
+    "frames": 17,
+    "controls": [
+      "Current",
+      "R3-1",
+      "R7-1",
+      "R7-2"
+    ],
+    "purpose": "activity and decoder correctness, not BD ranking"
+  },
+  "experiments": [
+    {
+      "id": "A01",
+      "mode": 1,
+      "directory": "r8_1_raw_sparse_max",
+      "runtime_reserved": "r8_raw_sparse_max",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "A02",
+      "mode": 2,
+      "directory": "r8_2_raw_sparse_mean",
+      "runtime_reserved": "r8_raw_sparse_mean",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "raw",
+      "sparse": "Smean",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1",
+        "A01"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "A03",
+      "mode": 3,
+      "directory": "r8_3_raw_sparse_min",
+      "runtime_reserved": "r8_raw_sparse_min",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "raw",
+      "sparse": "Smin",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1",
+        "A01"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "A04",
+      "mode": 4,
+      "directory": "r8_4_guard_sparse_max",
+      "runtime_reserved": "r8_guard_sparse_max",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "guard",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-2",
+        "A01",
+        "R6-5"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "A05",
+      "mode": 5,
+      "directory": "r8_5_guard_sparse_mean",
+      "runtime_reserved": "r8_guard_sparse_mean",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "guard",
+      "sparse": "Smean",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-2",
+        "A02",
+        "A04",
+        "R6-6"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "A06",
+      "mode": 6,
+      "directory": "r8_6_guard_sparse_min",
+      "runtime_reserved": "r8_guard_sparse_min",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "guard",
+      "sparse": "Smin",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-2",
+        "A03",
+        "A04",
+        "R6-7"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "A07",
+      "mode": 7,
+      "directory": "r8_7_dense_nopred",
+      "runtime_reserved": "r8_dense_nopred",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "unaccepted_to_identity",
+      "sparse": "S0",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-2",
+        "R6-1"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "A08",
+      "mode": 8,
+      "directory": "r8_8_reject_nopred",
+      "runtime_reserved": "r8_reject_nopred",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "rejected_to_identity",
+      "sparse": "S0",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-2",
+        "R6-2"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "A09",
+      "mode": 9,
+      "directory": "r8_9_trim_cost",
+      "runtime_reserved": "r8_trim_cost",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "trim_cost",
+      "sparse": "S0",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1",
+        "R6-3"
+      ],
+      "batch": "1b"
+    },
+    {
+      "id": "A10",
+      "mode": 10,
+      "directory": "r8_10_trim_saving",
+      "runtime_reserved": "r8_trim_saving",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "trim_saving",
+      "sparse": "S0",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1",
+        "R6-4"
+      ],
+      "batch": "1b"
+    },
+    {
+      "id": "A11",
+      "mode": 11,
+      "directory": "r8_11_reject_sparse_max",
+      "runtime_reserved": "r8_reject_sparse_max",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "rejected_to_identity",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "A08",
+        "A04"
+      ],
+      "batch": "1b"
+    },
+    {
+      "id": "A12",
+      "mode": 12,
+      "directory": "r8_12_trim_sparse_max",
+      "runtime_reserved": "r8_trim_sparse_max",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "trim_saving",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "A10",
+        "A01"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "B01",
+      "mode": 13,
+      "directory": "r8_13_mixed_raw",
+      "runtime_reserved": "r8_mixed_raw",
+      "status": "not_implemented",
+      "cost": "integer_fractional_1_1",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "A01"
+      ],
+      "batch": "1b"
+    },
+    {
+      "id": "B02",
+      "mode": 14,
+      "directory": "r8_14_mixed_guard",
+      "runtime_reserved": "r8_mixed_guard",
+      "status": "not_implemented",
+      "cost": "integer_fractional_1_1",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "guard",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B01",
+        "A04"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "B03",
+      "mode": 15,
+      "directory": "r8_15_complete_raw",
+      "runtime_reserved": "r8_complete_raw",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P1",
+      "decision": "raw",
+      "sparse": "S0",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "R7-1"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "B04",
+      "mode": 16,
+      "directory": "r8_16_complete_sparse_max",
+      "runtime_reserved": "r8_complete_sparse_max",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P1",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B03",
+        "A01"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "B05",
+      "mode": 17,
+      "directory": "r8_17_minimax",
+      "runtime_reserved": "r8_minimax",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "minimax_regret",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "A01",
+        "A04"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "B06",
+      "mode": 18,
+      "directory": "r8_18_minimax_complete",
+      "runtime_reserved": "r8_minimax_complete",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P1",
+      "decision": "minimax_regret",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B05",
+        "B04"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "B07",
+      "mode": 19,
+      "directory": "r8_19_smoothed_dense",
+      "runtime_reserved": "r8_smoothed_dense",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "smooth_121",
+      "candidates": "Psmooth",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B04",
+        "A01"
+      ],
+      "batch": "1a"
+    },
+    {
+      "id": "B08",
+      "mode": 20,
+      "directory": "r8_20_smoothed_all_support",
+      "runtime_reserved": "r8_smoothed_all_support",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "smooth_121",
+      "candidates": "Psmooth",
+      "decision": "raw",
+      "sparse": "smooth_if_n_positive",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B07"
+      ],
+      "batch": "2"
+    },
+    {
+      "id": "C01",
+      "mode": 21,
+      "directory": "r8_21_dual_path",
+      "runtime_reserved": "r8_dual_path",
+      "status": "not_implemented",
+      "cost": "path_fixed_1_1",
+      "samples": "empirical",
+      "candidates": "P1",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "B04"
+      ],
+      "batch": "3"
+    },
+    {
+      "id": "C02",
+      "mode": 22,
+      "directory": "r8_22_causal_path",
+      "runtime_reserved": "r8_causal_path",
+      "status": "not_implemented",
+      "cost": "path_causal",
+      "samples": "empirical",
+      "candidates": "P1",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "native",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "C01"
+      ],
+      "batch": "3"
+    },
+    {
+      "id": "C03",
+      "mode": 23,
+      "directory": "r8_23_r3_dual_quant",
+      "runtime_reserved": "r8_r3_dual_quant",
+      "status": "not_implemented",
+      "cost": "integer",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "guard",
+      "sparse": "S0",
+      "search": "dual_tu_up",
+      "needs_rate_context": false,
+      "direct_controls": [
+        "R3-1"
+      ],
+      "batch": "4"
+    },
+    {
+      "id": "C04",
+      "mode": 24,
+      "directory": "r8_24_raw_dual_quant",
+      "runtime_reserved": "r8_raw_dual_quant",
+      "status": "not_implemented",
+      "cost": "fractional10",
+      "samples": "empirical",
+      "candidates": "P0",
+      "decision": "raw",
+      "sparse": "Smax",
+      "search": "dual_tu_up",
+      "needs_rate_context": true,
+      "direct_controls": [
+        "A01",
+        "C03"
+      ],
+      "batch": "4"
+    }
+  ]
+}
