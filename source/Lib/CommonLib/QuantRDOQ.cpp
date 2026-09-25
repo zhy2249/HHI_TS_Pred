@@ -43,6 +43,12 @@
 
 #include "dtrace_next.h"
 #include "dtrace_buffer.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsRateReplay.h"
+#endif
+#if JVET_BJUT_TS_R7_SHADOW
+#include "TsRateRdoqStats.h"
+#endif
 
 #include <stdlib.h>
 #include <limits>
@@ -1189,6 +1195,13 @@ void QuantRDOQ::xRateDistOptQuant(TransformUnit &tu, const CompID &compID, const
 void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, const CCoeffBuf &coeffs, TCoeff &absSum,
                                     const QpParam &qp, const Ctx &ctx)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if (TsFixedPrediction::mode() == 4 || TsFixedPrediction::mode() == 8)
+  {
+    CHECK(qp.Qp(true) != QpParam(tu, compID).Qp(true),
+          "Conditional TS CU-QP gate cannot use an encoder-only QP override");
+  }
+#endif
   const FracBitsAccess &fracBits = ctx.getFracBitsAcess();
 
   const SPS        &sps             = *tu.cs->sps;
@@ -1242,6 +1255,19 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
   double   coeffLevelError[4];
 
   CoeffCodingContext cctx(tu, compID, tu.cs->slice->m_signDataHidingEnabledFlag, m_bdpcm);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  // Estimator input, NOT necessarily actual final Writer context. No writeback.
+  Ctx rateTrial;
+  const bool useRateModel = TsFixedPrediction::rateMode(TsFixedPrediction::mode());
+  bool trackRateModel = useRateModel;
+#if JVET_BJUT_TS_R7_SHADOW
+  const bool probeRateModel = TsFixedPrediction::rateRdoqShadow();
+  CHECK(probeRateModel && TsFixedPrediction::mode()!=13,"RDOQ shadow requires unchanged R3");
+  trackRateModel |= probeRateModel;
+#endif
+  if (trackRateModel) { rateTrial = ctx; }
+  int rateTrialBins = (cctx.maxNumCoeff() * 7) >> 2;
+#endif
   const int          sbSizeM1    = (1 << cctx.log2CGSize()) - 1;
   double             baseCost    = 0;
   uint32_t           goRiceParam = 0;
@@ -1261,6 +1287,10 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
   for (int sbId = 0; sbId < sbNum; sbId++)
   {
     cctx.initSubblock(sbId);
+
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    if (trackRateModel) { cctx.freezeTsRateContext(rateTrial); }
+#endif
 
     int noCoeffCoded = 0;
     baseCost         = 0.0;
@@ -1344,6 +1374,41 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
                                     extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
                                     cctx.magnitudePredictorTS(scanPos, dstCoeff));
 
+#if JVET_BJUT_TS_R7_SHADOW
+      if (probeRateModel)
+      {
+        using namespace TsFixedPrediction;
+        const auto old = cctx.ratePredictionTS(scanPos,dstCoeff,true);
+        const auto now = cctx.ratePredictionTS(scanPos,dstCoeff);
+        const bool changed = !equivalentPredictors(old.predictor,now.predictor);
+        const bool allowedUp = upAbsLevel!=roundAbsLevel && upAbsLevel!=minAbsLevel;
+        const bool oldUp = allowedUp && remap(upAbsLevel,old.predictor)==1;
+        const bool newUp = allowedUp && remap(upAbsLevel,now.predictor)==1;
+        unsigned hypothetical = cLevel;
+        if (changed)
+        {
+          // One-step diagnostic at the SAME anchor search state. Restore the
+          // only mutable search member; no result or context is committed.
+          const int saved = m_testedLevels;
+          uint32_t alternatives[3] = {roundAbsLevel};
+          m_testedLevels = 1;
+          if(minAbsLevel!=roundAbsLevel)alternatives[m_testedLevels++]=minAbsLevel;
+          if(newUp)alternatives[m_testedLevels++]=upAbsLevel;
+          double altCost=0,altZero=costCoeff0[scanPos],altSig=0,altError[4]{}; int altBins=0;
+          auto probeContext=cctx;
+          hypothetical=xGetCodedLevelTSPred(altCost,altZero,altSig,levelDouble,qBits,errorScale,
+            alternatives,altError,&fracBitsSig,fracBitsPar,probeContext,fracBits,fracBitsSign,
+            fracBitsGr1,sign,rightPixel,belowPixel,goRiceParam,lastCoeff,extendedPrecision,
+            maxLog2TrDynamicRange,altBins,now.predictor);
+          m_testedLevels=saved;
+        }
+        rateRdoqStats().add({int(compID),width,height,tu.cu->qp,old.n},
+          {1,uint64_t(cctx.remRegBins>=4),uint64_t(changed),uint64_t(oldUp),uint64_t(newUp),
+           uint64_t(oldUp!=newUp),uint64_t(cLevel!=hypothetical),
+           uint64_t(cctx.remRegBins>=4 && hypothetical && remap(hypothetical,now.predictor)==1),
+           uint64_t(cctx.remRegBins>=4 && cLevel && remap(cLevel,old.predictor)==1)});
+      }
+#endif
       cctx.remRegBins -= numUsedCtxBins;
       rdStats.iNumSbbCtxBins += numUsedCtxBins;
 
@@ -1411,6 +1476,18 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
         anySigCG = true;
       }
     }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    // Only finalized CG coefficients, including the all-zero RD alternative.
+    // State lives in this trial's CoeffCodingContext and never escapes the TU.
+    if (trackRateModel)
+    {
+      TsFixedPrediction::FractionalSink sink{static_cast<CtxStore<BinProbModel_Std> &>(rateTrial)};
+      const auto predict = [&](int s) { return TsFixedPrediction::ratePredictor(cctx,s,dstCoeff); };
+      TsFixedPrediction::replayRateCG(cctx,dstCoeff,predict,rateTrialBins,
+        1 + (sps.m_spsRangeExtension.m_tsrcRicePresentFlag ? tu.cu->slice->m_tsrcIndex : 0),sink);
+    }
+    cctx.finishTsPredictorCG(dstCoeff);
+#endif
   }
 
   //===== estimate last position =====

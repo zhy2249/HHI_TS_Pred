@@ -4474,11 +4474,18 @@ void CABACReader::residual_codingTS(TransformUnit &tu, CompID compID)
       goRiceParam = goRiceParam + tu.cu->slice->m_tsrcIndex;
     }
     residual_coding_subblockTS(cctx, coeff, goRiceParam);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    cctx.finishTsPredictorCG(coeff, true, true);
+#endif
   }
 }
 
 void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *coeff, const int riceParam)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  // Capture BEFORE any CG bins. Immediate pass-3 contexts would be too late.
+  if (TsFixedPrediction::rateMode(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
+#endif
   // NOTE: All coefficients of the subblock must be set to zero before calling this function
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
   CodingStatisticsClassType ctype_group(STATS__CABAC_BITS__SIG_COEFF_GROUP_FLAG, cctx.width(), cctx.height(),
@@ -4642,7 +4649,17 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
       {
         int rightPixel, belowPixel;
         cctx.neighTS(rightPixel, belowPixel, scanPos, coeff);
-        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff, cctx.magnitudePredictorTS(scanPos, coeff));
+        int prediction;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        if (TsFixedPrediction::mode() == 22)
+        {
+          const TsFixedPrediction::R4SignView signs{coeff, sigBlkPos, numNonZero, signPattern};
+          prediction = cctx.magnitudePredictorModeTS(22, scanPos, coeff, &signs);
+        }
+        else
+#endif
+        { prediction = cctx.magnitudePredictorTS(scanPos, coeff); }
+        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff, prediction);
       }
     }
   }

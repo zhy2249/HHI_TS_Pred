@@ -38,10 +38,9 @@ BDPCM 及原本 cutoff=0 的 bypass-only 路径保持 identity。所有合法 TU
 
 ## 3. 真实编解码实现
 
-编译宏 `JVET_BJUT_TS_FIXED_PREDICTOR` 默认在 `source/Lib/CommonLib/TypeDef.h` 定义为 0。
-CMake 选项支持 `AUTO`（新构建默认，使用 TypeDef.h）、`ON`（强制 1）、`OFF`（强制 0）。
-已有构建目录缓存的 ON/OFF 会保留；要改由头文件控制，先执行
-`cmake -S . -B <构建目录> -DJVET_BJUT_TS_FIXED_PREDICTOR=AUTO`，然后修改头文件并重新编译。
+2026-09-18起，`source/Lib/CommonLib/TypeDef.h` 是实验默认设置的首要来源。
+当前master `JVET_BJUT_TS_FIXED_PREDICTOR=1`、所有模式默认宏=0，选择Current。
+CMake已移除AUTO/ON/OFF编译定义覆盖，遗留缓存会提示并清除；修改头文件后在新构建目录编译。
 不要在正在编码或准备续跑的实验中随意重编原二进制，否则成功 marker 的二进制指纹会变化。
 该实验与旧的
 `JVET_BJUT_TS_PRED_ANALYSIS` 构建互斥，防止旧 Oracle 的模式解释混入真实实验。
@@ -54,7 +53,7 @@ CMake 选项支持 `AUTO`（新构建默认，使用 TypeDef.h）、`ON`（强�
 #define JVET_BJUT_TS_FIXED_DIRECTIONAL  0
 ```
 
-最多一个设为 1；全为 0 时 Current。多开或使用非 0/1 值会在编译时报错。
+最多一个设为1；旧条件宏和R2宏也全为0时选择Current。多开或使用非0/1值会在编译时报错。
 这些子宏只选择默认模式，总开关 `JVET_BJUT_TS_FIXED_PREDICTOR` 仍需开启。
 环境变量 `TS_FIXED_PREDICTOR` 可在单独进程中覆盖宏默认，拼写错误立即退出。
 Encoder/Decoder 开始时均输出包含实际模式及 `experimental-v1` 的 banner，另打印宏默认和选择来源。
@@ -121,7 +120,6 @@ cmake -S . -B build/ts-fixed \
   -DCMAKE_BUILD_TYPE=Release \
   -DNX2_ENABLE_LINK_TIME_OPT=OFF \
   -DNX2_TOPLEVEL_OUTPUT_DIRS=OFF \
-  -DJVET_BJUT_TS_FIXED_PREDICTOR=ON \
   -DJVET_BJUT_TS_PRED_ANALYSIS=OFF
 cmake --build build/ts-fixed --target EncoderApp DecoderApp TsFixedPredictorTest -j 4
 build/ts-fixed/bin/TsFixedPredictorTest

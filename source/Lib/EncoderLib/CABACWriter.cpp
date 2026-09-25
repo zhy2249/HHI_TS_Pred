@@ -50,6 +50,13 @@
 #include <map>
 #include <algorithm>
 #include <limits>
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "CommonLib/TsVirtualCoding.h"
+#include "CommonLib/TsR2Stats.h"
+#endif
+#if JVET_BJUT_TS_R7_SHADOW
+#include "TsRateShadow.h"
+#endif
 #if JVET_BJUT_TS_PRED_ANALYSIS
 #include "TsPredAnalysis.h"
 #endif
@@ -4037,7 +4044,35 @@ void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
         }
       }
     }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    // Observation only: quantify the virtual-prior mismatch at the FINAL writer.
+    // These actual-context costs are never passed to RDOQ, decoder, or selector.
+    if (isEncoding() && TsFixedPrediction::mode() == 12 && cctx.bdpcm() == BdpcmMode::NONE &&
+        (!std::getenv("TS_R2_STATS") || std::strcmp(std::getenv("TS_R2_STATS"), "0")))
+    {
+      using namespace TsFixedPrediction;
+      std::array<uint64_t, R2Stats::COUNT> counts{};
+      for (int predictor : {1, 0})
+      {
+        Ctx observation(getCtx());
+        FractionalSink sink{static_cast<CtxStore<BinProbModel_Std> &>(observation)};
+        int bins = cctx.remRegBins;
+        replayCG(cctx, coeff, predictor, bins, goRiceParam, sink);
+        counts[predictor ? R2Stats::REAL_CTX_C : R2Stats::REAL_CTX_N] = sink.bits;
+      }
+      counts[R2Stats::REAL_CTX_CGS] = 1;
+      r2Stats().add({12, tu.cu->slice->m_poc, int(compID), cctx.width(), cctx.height(), tu.cu->qp,
+                    tu.cu->predMode == MODE_INTRA, 0}, counts);
+    }
+#endif
+#if JVET_BJUT_TS_R7_SHADOW
+    if (isEncoding() && TsRateShadow::enabled())
+      TsRateShadow::observe(tu,compID,cctx,coeff,getCtx(),goRiceParam);
+#endif
     residual_coding_subblockTS(cctx, coeff, riceBit, goRiceParam, ricePresentFlag);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    cctx.finishTsPredictorCG(coeff, isEncoding(), true, isEncoding());
+#endif
     if (tu.cu->slice->m_sps->m_spsRangeExtension.m_tsrcRicePresentFlag && tu.mtsIdx[compID] == MtsType::SKIP &&
         isEncoding())
     {
@@ -4052,6 +4087,9 @@ void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
 void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCoeff *coeff, unsigned (&RiceBit)[8],
                                              const int riceParam, bool ricePresentFlag)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if (TsFixedPrediction::rateMode(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
+#endif
   const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
 #if JVET_BJUT_TS_PRED_ANALYSIS
     if (m_tsAnalysisMode != 1)

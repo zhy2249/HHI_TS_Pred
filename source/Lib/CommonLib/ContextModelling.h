@@ -46,6 +46,12 @@
 #include "UnitPartitioner.h"
 #include "CodingStructure.h"
 #include "TsFixedPrediction.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsR4Prediction.h"
+#include "TsR5Prediction.h"
+#include "TsR6Prediction.h"
+#include "TsRateCost.h"
+#endif
 
 #include <bitset>
 
@@ -565,19 +571,111 @@ public:
   int magnitudePredictorTS(int scanPos, const TCoeff *coeff) const
   {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
-    const int mode = TsFixedPrediction::mode();
+    const int mode = TsFixedPrediction::selectedMode(TsFixedPrediction::mode(), m_tsQp, m_tsState,
+                                                    m_tsRecentMargin, m_compID == COMP_Y);
+    return magnitudePredictorModeTS(mode, scanPos, coeff);
+#else
+    return -1;
+#endif
+  }
+
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  void freezeTsRateContext(const Ctx &ctx)
+  {
+    const auto &bits = ctx.getFracBitsAcess();
+    for (int k = 0; k < 3; ++k)
+    {
+      auto &t = m_tsRateSnapshot.byDirectNonzero[k];
+      t.gt1 = bits.getFracBitsArray(m_tsLrg1FlagCtxSet(k));
+      t.parity = bits.getFracBitsArray(parityCtxIdAbsTS());
+      for (int j = 0; j < 4; ++j) { t.gt[j] = bits.getFracBitsArray(greaterXCtxIdAbsTS(j + 1)); }
+    }
+    m_tsRateSnapshot.ready = true;
+  }
+  const TsFixedPrediction::RateTable &tsRateTable(int directNonzero) const
+  {
+    CHECK(!m_tsRateSnapshot.ready || directNonzero < 0 || directNonzero > 2, "Uninitialized TS rate snapshot");
+    return m_tsRateSnapshot.byDirectNonzero[directNonzero];
+  }
+  TsFixedPrediction::RateDecision ratePredictionTS(int scanPos, const TCoeff *coeff, bool integer = false) const
+  {
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto read = [&](int dx, int dy) { return x + dx < 0 || y + dy < 0 ? 0 : std::abs(int(coeff[pos + dx + dy * m_width])); };
+    const int a[] = {read(-1,0), read(0,-1), read(-1,-1), read(-2,0), read(0,-2)};
+    int nz[5], n = 0;
+    for (int v : a) { if (v) { nz[n++] = v; } }
+    const auto cost = [&](int level) -> int64_t {
+      if (integer) { return int64_t(TsFixedPrediction::syntaxCost(level, m_tsRice, m_maxLog2TrDynamicRange)) << SCALE_BITS; }
+      return tsRateTable((a[0] != 0) + (a[1] != 0)).cost(level, m_tsRice, m_maxLog2TrDynamicRange);
+    };
+    return TsFixedPrediction::rateDecision(std::max(a[0],a[1]), nz, n, cost);
+  }
+  TsFixedPrediction::R6Result r6PredictionTS(int mode, int scanPos, const TCoeff *coeff) const
+  {
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto read = [&](int xx, int yy) { return xx < 0 || yy < 0 ? 0 : int(coeff[xx + yy * m_width]); };
+    return TsFixedPrediction::r6Predict(mode, read, x, y, m_tsRice, m_maxLog2TrDynamicRange);
+  }
+  TsFixedPrediction::R5Result r5PredictionTS(int mode, int scanPos, const TCoeff *coeff) const
+  {
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto read = [&](int xx, int yy) { return xx < 0 || yy < 0 ? 0 : int(coeff[xx + yy * m_width]); };
+    return TsFixedPrediction::r5Predict(mode, read, x, y, m_tsRice, m_maxLog2TrDynamicRange);
+  }
+  TsFixedPrediction::R4Result r4PredictionTS(int mode, int scanPos, const TCoeff *coeff,
+                                            const TsFixedPrediction::R4SignView *signs = nullptr) const
+  {
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto read = [&](int xx, int yy) {
+      if (xx < 0 || yy < 0) { return 0; }
+      const int index = xx + yy * m_width;
+      return signs ? signs->at(index) : int(coeff[index]);
+    };
+    return TsFixedPrediction::r4Predict(mode, read, x, y, m_tsRice, m_maxLog2TrDynamicRange);
+  }
+  int magnitudePredictorModeTS(int mode, int scanPos, const TCoeff *coeff,
+                               const TsFixedPrediction::R4SignView *signs = nullptr) const
+  {
+    if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::rateMode(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      const auto d = ratePredictionTS(scanPos, coeff);
+      return mode == 32 ? d.winner : d.predictor;
+    }
+    if (TsFixedPrediction::r6(mode)) { return r6PredictionTS(mode, scanPos, coeff).predictor; }
+    if (TsFixedPrediction::r5(mode)) { return r5PredictionTS(mode, scanPos, coeff).predictor; }
+    if (TsFixedPrediction::r4(mode)) { return r4PredictionTS(mode, scanPos, coeff, signs).predictor; }
     const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
     const auto a = [&](int dx, int dy) { return std::abs(int(coeff[pos + dx + dy * m_width])); };
     const int l = x ? a(-1, 0) : 0, u = y ? a(0, -1) : 0;
     const int d = x && y ? a(-1, -1) : 0;
     const int ll = x >= 2 ? a(-2, 0) : 0, uu = y >= 2 ? a(0, -2) : 0;
+    if (mode == 9 || mode == 10 || TsFixedPrediction::r3Local(mode))
+    {
+      // These five offsets precede the current position in the native grouped
+      // diagonal scan, including rectangular TU/CG boundaries (unit tested).
+      const int available[] = {l, u, d, ll, uu};
+      int nonzero[5], n = 0;
+      for (int value : available) { if (value) { nonzero[n++] = value; } }
+      return TsFixedPrediction::r3Local(mode) ?
+        TsFixedPrediction::guardedLocalPredict(std::max(l, u), nonzero, n, m_tsRice, m_maxLog2TrDynamicRange).predictor :
+        TsFixedPrediction::localPredict(mode, std::max(l, u), nonzero, n, m_tsRice, m_maxLog2TrDynamicRange);
+    }
     return TsFixedPrediction::predict(mode, x, y, l, u, d, ll, uu);
-#else
-    return -1;
-#endif
   }
+  // Replay actual syntax budget on final q; R2-F additionally owns virtual contexts.
+  // RDOQ's approximate budget differs from the writer's three-pass traversal;
+  // a private replay budget is essential for identical historical scores.
+  void finishTsPredictorCG(const TCoeff *coeff, bool trace = false, bool verifyBudget = false, bool report = false);
+  void finishTsR4CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR5CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
+  int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
+#endif
 
   int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm, int prediction = -1)
   {
@@ -643,6 +741,19 @@ public:
   void     setUpdateHist(bool value) { m_updateHist = value; };
 
 private:
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  int m_tsQp = 0;
+  int64_t m_tsState = 0;
+  int64_t m_tsRecentMargin = 0; // R3 certificate of exactly the immediately preceding final CG.
+  int m_tsHistoryBins = 0;
+  int m_tsRice = 1;
+  int m_tsPoc = 0;
+  bool m_tsIntra = false;
+  bool m_tsVirtualReady = false;
+  int m_tsVirtualBins = 0;
+  Ctx m_tsVirtualCtx; // Default Ctx allocates no probability store; lazy for R2-F only.
+  TsFixedPrediction::RateSnapshot m_tsRateSnapshot;
+#endif
   // constant
   const CompID             m_compID;
   const ChannelType        m_chType;

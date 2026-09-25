@@ -41,6 +41,14 @@
 #include "UnitTools.h"
 #include "CodingStructure.h"
 #include "Picture.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsVirtualCoding.h"
+#include "TsR2Stats.h"
+#include "TsR3Stats.h"
+#include "TsR4Stats.h"
+#include "TsR5Stats.h"
+#include "TsR6Stats.h"
+#endif
 
 const int CoeffCodingContext::prefixCtx[] = { 0, 0, 0, 3, 6, 10, 15, 21, 28 };
 
@@ -123,6 +131,14 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
   , m_signPredArea()
   , m_numSignsPredArea(0)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  m_tsQp = tu.cu->qp;
+  m_tsHistoryBins = (m_maxNumCoeff * 7) >> 2;
+  m_tsRice = 1 + (tu.cu->slice->m_sps->m_spsRangeExtension.m_tsrcRicePresentFlag &&
+                 tu.mtsIdx[component] == MtsType::SKIP ? tu.cu->slice->m_tsrcIndex : 0);
+  m_tsPoc = tu.cu->slice->m_poc;
+  m_tsIntra = tu.cu->predMode == MODE_INTRA;
+#endif
   if (TU::getDelayedSignCoding(tu, component))
   {
     m_signPredArea = TU::getSignPredArea(tu, component);
@@ -160,6 +176,514 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
     deriveRiceRRC = &CoeffCodingContext::deriveRice;
   }
 }
+
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
+{
+  using namespace TsFixedPrediction;
+  const int policy = mode();
+  if (r6(policy)) { finishTsR6CG(coeff, trace, verifyBudget, report); return; }
+  if (r5(policy)) { finishTsR5CG(coeff, trace, verifyBudget, report); return; }
+  if (r4(policy)) { finishTsR4CG(coeff, trace, verifyBudget, report); return; }
+  static const bool statsEnabled = !std::getenv("TS_R2_STATS") || std::strcmp(std::getenv("TS_R2_STATS"), "0");
+  static const bool r3StatsEnabled = !std::getenv("TS_R3_STATS") || std::strcmp(std::getenv("TS_R3_STATS"), "0");
+  const bool collectR2 = report && statsEnabled && policy >= 9 && policy <= 12;
+  const bool collectR3 = report && r3StatsEnabled && r3(policy);
+  const bool collect = collectR2 || collectR3;
+  const bool scopeOn = componentEnabled(policy, m_compID == COMP_Y);
+  if (policy < 4) { return; }
+  std::array<uint64_t, R2Stats::COUNT> counts{};
+  std::array<uint64_t, R3Stats::COUNT> counts3{};
+  counts[R2Stats::TU] = m_subSetId == 0;
+  counts[R2Stats::CG] = 1;
+  counts[R2Stats::COEFF] = m_maxSubPos - m_minSubPos + 1;
+  const auto reportR3 = [&]() {
+    counts3[R3Stats::TU] = counts[R2Stats::TU];
+    counts3[R3Stats::CG] = counts[R2Stats::CG];
+    counts3[R3Stats::COEFF] = counts[R2Stats::COEFF];
+    counts3[R3Stats::NZ] = counts[R2Stats::NZ];
+    counts3[R3Stats::ACTIVE] = counts[R2Stats::ACTIVE];
+    counts3[R3Stats::BYPASS] = counts[R2Stats::BYPASS];
+    counts3[R3Stats::DIFFERENT] = counts[R2Stats::DIFFERENT];
+    counts3[R3Stats::MAPPED] = counts[R2Stats::MAPPED];
+    counts3[R3Stats::SCOPE_ON] = scopeOn && m_bdpcm == BdpcmMode::NONE;
+    r3Stats().add({policy, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra,
+                   int(m_bdpcm), lastSubSet() + 1, m_subSetId}, counts3);
+  };
+  if (m_bdpcm != BdpcmMode::NONE)
+  {
+    if (collect)
+    {
+      for (int s = m_minSubPos; s <= m_maxSubPos; ++s) { counts[R2Stats::NZ] += coeff[blockPos(s)] != 0; }
+      if (collectR2) { r2Stats().add({policy, m_tsPoc, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra, int(m_bdpcm)}, counts); }
+      if (collectR3) { reportR3(); }
+    }
+    return;
+  }
+  static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
+  const bool debug = trace && traceEnabled;
+  if (!adaptive(policy) && !debug && !collect) { return; }
+  const int64_t oldState = m_tsState;
+  const int64_t oldMargin = m_tsRecentMargin;
+  const int selected = selectedMode(policy, m_tsQp, oldState, oldMargin, m_compID == COMP_Y);
+  int64_t gain = 0, bestPositive = 0;
+  int nonzero = 0, changes = 0, mappedChanges = 0;
+  int lastPass1 = m_minSubPos - 1;
+  bool significant = false;
+  uint64_t hash = 1469598103934665603ULL;
+  for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+  {
+    significant |= coeff[blockPos(s)] != 0;
+    counts[R2Stats::NZ] += coeff[blockPos(s)] != 0;
+    if (debug) { hash = (hash ^ uint64_t(int64_t(coeff[blockPos(s)]))) * 1099511628211ULL; }
+  }
+  const auto modified = [&](int s, int predictorMode) {
+    int left, above;
+    neighTS(left, above, s, coeff);
+    int pred = magnitudePredictorModeTS(predictorMode, s, coeff);
+    if (pred < 0) { pred = std::max(std::abs(left), std::abs(above)); }
+    return remap(std::abs(int(coeff[blockPos(s)])), pred);
+  };
+  if (significant)
+  {
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      const int a = std::abs(int(coeff[blockPos(s)]));
+      if (nonzero || s != m_maxSubPos) { --m_tsHistoryBins; }
+      if (a)
+      {
+        ++nonzero;
+        const int mod = modified(s, selected);
+        m_tsHistoryBins -= 2 + (mod > 1); // sign, gt1, optional parity
+      }
+      if (scopeOn && !r3Local(policy))
+      {
+        const bool noPred = policy == 11 || policy == 12 || r3Adaptive(policy);
+        const int contribution = proxyCost(modified(s, 1)) - proxyCost(modified(s, noPred ? 0 : 3));
+        gain += contribution;
+        bestPositive = std::max(bestPositive, int64_t(contribution));
+      }
+      if (debug || collect)
+      {
+        int l, u;
+        neighTS(l, u, s, coeff);
+        changes += selected != 1 && magnitudePredictorModeTS(selected, s, coeff) != std::max(std::abs(l), std::abs(u));
+        mappedChanges += modified(s, selected) != modified(s, 1);
+        ++counts[R2Stats::ACTIVE];
+        if (collect)
+        {
+          const int pos = blockPos(s), x = pos % m_width, y = pos / m_width;
+          const int offsets[] = {-1, -int(m_width), -int(m_width)-1, -2, -2*int(m_width)};
+          const bool valid[] = {x > 0, y > 0, x > 0 && y > 0, x >= 2, y >= 2};
+          int values[5], n = 0;
+          for (int i = 0; i < 5; ++i)
+            if (valid[i])
+            {
+              ++counts[R2Stats::AVAILABLE];
+              const int value = std::abs(int(coeff[pos + offsets[i]]));
+              if (value) { values[n++] = value; }
+            }
+          counts[R2Stats::SUPPORT] += n;
+          if (collectR3 && scopeOn && r3Local(policy))
+          {
+            ++counts3[R3Stats::SUPPORT0 + n];
+            const int current = std::max(std::abs(l), std::abs(u));
+            const auto local = guardedLocalPredict(current, values, n, m_tsRice, m_maxLog2TrDynamicRange);
+            const bool proposed = !equivalentPredictors(current, local.winner);
+            counts3[R3Stats::LOCAL_PROPOSED] += proposed;
+            counts3[R3Stats::LOCAL_ACCEPT] += proposed && local.margin() > 0;
+            counts3[R3Stats::LOCAL_REJECT] += proposed && local.margin() <= 0;
+            ++counts3[local.gain > 0 ? R3Stats::LOCAL_GPOS : local.gain < 0 ? R3Stats::LOCAL_GNEG : R3Stats::LOCAL_GZERO];
+            ++counts3[R3Stats::LOCAL_B0 + std::min(3, local.bestPositive)];
+            ++counts3[local.margin() > 0 ? R3Stats::LOCAL_HPOS : local.margin() < 0 ? R3Stats::LOCAL_HNEG : R3Stats::LOCAL_HZERO];
+          }
+          bool majority = false;
+          for (int i = 0; n >= 3 && i < n; ++i)
+          {
+            int count = 0;
+            for (int j = 0; j < n; ++j) { count += values[i] == values[j]; }
+            majority |= 2 * count > n;
+          }
+          counts[R2Stats::MAJORITY] += majority;
+          int p = magnitudePredictorModeTS(selected, s, coeff);
+          const int current = std::max(std::abs(l), std::abs(u));
+          if (p < 0) { p = current; }
+          ++counts[p == current || (p <= 1 && current <= 1) ? R2Stats::PCURRENT : p <= 1 ? R2Stats::PIDENTITY : R2Stats::POTHER];
+        }
+      }
+      lastPass1 = s;
+    }
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      const int a = modified(s, selected);
+      for (int cutoff = 2; cutoff <= 8; cutoff += 2)
+        if (a >= cutoff) { --m_tsHistoryBins; }
+    }
+  }
+  if (verifyBudget)
+    CHECK(m_tsHistoryBins != remRegBins, "TS predictor history replay differs from actual syntax budget");
+  uint64_t currentRate = 0, nopredRate = 0;
+  if (policy == 12)
+  {
+    if (!m_tsVirtualReady)
+    {
+      m_tsVirtualCtx = Ctx(static_cast<const BinProbModel_Std *>(nullptr));
+      m_tsVirtualCtx.init(Clip3(0, MAX_QP, m_tsQp), I_SLICE);
+      m_tsVirtualBins = (m_maxNumCoeff * 7) >> 2;
+      m_tsVirtualReady = true;
+    }
+    Ctx alternative(m_tsVirtualCtx); // Deep copy; never aliases the canonical store.
+    int alternativeBins = m_tsVirtualBins;
+    FractionalSink current{static_cast<CtxStore<BinProbModel_Std> &>(m_tsVirtualCtx)};
+    FractionalSink nopred{static_cast<CtxStore<BinProbModel_Std> &>(alternative)};
+    replayCG(*this, coeff, 1, m_tsVirtualBins, m_tsRice, current);
+    replayCG(*this, coeff, 0, alternativeBins, m_tsRice, nopred);
+    currentRate = current.bits;
+    nopredRate = nopred.bits;
+    gain = int64_t(currentRate) - int64_t(nopredRate);
+    // Keep only the Current branch as next CG's common starting state.
+  }
+  if (adaptive(policy) && scopeOn) { m_tsState = updateState(policy, oldState, gain); }
+  if (r3Adaptive(policy) && scopeOn)
+  {
+    // A zero/empty CG MUST overwrite the certificate, even when small EWMA
+    // values do not decay. Never retain a more distant favorable CG instead.
+    m_tsRecentMargin = gain - bestPositive;
+  }
+  if (collect)
+  {
+    counts[R2Stats::BYPASS] = significant ? m_maxSubPos - lastPass1 : 0;
+    counts[R2Stats::DIFFERENT] = changes;
+    counts[R2Stats::MAPPED] = mappedChanges;
+    counts[R2Stats::NCG] = selected == 0;
+    if (adaptive(policy)) { ++counts[gain > 0 ? R2Stats::GP : gain < 0 ? R2Stats::GN : R2Stats::GZ]; }
+    counts[R2Stats::VIRTUAL_C] = currentRate;
+    counts[R2Stats::VIRTUAL_N] = nopredRate;
+    if (collectR2) { r2Stats().add({policy, m_tsPoc, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra, 0}, counts); }
+    if (collectR3)
+    {
+      counts3[R3Stats::EMPTY_CG] = !significant;
+      counts3[R3Stats::NO_ACTIVE_CG] = counts[R2Stats::ACTIVE] == 0;
+      if (r3Adaptive(policy) && scopeOn)
+      {
+        counts3[R3Stats::STATE_POS] = oldState > 0;
+        counts3[R3Stats::NOPRED_CG] = selected == 0;
+        counts3[R3Stats::CERT_BLOCK] = oldState > 0 && oldMargin <= 0;
+        ++counts3[gain > 0 ? R3Stats::GAIN_POS : gain < 0 ? R3Stats::GAIN_NEG : R3Stats::GAIN_ZERO];
+        ++counts3[m_tsRecentMargin > 0 ? R3Stats::CERT_POS : m_tsRecentMargin < 0 ? R3Stats::CERT_NEG : R3Stats::CERT_ZERO];
+        counts3[R3Stats::GAIN_POS_SUM] = std::max<int64_t>(gain, 0);
+        counts3[R3Stats::GAIN_NEG_SUM] = std::max<int64_t>(-gain, 0);
+        counts3[R3Stats::BEST_POS_SUM] = bestPositive;
+      }
+      reportR3();
+    }
+  }
+  // Opt-in small-input debugging only: identical encoder/decoder lines are a state audit.
+  if (debug)
+    std::fprintf(stderr, "TS_COND c=%d w=%u h=%u q=%d cg=%d policy=%d state=%lld selected=%d gain=%lld next=%lld bins=%d last=%d changes=%d mapped=%d hash=%llu virtual_c=%llu virtual_n=%llu\n",
+                 int(m_compID), m_width, m_height, m_tsQp, m_subSetId, policy, (long long)oldState, selected, (long long)gain,
+                 (long long)m_tsState, m_tsHistoryBins, lastPass1, changes, mappedChanges, (unsigned long long)hash,
+                 (unsigned long long)currentRate, (unsigned long long)nopredRate);
+  if (debug && r3(policy))
+    std::fprintf(stderr, "TS_R3_CERT c=%d w=%u h=%u cg=%d policy=%d scope=%d prev=%lld best=%lld next=%lld\n",
+                 int(m_compID), m_width, m_height, m_subSetId, policy, scopeOn,
+                 (long long)oldMargin, (long long)bestPositive, (long long)m_tsRecentMargin);
+}
+// R4 is stateless. Only final-writer observation / opt-in debug uses this replay.
+// RDOQ calls return immediately, including discarded and all-zero CG trials.
+void CoeffCodingContext::finishTsR4CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
+{
+  using namespace TsFixedPrediction;
+  static const bool statsEnabled = !std::getenv("TS_R4_STATS") || std::strcmp(std::getenv("TS_R4_STATS"), "0");
+  static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
+  const bool collect = report && statsEnabled, debug = trace && traceEnabled;
+  if (!collect && !debug) { return; }
+  const int policy = mode();
+  std::array<uint64_t, R4Stats::COUNT> counts{};
+  counts[R4Stats::TU] = m_subSetId == 0;
+  counts[R4Stats::CG] = 1;
+  counts[R4Stats::COEFF] = m_maxSubPos - m_minSubPos + 1;
+  counts[R4Stats::SCOPE] = m_bdpcm == BdpcmMode::NONE;
+  uint64_t hash = 1469598103934665603ULL;
+  for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+  {
+    const int q = coeff[blockPos(s)];
+    counts[R4Stats::NZ] += q != 0;
+    if (debug) { hash = (hash ^ uint64_t(int64_t(q))) * 1099511628211ULL; }
+  }
+  const bool significant = counts[R4Stats::NZ] != 0;
+  counts[R4Stats::EMPTY] = !significant;
+  int last = m_minSubPos - 1, seen = 0;
+  int levels[1 << MLS_CG_SIZE] = {};
+  if (significant && m_bdpcm == BdpcmMode::NONE)
+  {
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      const auto r = r4PredictionTS(policy, s, coeff);
+      const int a = std::abs(int(coeff[blockPos(s)]));
+      const int mod = levels[s - m_minSubPos] = remap(a, r.predictor);
+      if (seen || s != m_maxSubPos) { --m_tsHistoryBins; }
+      if (a) { ++seen; m_tsHistoryBins -= 2 + (mod > 1); }
+      ++counts[R4Stats::ACTIVE];
+      counts[R4Stats::DIFFERENT] += !equivalentPredictors(r.predictor, r.current);
+      counts[R4Stats::MAPPED] += mod != remap(a, r.current);
+      counts[R4Stats::PARENT_DIFFERENT] += !equivalentPredictors(r.predictor, r.parent);
+      counts[R4Stats::PARENT_MAPPED] += mod != remap(a, r.parent);
+      if (collect)
+      {
+        ++counts[equivalentPredictors(r.predictor, r.current) ? R4Stats::PCURRENT : r.predictor <= 1 ? R4Stats::PIDENTITY : R4Stats::POTHER];
+        ++counts[equivalentPredictors(r.parent, r.current) ? R4Stats::R3_CURRENT : r.parent <= 1 ? R4Stats::R3_IDENTITY : R4Stats::R3_OTHER];
+        const bool proposed = !equivalentPredictors(r.original.winner, r.current);
+        counts[R4Stats::R3_PROPOSED] += proposed;
+        counts[R4Stats::R3_ACCEPTED] += proposed && r.original.margin() > 0;
+        counts[R4Stats::R3_REJECTED] += proposed && r.original.margin() <= 0;
+        counts[R4Stats::SUPPRESSED] += r.suppressed;
+        counts[R4Stats::ATTEMPTED] += r.attempted;
+        counts[R4Stats::ACCEPTED] += r.accepted;
+        counts[R4Stats::RESCUE] += r.rescue;
+        ++counts[R4Stats::SUPPORT0 + r.support];
+        if (r.attempted)
+        {
+          ++counts[r.gain > 0 ? R4Stats::GPOS : r.gain < 0 ? R4Stats::GNEG : R4Stats::GZERO];
+          ++counts[r.margin() > 0 ? R4Stats::HPOS : r.margin() < 0 ? R4Stats::HNEG : R4Stats::HZERO];
+          ++counts[R4Stats::B0 + std::min(3, r.bestPositive)];
+        }
+        if (policy == 20) { ++counts[r.direction < 0 ? R4Stats::DIR_BOUNDARY : R4Stats::DIR_TIE + r.direction]; }
+        if (policy >= 21) { ++counts[R4Stats::MODEL_R3 + r.model]; }
+        if (policy == 22)
+        {
+          const int pos = blockPos(s), x = pos % m_width, y = pos / m_width;
+          if (x && y)
+          {
+            const auto read = [&](int xx, int yy) { return xx < 0 || yy < 0 ? 0 : int(coeff[xx + yy * m_width]); };
+            const int l = read(x - 1, y), u = read(x, y - 1), d = read(x - 1, y - 1);
+            ++counts[!l || !u || !d ? R4Stats::SIGN_ZERO : ((l < 0) == (u < 0) && (l < 0) == (d < 0)) ? R4Stats::SIGN_SAME : R4Stats::SIGN_OPPOSITE];
+            const int plane = r4Expert(read, x, y, m_tsRice, m_maxLog2TrDynamicRange, 4);
+            const int gradient = predict(2, x, y, std::abs(l), std::abs(u), std::abs(d), 0, 0);
+            counts[R4Stats::PLANE_VS_GRADIENT] += !equivalentPredictors(plane, gradient);
+            bool novel = plane > 1;
+            for (int k = 0; k < 5; ++k) { novel &= plane != std::abs(read(x + r4Dx[k], y + r4Dy[k])); }
+            counts[R4Stats::PLANE_NEW_NONIDENTITY] += novel;
+          }
+        }
+        ++counts[r.predictor == a ? R4Stats::HIT : r.predictor < a ? R4Stats::UNDER : R4Stats::OVER];
+        counts[R4Stats::ABS_ERROR] += std::abs(r.predictor - a);
+        ++counts[mod <= 2 ? R4Stats::MOD0 + mod : R4Stats::MOD_HIGH];
+        const int gain = syntaxCost(remap(a, r.current), m_tsRice, m_maxLog2TrDynamicRange) - syntaxCost(mod, m_tsRice, m_maxLog2TrDynamicRange);
+        counts[gain >= 0 ? R4Stats::COST_POS : R4Stats::COST_NEG] += std::abs(gain);
+      }
+      last = s;
+    }
+    // Pass 2 cannot extend beyond pass 1: only the remaining regular budget decreases.
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      CHECK(s > last, "R4 replay accessed level outside pass 1");
+      for (int cutoff = 2; cutoff <= 8; cutoff += 2)
+        if (levels[s - m_minSubPos] >= cutoff) { --m_tsHistoryBins; }
+    }
+    counts[R4Stats::BYPASS] = m_maxSubPos - last;
+  }
+  if (verifyBudget && m_bdpcm == BdpcmMode::NONE)
+    CHECK(m_tsHistoryBins != remRegBins, "R4 diagnostic replay differs from native syntax budget");
+  if (collect)
+    r4Stats().add({policy, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra,
+                  int(m_bdpcm), lastSubSet() + 1, m_subSetId}, counts);
+  if (debug && m_bdpcm == BdpcmMode::NONE)
+    std::fprintf(stderr, "TS_COND c=%d w=%u h=%u q=%d cg=%d policy=%d state=0 selected=%d gain=0 next=0 bins=%d last=%d changes=%llu mapped=%llu hash=%llu virtual_c=0 virtual_n=0\n",
+                 int(m_compID), m_width, m_height, m_tsQp, m_subSetId, policy, policy, m_tsHistoryBins, last,
+                 (unsigned long long)counts[R4Stats::DIFFERENT], (unsigned long long)counts[R4Stats::MAPPED], (unsigned long long)hash);
+}
+// R6 replay observes final coefficients only; none of these counters affect RDOQ.
+void CoeffCodingContext::finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
+{
+  using namespace TsFixedPrediction;
+  static const bool statsEnabled = !std::getenv("TS_R6_STATS") || std::strcmp(std::getenv("TS_R6_STATS"), "0");
+  static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
+  const bool collect = report && statsEnabled, debug = trace && traceEnabled;
+  if (!collect && !debug) { return; }
+  const int policy = mode();
+  std::array<uint64_t, R6Stats::COUNT> counts{};
+  counts[R6Stats::TU] = m_subSetId == 0;
+  counts[R6Stats::CG] = 1;
+  counts[R6Stats::COEFF] = m_maxSubPos - m_minSubPos + 1;
+  counts[R6Stats::SCOPE] = m_bdpcm == BdpcmMode::NONE;
+  uint64_t hash = 1469598103934665603ULL;
+  for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+  {
+    const int q = coeff[blockPos(s)];
+    counts[R6Stats::NZ] += q != 0;
+    if (debug) { hash = (hash ^ uint64_t(int64_t(q))) * 1099511628211ULL; }
+  }
+  const bool significant = counts[R6Stats::NZ] != 0;
+  counts[R6Stats::EMPTY] = !significant;
+  int last = m_minSubPos - 1, seen = 0;
+  int levels[1 << MLS_CG_SIZE] = {};
+  if (significant && m_bdpcm == BdpcmMode::NONE)
+  {
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      const auto r = r6PredictionTS(policy, s, coeff);
+      const int a = std::abs(int(coeff[blockPos(s)]));
+      const int mod = levels[s - m_minSubPos] = remap(a, r.predictor);
+      if (seen || s != m_maxSubPos) { --m_tsHistoryBins; }
+      if (a) { ++seen; m_tsHistoryBins -= 2 + (mod > 1); }
+      ++counts[R6Stats::ACTIVE];
+      counts[R6Stats::ACTIVE_NZ] += a != 0;
+      counts[R6Stats::DIFFERENT] += !equivalentPredictors(r.predictor, r.current);
+      counts[R6Stats::MAPPED] += mod != remap(a, r.current);
+      const bool changed = !equivalentPredictors(r.predictor, r.parent);
+      const bool mapped = mod != remap(a, r.parent);
+      counts[R6Stats::PARENT_DIFFERENT] += changed;
+      counts[R6Stats::PARENT_MAPPED] += mapped;
+      if (collect)
+      {
+        ++counts[equivalentPredictors(r.predictor, r.current) ? R6Stats::PCURRENT : r.predictor <= 1 ? R6Stats::PIDENTITY : R6Stats::POTHER];
+        counts[R6Stats::R3_PROPOSED] += r.proposed;
+        counts[R6Stats::R3_ACCEPTED] += r.parentAccepted;
+        counts[R6Stats::R3_REJECTED] += r.proposed && !r.parentAccepted;
+        counts[R6Stats::ATTEMPTED] += r.attempted;
+        if (r.support >= 3)
+        {
+          ++counts[r.parentAccepted ? R6Stats::DENSE_ACCEPTED : r.proposed ? R6Stats::DENSE_REJECTED : R6Stats::DENSE_CURRENT];
+          if (policy <= 26 && !r.parentAccepted && (policy == 25 || r.proposed))
+            ++counts[r.proposed ? R6Stats::FALLBACK_REJECTED : R6Stats::FALLBACK_CURRENT];
+        }
+        ++counts[r.currentHits == 0 ? R6Stats::CURRENT_HITS0 : r.currentHits == 1 ? R6Stats::CURRENT_HITS1 : R6Stats::CURRENT_HITS_MULTI];
+        counts[R6Stats::SCORE_TIE] += r.scoreTieCurrent;
+        ++counts[R6Stats::SUPPORT0 + r.support];
+        counts[R6Stats::MAPPED_N0 + r.support] += mapped;
+        if (r.luOnly)
+        {
+          ++counts[R6Stats::LU_ONLY];
+          const int pos = blockPos(s);
+          const bool equal = std::abs(int(coeff[pos-1])) == std::abs(int(coeff[pos-m_width]));
+          ++counts[equal ? R6Stats::LU_EQUAL : R6Stats::LU_UNEQUAL];
+          counts[R6Stats::LU_DIFFERENT] += changed;
+          counts[R6Stats::LU_MAPPED] += mapped;
+        }
+        ++counts[r.predictor == a ? R6Stats::HIT : r.predictor < a ? R6Stats::UNDER : R6Stats::OVER];
+        counts[R6Stats::ABS_ERROR] += std::abs(r.predictor - a);
+        ++counts[mod == 0 ? R6Stats::MOD0 : mod == 1 ? R6Stats::MOD1 : mod == 2 ? R6Stats::MOD2 : R6Stats::MOD_HIGH];
+        const int cost = syntaxCost(mod, m_tsRice, m_maxLog2TrDynamicRange);
+        const int gain = syntaxCost(remap(a, r.current), m_tsRice, m_maxLog2TrDynamicRange) - cost;
+        const int parentGain = syntaxCost(remap(a, r.parent), m_tsRice, m_maxLog2TrDynamicRange) - cost;
+        counts[gain >= 0 ? R6Stats::COST_POS : R6Stats::COST_NEG] += std::abs(gain);
+        counts[parentGain >= 0 ? R6Stats::PARENT_COST_POS : R6Stats::PARENT_COST_NEG] += std::abs(parentGain);
+      }
+      last = s;
+    }
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      CHECK(s > last, "R6 replay accessed level outside pass 1");
+      for (int cutoff = 2; cutoff <= 8; cutoff += 2)
+        if (levels[s - m_minSubPos] >= cutoff) { --m_tsHistoryBins; }
+    }
+    counts[R6Stats::BYPASS] = m_maxSubPos - last;
+  }
+  if (verifyBudget && m_bdpcm == BdpcmMode::NONE)
+    CHECK(m_tsHistoryBins != remRegBins, "R6 diagnostic replay differs from native syntax budget");
+  if (collect)
+    r6Stats().add({policy, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra,
+                  int(m_bdpcm), lastSubSet() + 1, m_subSetId}, counts);
+  if (debug && m_bdpcm == BdpcmMode::NONE)
+    std::fprintf(stderr, "TS_COND c=%d w=%u h=%u q=%d cg=%d policy=%d state=0 selected=%d gain=0 next=0 bins=%d last=%d changes=%llu mapped=%llu hash=%llu virtual_c=0 virtual_n=0\n",
+                 int(m_compID), m_width, m_height, m_tsQp, m_subSetId, policy, policy, m_tsHistoryBins, last,
+                 (unsigned long long)counts[R6Stats::DIFFERENT], (unsigned long long)counts[R6Stats::MAPPED], (unsigned long long)hash);
+}
+
+// R5 pure predictions never consume this diagnostic budget. No RDOQ history writes.
+void CoeffCodingContext::finishTsR5CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
+{
+  using namespace TsFixedPrediction;
+  static const bool statsEnabled = !std::getenv("TS_R5_STATS") || std::strcmp(std::getenv("TS_R5_STATS"), "0");
+  static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
+  const bool collect = report && statsEnabled, debug = trace && traceEnabled;
+  if (!collect && !debug) { return; }
+  const int policy = mode();
+  std::array<uint64_t, R5Stats::COUNT> counts{};
+  counts[R5Stats::TU] = m_subSetId == 0;
+  counts[R5Stats::CG] = 1;
+  counts[R5Stats::COEFF] = m_maxSubPos - m_minSubPos + 1;
+  counts[R5Stats::SCOPE] = m_bdpcm == BdpcmMode::NONE;
+  uint64_t hash = 1469598103934665603ULL;
+  for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+  {
+    const int q = coeff[blockPos(s)];
+    counts[R5Stats::NZ] += q != 0;
+    if (debug) { hash = (hash ^ uint64_t(int64_t(q))) * 1099511628211ULL; }
+  }
+  const bool significant = counts[R5Stats::NZ] != 0;
+  counts[R5Stats::EMPTY] = !significant;
+  int last = m_minSubPos - 1, seen = 0;
+  int levels[1 << MLS_CG_SIZE] = {};
+  if (significant && m_bdpcm == BdpcmMode::NONE)
+  {
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      const auto r = r5PredictionTS(policy, s, coeff);
+      const int a = std::abs(int(coeff[blockPos(s)]));
+      const int mod = levels[s - m_minSubPos] = remap(a, r.predictor);
+      if (seen || s != m_maxSubPos) { --m_tsHistoryBins; }
+      if (a) { ++seen; m_tsHistoryBins -= 2 + (mod > 1); }
+      ++counts[R5Stats::ACTIVE];
+      counts[R5Stats::DIFFERENT] += !equivalentPredictors(r.predictor, r.current);
+      counts[R5Stats::MAPPED] += mod != remap(a, r.current);
+      const bool changed = !equivalentPredictors(r.predictor, r.parent);
+      const bool parentActive = !equivalentPredictors(r.parent, r.current);
+      counts[R5Stats::PARENT_DIFFERENT] += changed;
+      counts[R5Stats::PARENT_MAPPED] += mod != remap(a, r.parent);
+      if (collect)
+      {
+        ++counts[equivalentPredictors(r.predictor, r.current) ? R5Stats::PCURRENT : r.predictor <= 1 ? R5Stats::PIDENTITY : R5Stats::POTHER];
+        ++counts[parentActive ? (r.parent <= 1 ? R5Stats::R3_IDENTITY : R5Stats::R3_OTHER) : R5Stats::R3_CURRENT];
+        const bool proposed = !equivalentPredictors(r.original.winner, r.current);
+        counts[R5Stats::R3_PROPOSED] += proposed;
+        counts[R5Stats::R3_ACCEPTED] += proposed && r.original.margin() > 0;
+        counts[R5Stats::R3_REJECTED] += proposed && r.original.margin() <= 0;
+        counts[R5Stats::ATTEMPTED] += r.attempted;
+        counts[R5Stats::ACCEPTED] += r.accepted;
+        counts[R5Stats::REORDER] += policy == 23 && parentActive && changed;
+        counts[R5Stats::RESCUE] += policy == 23 && !parentActive && changed;
+        counts[R5Stats::VETO] += policy == 24 && r.accepted;
+        counts[R5Stats::VETO_IDENTITY] += policy == 24 && r.accepted && r.parent <= 1;
+        counts[R5Stats::VETO_OTHER] += policy == 24 && r.accepted && r.parent > 1;
+        ++counts[R5Stats::SUPPORT0 + r.support];
+        if (r.attempted)
+        {
+          ++counts[r.gain > 0 ? R5Stats::GPOS : r.gain < 0 ? R5Stats::GNEG : R5Stats::GZERO];
+          ++counts[r.margin() > 0 ? R5Stats::HPOS : r.margin() < 0 ? R5Stats::HNEG : R5Stats::HZERO];
+          ++counts[R5Stats::B0 + std::min(3, r.bestPositive)];
+        }
+        ++counts[r.predictor == a ? R5Stats::HIT : r.predictor < a ? R5Stats::UNDER : R5Stats::OVER];
+        counts[R5Stats::ABS_ERROR] += std::abs(r.predictor - a);
+        ++counts[mod == 0 ? R5Stats::MOD0 : mod == 1 ? R5Stats::MOD1 : mod == 2 ? R5Stats::MOD2 : R5Stats::MOD_HIGH];
+        const int cost = syntaxCost(mod, m_tsRice, m_maxLog2TrDynamicRange);
+        const int gain = syntaxCost(remap(a, r.current), m_tsRice, m_maxLog2TrDynamicRange) - cost;
+        const int parentGain = syntaxCost(remap(a, r.parent), m_tsRice, m_maxLog2TrDynamicRange) - cost;
+        counts[gain >= 0 ? R5Stats::COST_POS : R5Stats::COST_NEG] += std::abs(gain);
+        counts[parentGain >= 0 ? R5Stats::PARENT_COST_POS : R5Stats::PARENT_COST_NEG] += std::abs(parentGain);
+      }
+      last = s;
+    }
+    for (int s = m_minSubPos; s <= m_maxSubPos && m_tsHistoryBins >= 4; ++s)
+    {
+      CHECK(s > last, "R5 replay accessed level outside pass 1");
+      for (int cutoff = 2; cutoff <= 8; cutoff += 2)
+        if (levels[s - m_minSubPos] >= cutoff) { --m_tsHistoryBins; }
+    }
+    counts[R5Stats::BYPASS] = m_maxSubPos - last;
+  }
+  if (verifyBudget && m_bdpcm == BdpcmMode::NONE)
+    CHECK(m_tsHistoryBins != remRegBins, "R5 diagnostic replay differs from native syntax budget");
+  if (collect)
+    r5Stats().add({policy, int(m_compID), m_width, m_height, m_tsQp, m_tsIntra,
+                  int(m_bdpcm), lastSubSet() + 1, m_subSetId}, counts);
+  if (debug && m_bdpcm == BdpcmMode::NONE)
+    std::fprintf(stderr, "TS_COND c=%d w=%u h=%u q=%d cg=%d policy=%d state=0 selected=%d gain=0 next=0 bins=%d last=%d changes=%llu mapped=%llu hash=%llu virtual_c=0 virtual_n=0\n",
+                 int(m_compID), m_width, m_height, m_tsQp, m_subSetId, policy, policy, m_tsHistoryBins, last,
+                 (unsigned long long)counts[R5Stats::DIFFERENT], (unsigned long long)counts[R5Stats::MAPPED], (unsigned long long)hash);
+}
+#endif
 
 void CoeffCodingContext::initSubblock(int SubsetId, bool sigGroupFlag)
 {

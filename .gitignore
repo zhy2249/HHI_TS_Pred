@@ -20,5 +20,17 @@ deploy
 /source/Lib/CommonLib/version.h
 /source/Lib/CommonAnalyserLib/version.h
 
-# Generated TS predictor experiment data, bitstreams, and analysis outputs.
-/runs/ts_*/
+# Generated TS predictor experiment data, manifests, and analysis outputs.
+/runs/
+
+# External result bundles remain local; do not upload codec/data archives.
+/exp_resl/
+/exp_resl.zip
+/experiments.zip
+/source.zip
+
+# Version only experiment documentation and blank provenance templates.
+/experiments/**/*
+!/experiments/**/
+!/experiments/**/*.md
+!/experiments/**/run_metadata.template.json

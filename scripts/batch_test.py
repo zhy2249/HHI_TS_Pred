@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable
+from ts_predictor_naming import experiment_directory
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -24,6 +25,16 @@ _EXPERIMENT_LINE_RE = re.compile(r"^\s*EXPERIMENT:\s*(.*?)\s*$", re.MULTILINE)
 _SECTION_RE = re.compile(r"^\s*\[([^\]]+)\]\s*$")
 _INI_KV_RE = re.compile(r"^\s*([^=]+?)\s*=\s*(.*?)\s*$")
 _INI_CLASS_RE = re.compile(r"^\s*#\s*Class\s*([A-Za-z0-9]+)\b", re.IGNORECASE)
+_TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
+                       "q32", "conf2", "prev", "ewma", "q32_ewma",
+                       "r2_modal", "r2_risk", "r2_cn_log", "r2_cn_frac",
+                       "r3_risk_guard", "r3_risk_guard_y", "r3_cn_guard", "r3_cn_guard_y",
+                       "r4_identity_only", "r4_magnitude_only", "r4_guard_rescue",
+                       "r4_directional_risk", "r4_causal_models", "r4_signed_plane",
+                       "r5_margin_first", "r5_current_veto",
+                       "r6_dense_nopred", "r6_reject_nopred", "r6_trim_cost", "r6_trim_saving",
+                       "r6_sparse_max", "r6_sparse_mean", "r6_sparse_min", "rate_raw", "rate_guard")
+_TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 
 _PRESET_CFGS = {
     "AI": "cfg/encoder_intra_nx2.cfg",
@@ -324,12 +335,16 @@ def _iter_all_sequence_cfgs(repo_root: Path) -> Iterable[Path]:
             yield cfg
 
 
-def _detect_experiment_line(exe: Path, cwd: Path) -> str | None:
+def _detect_experiment_line(exe: Path, cwd: Path, mode: str | None = None) -> str | None:
     if not exe.is_file() or not os.access(exe, os.X_OK):
         return None
     try:
         probe_env = os.environ.copy()
         probe_env.pop("TS_FIXED_PREDICTOR", None)  # Probe compiled default, not ambient shell override.
+        probe_env.pop("TS_RATE_SHADOW", None)  # Observers constrain actual jobs, not capability probes.
+        probe_env.pop("TS_RATE_RDOQ_SHADOW", None)
+        if mode is not None:
+            probe_env["TS_FIXED_PREDICTOR"] = mode
         proc = subprocess.run(
             [str(exe), "-h"],
             cwd=str(cwd),
@@ -533,6 +548,8 @@ def _run_one(job: TestJob) -> dict:
             "encoder": identity(job.encoder), "input": identity(job.input_path),
             "cfgs": [(str(p), p.read_text(encoding="utf-8")) for p in [*job.cfgs, job.sequence_cfg]],
             "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
+            "rate_shadow": os.environ.get("TS_RATE_SHADOW", "0"),
+            "rate_rdoq_shadow": os.environ.get("TS_RATE_RDOQ_SHADOW", "0"),
             "decode": job.decode_md5, "decoder_args": job.decoder_args,
             "decoder": identity(job.decoder) if job.decode_md5 else None,
             **({"fixed_predictor": job.fixed_predictor, "no_recon": job.no_recon}
@@ -739,8 +756,9 @@ def _write_xlsm_reports(*, repo_root: Path, out_dir: Path, rows: list[dict], arg
         # Never overwrite the same Test cells with several predictor conditions.
         for mode in modes:
             subset = [dict(r, fixed_predictor="") for r in rows if r.get("fixed_predictor") == mode]
-            _safe_mkdir(out_dir / mode)
-            _write_xlsm_reports(repo_root=repo_root, out_dir=out_dir / mode, rows=subset, args=args)
+            mode_dir = experiment_directory(out_dir, mode)
+            _safe_mkdir(mode_dir)
+            _write_xlsm_reports(repo_root=repo_root, out_dir=mode_dir, rows=subset, args=args)
         return
     template = args.xlsm_template.resolve() if args.xlsm_template is not None else _default_xlsm_template(repo_root)
     auto_xlsm = args.xlsm_report is None and template.is_file()
@@ -777,8 +795,8 @@ def _write_xlsm_reports(*, repo_root: Path, out_dir: Path, rows: list[dict], arg
     stage_files: list[Path] = []
     tag_items = sorted(rows_by_tag.items())
     for idx, (tag, tag_rows) in enumerate(tag_items):
-        is_last = idx == len(tag_items) - 1
-        step_output = output if is_last else out_dir / f".JVET-hhi.{idx + 1}.{tag}.stage.xlsm"
+        # Preserve the last complete workbook if interrupted during a refresh.
+        step_output = out_dir / f".JVET-hhi.{idx + 1}.{tag}.stage.xlsm"
         stage_files.append(step_output)
         ok, msg = fill_jvet_hhi_test_sheet(
             template_xlsm=current_template,
@@ -791,6 +809,7 @@ def _write_xlsm_reports(*, repo_root: Path, out_dir: Path, rows: list[dict], arg
             break
         current_template = step_output
     else:
+        current_template.replace(output)
         print(f"XLSM       : {output}")
 
     for stage in stage_files:
@@ -1142,9 +1161,10 @@ def _expand_fixed_predictors(jobs: list[TestJob], modes: list[str], root: Path) 
     """One queue, grouped submission order but NO barrier between groups."""
     expanded = []
     for mode in modes:
+        mode_dir = experiment_directory(root, mode)
         for job in jobs:
             def relocate(path: Path) -> Path:
-                return root / mode / path.relative_to(root)
+                return mode_dir / path.relative_to(root)
             expanded.append(replace(job, order=len(expanded), name=f"{mode}__{job.name}",
                                     fixed_predictor=mode, no_recon=True,
                                     out_dir=relocate(job.out_dir), bitstream=relocate(job.bitstream),
@@ -1184,7 +1204,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out-dir", type=Path, default=None, help="输出根目录；留空则使用 runs/batch_test/<timestamp>")
     parser.add_argument("--ts-pred-stats-dir", type=Path, default=None,
                         help="启用 TS predictor 统计；需 analysis 宏编译。每任务独立 CSV，成功标记用于断点续跑")
-    parser.add_argument("--fixed-predictors", help="强制覆盖编译时默认模式，逗号分隔 nopred,gradient,directional/current；省略时从实验二进制读取 TypeDef.h 默认。统一任务池，禁用重建输出")
+    parser.add_argument("--fixed-predictors", help="强制覆盖编译时默认模式，逗号分隔：" + ",".join(_TS_PREDICTOR_MODES) + "；省略时读取二进制默认。统一任务池，禁用重建输出")
     parser.add_argument("--no-recon", action="store_true", help="不写编码/解码重建视频（空 ReconFile）；仍可校验 hash")
     parser.add_argument("--jobs", type=int, default=1, help="并行任务数")
     parser.add_argument("--retry-failed", type=int, default=0, help="失败任务结束后按单路重试次数")
@@ -1207,8 +1227,8 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     modes = _split_csv_list(args.fixed_predictors)
     if args.fixed_predictors is not None and (not modes or len(modes) != len(set(modes))
-            or any(m not in {"current", "nopred", "gradient", "directional"} for m in modes)):
-        parser.error("--fixed-predictors requires distinct current/nopred/gradient/directional modes")
+            or any(m not in _TS_PREDICTOR_MODES for m in modes)):
+        parser.error("--fixed-predictors requires distinct modes: " + ",".join(_TS_PREDICTOR_MODES))
     if modes and args.ts_pred_stats_dir:
         parser.error("fixed coding modes cannot use the legacy counterfactual statistics observer")
     if args.jobs < 1:
@@ -1269,7 +1289,7 @@ def main(argv: list[str]) -> int:
         compiled_defaults = set()
         for exe in {job.encoder for job in jobs}:
             banner = _detect_experiment_line(exe, repo_root) or ""
-            match = re.search(r"TS_FIXED_PREDICTOR=(current|nopred|gradient|directional); syntax=experimental-v1", banner)
+            match = re.search(r"TS_FIXED_PREDICTOR=(" + "|".join(_TS_PREDICTOR_MODES) + r"); syntax=experimental-v1", banner)
             compiled_defaults.add(match.group(1) if match else None)
         if len(compiled_defaults) > 1:
             parser.error("mixed encoder defaults; split the manifest or explicitly specify --fixed-predictors")
@@ -1279,7 +1299,10 @@ def main(argv: list[str]) -> int:
     if modes and args.ts_pred_stats_dir:
         parser.error("fixed coding modes cannot use the legacy counterfactual statistics observer")
     if modes:
-        jobs = _expand_fixed_predictors(jobs, modes, args.out_dir)
+        try:
+            jobs = _expand_fixed_predictors(jobs, modes, args.out_dir)
+        except ValueError as e:
+            parser.error(str(e))
     elif args.no_recon:
         jobs = [replace(job, no_recon=True) for job in jobs]
     if args.full_sequence:
@@ -1335,6 +1358,12 @@ def main(argv: list[str]) -> int:
             if "TS_FIXED_PREDICTOR=" not in banner or "syntax=experimental-v1" not in banner:
                 print(f"ERROR: {label} lacks fixed-predictor experiment support: {exe}", file=sys.stderr)
                 return 2
+            for mode in modes:
+                if mode in _TS_CONDITIONAL_MODES:
+                    probe = _detect_experiment_line(exe, repo_root, mode) or ""
+                    if f"TS_FIXED_PREDICTOR={mode};" not in probe:
+                        print(f"ERROR: {label} does not support {mode}: {exe}; rebuild conditional experiment binary", file=sys.stderr)
+                        return 2
 
     _safe_mkdir(args.out_dir)
     if modes:
@@ -1344,6 +1373,29 @@ def main(argv: list[str]) -> int:
                  "bitstream": str(j.bitstream), "reconstruction": None} for j in jobs]
         (args.out_dir / "experiment_plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
     results_by_order: dict[int, dict] = {}
+    orders_by_mode = {mode: [j.order for j in jobs if j.fixed_predictor == mode] for mode in modes}
+    revisions = dict.fromkeys(modes, 0)
+    published = dict.fromkeys(modes, -1)
+
+    def publish_mode(mode: str, allow_partial: bool = False) -> None:
+        orders = orders_by_mode[mode]
+        subset = [results_by_order[i] for i in orders if i in results_by_order]
+        if not subset or (len(subset) != len(orders) and not allow_partial):
+            return
+        if published[mode] == revisions[mode]:
+            return
+        mode_dir = experiment_directory(args.out_dir, mode)
+        _safe_mkdir(mode_dir)
+        try:
+            _write_summary(mode_dir / "summary.csv", subset)
+            _write_summary(mode_dir / "failures.csv", [r for r in subset if r.get("error_info") != "pass"])
+            _write_xlsm_reports(repo_root=repo_root, out_dir=args.out_dir, rows=subset, args=args)
+            published[mode] = revisions[mode]
+            print(f"GROUP REPORT : {mode} ({len(subset)}/{len(orders)} tasks returned)", flush=True)
+        except Exception as e:
+            # Reporting must not cancel encoding jobs already running in the shared pool.
+            print(f"WARN: group report failed for {mode}: {e}", file=sys.stderr)
+
     interrupted = False
     with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
         future_map = {pool.submit(_run_one, job): job for job in jobs}
@@ -1385,6 +1437,9 @@ def main(argv: list[str]) -> int:
                     print(f"{status.upper():<14}: {job.name} QP{job.qp}")
                 else:
                     print(f"FAIL          : {job.name} QP{job.qp} log={job.encode_log}", file=sys.stderr)
+                if job.fixed_predictor:
+                    revisions[job.fixed_predictor] += 1
+                    publish_mode(job.fixed_predictor)
         except KeyboardInterrupt:
             interrupted = True
             for fut in future_map:
@@ -1408,6 +1463,9 @@ def main(argv: list[str]) -> int:
                     job = retry_future_map[future]
                     result = future.result()
                     results_by_order[job.order] = result
+                    if job.fixed_predictor:
+                        revisions[job.fixed_predictor] += 1
+                        publish_mode(job.fixed_predictor)
                     if result.get("encode_status") != "ok":
                         next_retry.append(job)
             retry_jobs = next_retry
@@ -1418,8 +1476,9 @@ def main(argv: list[str]) -> int:
     print(f"Summary    : {summary_path}")
     _write_summary(args.out_dir / "failures.csv", [r for r in rows if r.get("error_info") != "pass"])
     for mode in modes:
-        _write_summary(args.out_dir / mode / "summary.csv", [r for r in rows if r.get("fixed_predictor") == mode])
-    _write_xlsm_reports(repo_root=repo_root, out_dir=args.out_dir, rows=rows, args=args)
+        publish_mode(mode, allow_partial=True)
+    if not modes:
+        _write_xlsm_reports(repo_root=repo_root, out_dir=args.out_dir, rows=rows, args=args)
 
     if interrupted:
         return 130

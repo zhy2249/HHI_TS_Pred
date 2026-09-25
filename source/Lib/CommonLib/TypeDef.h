@@ -54,21 +54,163 @@
 #include "CommonDef.h"
 
 // clang-format off
-// TS fixed-predictor experiment: edit this default when CMake uses AUTO.
-// Explicit CMake ON/OFF overrides this value via a compiler definition.
+// TS predictor 实验开关：直接修改本文件，CMake 不选择算法。
+// 以下 *_MODE 是各轮的公开实验编号，不是内部 policy ID；各轮不能叠加启用。
+// 总开关=1且所有实验模式=0 -> Current=max(|L|,|U|)，唯一正式 anchor。
+// TS_FIXED_PREDICTOR 环境变量 / batch --fixed-predictors 可以覆盖编译默认模式。
+// 改宏后须重新编译 Encoder/Decoder，并核对每个任务的 EXPERIMENT 启动行。
+// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R7 实验，并非启用 NoPred。
 #ifndef JVET_BJUT_TS_FIXED_PREDICTOR
-#define JVET_BJUT_TS_FIXED_PREDICTOR                       0
+#define JVET_BJUT_TS_FIXED_PREDICTOR                       1
 #endif
-// Default runtime mode when no TS_FIXED_PREDICTOR override is supplied.
-// At most one may be 1; all zero selects the original Current predictor.
+// 早期固定 predictor 实验（台账 TS-003/005/007），三者最多开启一个；不是旧统计阶段 M2..M5。
+// 1=固定 NoPred：p=0，identity remapping，保留其它 TSRC syntax；0=不选择此实验。
 #ifndef JVET_BJUT_TS_FIXED_NOPRED
 #define JVET_BJUT_TS_FIXED_NOPRED                          0
 #endif
+// 1=固定 gradient：clip(L+U-D,min(L,U),max(L,U))，邻域不足回 Current；0=不选择。
 #ifndef JVET_BJUT_TS_FIXED_GRADIENT
 #define JVET_BJUT_TS_FIXED_GRADIENT                        0
 #endif
+// 1=固定 directional：按横/纵幅值一致性选 L/U，平局/邻域不足回 Current；0=不选择。
 #ifndef JVET_BJUT_TS_FIXED_DIRECTIONAL
 #define JVET_BJUT_TS_FIXED_DIRECTIONAL                     0
+#endif
+// 第一轮条件/历史自适应（revision1，台账 TS-006），均在 Current 与 directional 间选。
+// 0=不选择本轮；1=N1/q32：CU QP<=32；2=N2/conf2：方向分数满足2:1置信条件；
+// 3=A1/prev：前一CG收益；4=A2/ewma：TU内衰减历史收益；5=A3/q32_ewma：QP与历史联合。
+#ifndef JVET_BJUT_TS_CONDITIONAL_MODE
+#define JVET_BJUT_TS_CONDITIONAL_MODE                      0
+#endif
+// R2（TS-008）：0=不选择本轮。
+// 1=R2-1/M/r2_modal：五点非零幅值严格多数，否则Current；
+// 2=R2-2/R/r2_risk：原整数syntaxCost最低成本候选，无R3 guard；R7-1的原始对照；
+// 3=R2-3/N/r2_cn_log：Current/NoPred，旧log代理+TU-local EWMA；
+// 4=R2-4/F/r2_cn_frac：Current/NoPred，虚拟CABAC完整CG评分+EWMA（不是R7局部评分）。
+#ifndef JVET_BJUT_TS_R2_MODE
+#define JVET_BJUT_TS_R2_MODE                               0
+#endif
+// 原R3（TS-010），此宏始终选择旧评分，不会因加入R7自动升级。0=不选择本轮。
+// 1=R3-1/r3_risk_guard：YUV，局部整数评分，H=G-max(0,max d_i)>0才接受；R7-2原始对照；
+// 2=R3-2/r3_risk_guard_y：R3-1仅Y启用，U/V保持Current；
+// 3=R3-3/r3_cn_guard：Current/NoPred，TU内历史分数+前一CG证据保护；
+// 4=R3-4/r3_cn_guard_y：R3-3仅Y启用。
+#ifndef JVET_BJUT_TS_R3_MODE
+#define JVET_BJUT_TS_R3_MODE                               0
+#endif
+// R4（TS-011）：以原R3-1为基底，0=不选择本轮。
+// 1=R4-1/identity_only：只保留R3已接受的NoPred分支；
+// 2=R4-2/magnitude_only：只保留R3已接受的非identity幅值分支；
+// 3=R4-3/guard_rescue：R3拒绝后补查其它H>0候选；
+// 4=R4-4/directional_risk：方向条件加权风险；
+// 5=R4-5/causal_models：因果回看选择R3/Current/NoPred/directional规则；
+// 6=R4-6/signed_plane：带符号平面幅值候选+因果验证。
+#ifndef JVET_BJUT_TS_R4_MODE
+#define JVET_BJUT_TS_R4_MODE                               0
+#endif
+// R5（TS-012）：继续优化原R3-1，0=不选择本轮。
+// 1=R5-1/margin_first：按稳健margin H优先、G次之排序；
+// 2=R5-2/current_veto：因果验证仅允许把R3输出否决回Current，不新增替代候选。
+#ifndef JVET_BJUT_TS_R5_MODE
+#define JVET_BJUT_TS_R5_MODE                               0
+#endif
+// R6（TS-013）：原R3-1的Current偏好/稀疏区域诊断。n=五点因果邻域非零位置数。0=不选择。
+// 1=R6-1/dense_nopred：n>=3且R3未接受候选时fallback NoPred；
+// 2=R6-2/reject_nopred：仅G>0但H<=0的guard拒绝出口改NoPred；
+// 3=R6-3/trim_cost：各候选比较sum(cost)-min(cost)；
+// 4=R6-4/trim_saving：相对identity统一参考，删最大正节省贡献后对称比较；
+// 5=R6-5/sparse_max：n<3时，仅n=2且L/U都非零用max(L,U)，否则NoPred；n>=3仍R3；
+// 6=R6-6/sparse_mean：与5相同，L/U分支改为(L+U+1)/2；
+// 7=R6-7/sparse_min：与5相同，L/U分支改为min(L,U)。
+#ifndef JVET_BJUT_TS_R6_MODE
+#define JVET_BJUT_TS_R6_MODE                               0
+#endif
+// R7（TS-014，原名Rate estimator实验）：使用CG入口冻结的CABAC fractional-bit评分。
+// 0=不选择R7；1=R7-1/rate_raw：原R2-2仅更换评分，仍无强guard；
+// 2=R7-2/rate_guard：原R3-1(YUV)仅更换评分及G/H，保留候选、n<3回退和H>0 guard。
+// R7-2不是原R3-2；不受R3_MODE子编号控制。启用R7时R2..R6等其它模式必须全部为0。
+// 旧RATE_MODE编译定义仍可导入；新代码优先直接修改下面的R7_MODE。
+#ifndef JVET_BJUT_TS_R7_MODE
+#ifdef JVET_BJUT_TS_RATE_MODE
+#define JVET_BJUT_TS_R7_MODE                               JVET_BJUT_TS_RATE_MODE
+#else
+#define JVET_BJUT_TS_R7_MODE                               0
+#endif
+#endif
+// R7观察能力：0=不编译；1=编译shadow，不是新的预测模式，默认不改变实际决策。
+// 观察原R3-1时：R3_MODE=1、R7_MODE=0，并在运行时设置TS_RATE_SHADOW=1。
+// 可选TS_RATE_RDOQ_SHADOW=1只增加搜索诊断；二者都是环境变量，不是算法宏。
+#ifndef JVET_BJUT_TS_R7_SHADOW
+#ifdef JVET_BJUT_TS_RATE_SHADOW
+#define JVET_BJUT_TS_R7_SHADOW                             JVET_BJUT_TS_RATE_SHADOW
+#else
+#define JVET_BJUT_TS_R7_SHADOW                             0
+#endif
+#endif
+// 以下两个旧名字仅为兼容别名（含原脚本/构建定义）；不要在此另选一组实验。
+// RATE_MODE与R7_MODE同义；RATE_SHADOW与R7_SHADOW同义。新旧同时给值必须相同。
+#ifndef JVET_BJUT_TS_RATE_MODE
+#define JVET_BJUT_TS_RATE_MODE                             JVET_BJUT_TS_R7_MODE
+#endif
+#ifndef JVET_BJUT_TS_RATE_SHADOW
+#define JVET_BJUT_TS_RATE_SHADOW                           JVET_BJUT_TS_R7_SHADOW
+#endif
+#if JVET_BJUT_TS_RATE_MODE != JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_RATE_SHADOW != JVET_BJUT_TS_R7_SHADOW
+#error Conflicting R7 and legacy RATE macro values
+#endif
+#if JVET_BJUT_TS_R7_MODE < 0 || JVET_BJUT_TS_R7_MODE > 2
+#error Invalid TS R7 mode
+#endif
+#if JVET_BJUT_TS_R7_SHADOW != 0 && JVET_BJUT_TS_R7_SHADOW != 1
+#error TS R7 shadow must be 0 or 1
+#endif
+#if JVET_BJUT_TS_R7_MODE && (JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R7 and previous TS experiment defaults are mutually exclusive
+#endif
+#if !JVET_BJUT_TS_FIXED_PREDICTOR && (JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R7_SHADOW)
+#error TS R7 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R6_MODE < 0 || JVET_BJUT_TS_R6_MODE > 7
+#error Invalid TS R6 mode
+#endif
+#if JVET_BJUT_TS_R6_MODE && (JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R6 and all previous TS experiment defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R5_MODE < 0 || JVET_BJUT_TS_R5_MODE > 2
+#error Invalid TS R5 mode
+#endif
+#if JVET_BJUT_TS_R5_MODE && (JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R5 and all previous TS experiment defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R4_MODE < 0 || JVET_BJUT_TS_R4_MODE > 6
+#error Invalid TS R4 mode
+#endif
+#if JVET_BJUT_TS_R4_MODE && (JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R4 and all previous TS experiment defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_FIXED_PREDICTOR != 0 && JVET_BJUT_TS_FIXED_PREDICTOR != 1
+#error TS predictor master must be 0 or 1
+#endif
+#if JVET_BJUT_TS_R2_MODE < 0 || JVET_BJUT_TS_R2_MODE > 4
+#error Invalid TS R2 mode
+#endif
+#if JVET_BJUT_TS_R3_MODE < 0 || JVET_BJUT_TS_R3_MODE > 4
+#error Invalid TS R3 mode
+#endif
+#if JVET_BJUT_TS_R3_MODE && (JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R3, R2, revision1 and fixed predictor defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R2_MODE && (JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R2, revision1 and fixed predictor defaults are mutually exclusive
+#endif
+#if !JVET_BJUT_TS_FIXED_PREDICTOR && (JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error A TS experiment was requested but JVET_BJUT_TS_FIXED_PREDICTOR is disabled
+#endif
+#if JVET_BJUT_TS_CONDITIONAL_MODE < 0 || JVET_BJUT_TS_CONDITIONAL_MODE > 5
+#error Invalid TS conditional mode
+#endif
+#if JVET_BJUT_TS_CONDITIONAL_MODE && (JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error Select either a fixed default or a conditional default, not both
 #endif
 #if (JVET_BJUT_TS_FIXED_NOPRED != 0 && JVET_BJUT_TS_FIXED_NOPRED != 1) || \
     (JVET_BJUT_TS_FIXED_GRADIENT != 0 && JVET_BJUT_TS_FIXED_GRADIENT != 1) || \
@@ -78,6 +220,7 @@
 #if JVET_BJUT_TS_FIXED_NOPRED + JVET_BJUT_TS_FIXED_GRADIENT + JVET_BJUT_TS_FIXED_DIRECTIONAL > 1
 #error Enable at most one TS fixed predictor default (NoPred, gradient, directional)
 #endif
+// TS_PRED_ANALYSIS是TS-001旧anchor固定q统计（不是R7 shadow），与真实predictor实验总开关互斥。
 #if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_PRED_ANALYSIS
 #error Fixed TS predictor coding and legacy counterfactual analysis cannot be enabled together
 #endif
