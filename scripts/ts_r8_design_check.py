@@ -80,6 +80,20 @@ def check_manifest(path):
         assert r['needs_rate_context'] == (r['cost'] != 'integer')
         assert r['direct_controls']
     by_id = {r['id']: r for r in rows}
+    first = manifest['first_batch']
+    assert first == ['A01', 'A04', 'A08', 'B01', 'B03', 'B04', 'B05', 'B07']
+    assert [by_id[k]['mode'] for k in first] == [1, 4, 8, 13, 15, 16, 17, 19]
+    assert {r['id'] for r in rows if r['batch'] == '1'} == set(first)
+    primary = manifest['first_batch_primary_controls']
+    assert set(primary) == set(first)
+    assert all(p in first or p in ('R7-1', 'R7-2') for p in primary.values())
+    assert primary['B07'] == 'B04'  # Smoothing must not lose its complete-candidate control.
+    jobs = manifest['first_batch_point_counts']
+    per_smoke = len(manifest['smoke']['sequences']) * len(manifest['smoke']['qp'])
+    assert jobs == dict(lb_ce_new=len(first) * 7 * len(manifest['qp']),
+                        smoke_new=len(first) * per_smoke,
+                        smoke_controls=len(manifest['smoke']['controls']) * per_smoke,
+                        smoke_total=(len(first) + len(manifest['smoke']['controls'])) * per_smoke)
     for child, parent, field in [('B04', 'B03', 'sparse'), ('B06', 'B05', 'candidates'),
                                  ('B08', 'B07', 'sparse'), ('C02', 'C01', 'cost')]:
         changes = [f for f in ('cost', 'samples', 'candidates', 'decision', 'sparse', 'search')

@@ -134,14 +134,16 @@ python3 scripts/ts_pred_analyze.py runs/ts_smoke --allow-unmarked --smoke --out 
 ## R8 设计检查（2026-09-25，仅规格，尚未实现编码模式）
 
 24组设计与分阶段运行范围见 [R8 实验设计](../TS_Predictor_R8_Experiment_Design.md)。
+首轮现固定八组MODE 1/4/8/13/15/16/17/19，替代旧10组安排，见[首轮八组设计](../TS_Predictor_R8_First8_Design.md)。
 `ts_r8_experiment_manifest.json` 是开发规格，不是 `batch_test.py --manifest` 的任务CSV。
 当前不要向 batch 传预留的 `r8_*` 模式，也不要把 R8_MODE 写入尚未支持它的源码后冒认为生效。
 
 ```bash
 python3 scripts/ts_r8_design_check.py
+python3 scripts/ts_r8_first8_reference.py
 python3 scripts/ts_r7_results_for_r8.py --out runs/ts_r8_design/r7_evidence
 python3 -m unittest discover -s scripts -p 'test_ts_r8_design.py'
 ```
 
-第一项只检查数学规格；第二项复核本地已有R7 CE表格，不启动编码、不补点、不修改源表。
+前两项只检查数学规格；第三项复核本地已有R7 CE表格，不启动编码、不补点、不修改源表。
 结果收件目录为 `experiments/ts_predictor_r8/r8_<MODE>_<name>/`，存在目录不等于完成实验。

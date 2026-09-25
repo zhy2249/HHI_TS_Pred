@@ -1,6 +1,7 @@
 # R8：机制交叉、完整候选与评分分布实验
 
-设计版本：`R8-DESIGN-20260925-v1`。依据用户提供的 [探索计划](TS_Predictor_R8_Exploration_Plan.md)，结合本地源码与重新审计的 R7 表格。
+设计版本：`R8-DESIGN-20260925-v2`。依据用户提供的 [探索计划](TS_Predictor_R8_Exploration_Plan.md)，结合本地源码与重新审计的 R7 表格。
+按用户后续要求，首轮收敛为八组；详见 [首轮八组规格](TS_Predictor_R8_First8_Design.md)。24组原公式和公开MODE数字不变。
 
 **状态：完成实验规格、数学参考验证和收件目录；尚未修改编码算法、TypeDef.h 或批量运行器，没有 R8 编码结果。本文中的 R8_MODE 和 runtime 均为预留名称，不是目前可运行的选项。**
 
@@ -8,8 +9,8 @@
 
 保留探索计划的全部 **24 组**，不新增经验阈值、不扫描更多预测公式；分批实施，不一次启动 672 个正式 CE 编码点。
 
-- 第一批 10 组分成 1a 六组、1b 四组；先验证接口、实际活动和编解码同步，再运行完整 CE。
-- 第 2 批 10 组补齐 mean/min、候选覆盖和评分机制的配对关系。它们是正式研究计划，不以第一批必须超过 R3 作为实施前提。
+- 第一批八组：A01、A04、A08、B01、B03、B04、B05、B07；先验证接口、实际活动和编解码同步，再运行完整 CE。替代原首批10组安排，不叠加执行。
+- 第 2 批12组保留其余 A/B 方向，包括 mean/min、trim 和其它机制配对。暂缓不等于否定，不以第一批必须超过 R3 作为实施前提。
 - 第 3 批 C01/C02 检验语法路径模型；第 4 批 C03/C04 检验量化搜索交互。后者需要独立的 encoder 搜索接口，不混入公共 predictor 的第一版改造。
 - 正式 anchor 始终 Current；R3-1 是强增量对照，不是必须保留其已接受分支的规则。
 - 新方法都允许影响 TS-RDOQ、工具竞争与最终 q，正式性能用闭环编码判断；固定旧 q 的 shadow 只解释机制。
@@ -100,22 +101,23 @@ Raw 取 p*；Guard 只在非 Current-equivalent winner 且 H>0 时接受，否�
 ## 5. 实验编号与直接对照
 
 宏预留 `JVET_BJUT_TS_R8_MODE=0..24`，0 不选 R8；总开关仍为 `JVET_BJUT_TS_FIXED_PREDICTOR`。与所有旧固定/条件/R2–R7 默认模式互斥。以下 MODE 值为公开编号，不是内部 policy 数值。
+首轮未来只实现1/4/8/13/15/16/17/19，其余非零值仍为预留，误请求必须报错而不是静默使用Current；当前所有R8值均尚未接入编码器。
 
 ### 5.1 A 组：同一 CF10 下改变稀疏或接受规则
 
 | MODE / ID | dense / sparse | 直接对照 | 首次批次 |
 | --- | --- | --- | --- |
-| 1 / A01 | Raw / Smax | R7-1 | 1a |
+| 1 / A01 | Raw / Smax | R7-1 | 1 |
 | 2 / A02 | Raw / Smean | R7-1、A01 | 2 |
 | 3 / A03 | Raw / Smin | R7-1、A01 | 2 |
-| 4 / A04 | Guard / Smax | R7-2、A01、R6-5 | 1a |
+| 4 / A04 | Guard / Smax | R7-2、A01、R6-5 | 1 |
 | 5 / A05 | Guard / Smean | R7-2、A02、A04、R6-6 | 2 |
 | 6 / A06 | Guard / Smin | R7-2、A03、A04、R6-7 | 2 |
 | 7 / A07 | All-unaccepted-to-0 / S0 | R7-2、R6-1 | 2 |
-| 8 / A08 | Rejected-to-0 / S0 | R7-2、R6-2 | 1a |
-| 9 / A09 | Trim-cost / S0 | R7-1、R6-3 | 1b |
-| 10 / A10 | Trim-saving / S0 | R7-1、R6-4 | 1b |
-| 11 / A11 | Rejected-to-0 / Smax | A08、A04 | 1b |
+| 8 / A08 | Rejected-to-0 / S0 | R7-2、R6-2 | 1 |
+| 9 / A09 | Trim-cost / S0 | R7-1、R6-3 | 2 |
+| 10 / A10 | Trim-saving / S0 | R7-1、R6-4 | 2 |
+| 11 / A11 | Rejected-to-0 / Smax | A08、A04 | 2 |
 | 12 / A12 | Trim-saving / Smax | A10、A01 | 2 |
 
 全部 P0。A07 在 dense 区只有 Guard 接受非 Current 候选才保留它，其余全部 identity。A08 原始 winner 为 Current 时保留 Current，非 Current winner 被 guard 拒绝时才 identity。
@@ -130,13 +132,13 @@ R7-1/2 加 A01–A06 构成 fractional 下的 Raw/Guard × S0/max/mean/min 2×4 
 
 | MODE / ID | 改动 | 直接对照 | 首次批次 |
 | --- | --- | --- | --- |
-| 13 / B01 | CI+CF10，Raw，P0，Smax | A01 | 1b |
+| 13 / B01 | CI+CF10，Raw，P0，Smax | A01 | 1 |
 | 14 / B02 | 同混合 cost，Guard，P0，Smax | B01、A04 | 2 |
-| 15 / B03 | CF10，Raw，P1，S0 | R7-1 | 1a |
-| 16 / B04 | CF10，Raw，P1，Smax | B03、A01 | 2 |
-| 17 / B05 | CF10，对称 minimax regret，P0，Smax | A01、A04 | 1a |
+| 15 / B03 | CF10，Raw，P1，S0 | R7-1 | 1 |
+| 16 / B04 | CF10，Raw，P1，Smax | B03、A01 | 1 |
+| 17 / B05 | CF10，对称 minimax regret，P0，Smax | A01、A04 | 1 |
 | 18 / B06 | 同 B05，P1 | B05、B04 | 2 |
-| 19 / B07 | 三点平滑 CF10，完整平滑候选，Raw，Smax | B04、A01 | 1a |
+| 19 / B07 | 三点平滑 CF10，完整平滑候选，Raw，Smax | B04、A01 | 1 |
 | 20 / B08 | 同 B07，n>=1 都评分 | B07 | 2 |
 
 **B03/B04 的完整性**：排序不同幅值 v1<...<vm；命中点 p=vj、每个非空开区间的代表 vj+1、最小值以下的 identity 覆盖所有合法 p 的历史 remapping 向量。CF 可非单调，所以“没有历史 hit 的 p”不能预先删除。固定历史目标更优不保证下一个系数或闭环更优。
@@ -232,27 +234,26 @@ TU/CG 分母用独立 census 去重；同一 TU/CG 可以含多个 n 或 cutoff�
 
 这些是独立 Python 数学规格验证，**没有与尚不存在的 C++ R8 实现对照，不是 codec smoke 或实际收益**。
 
-`python3 -m unittest discover -s scripts -p 'test_ts_*.py'`：79 项通过，其中新增 5 项 R8 设计检查；其余为既有脚本回归，不等于本轮重新编码验证。
+`python3 -m unittest discover -s scripts -p 'test_ts_*.py'`：首轮八组规格更新后84项通过，其中10项R8设计检查；其余为既有脚本回归，不等于本轮重新编码验证。v1时79项通过的记录保留在实验台账历史。
 
 ### 阶段 1：实现及短测，禁止据短帧 BD 排名
 
-1a：A01、A04、A08、B03、B05、B07；1b：A09、A10、A11、B01。统一框架可一次支持这些配置，但先验收核心路径。
+首轮八组：A01、A04、A08、B01、B03、B04、B05、B07；预留MODE为1、4、8、13、15、16、17、19。以同一框架实现，不实现为按组串行占满任务池。
 
 先人工 TU 单测全 n、重复值、边界/矩形/原生尺寸、cutoff10/2/0、CG清零、reset、BDPCM、分量、符号、上下文复制和未来系数污染；Writer/Reader trace 与 decode hash 对齐。统计开/关同流；Current/macro-OFF 与旧 anchor 回归同流；旧 R3/R7 与保留程序回归同流。
 
 真实短测预注册 **PartyScene、BQMall、KristenAndSara、Johnny，QP22/37，17 帧**：包含原 R3 强项、共同弱项以及 fractional 的改善/退化两面；GOP=8，17 帧可检查两组后续帧，不用只有两个相同起始画面的输入替代运动覆盖。
 
-首批 10 组 80 个短任务，四对照 Current/R3/R7-1/R7-2 共 32 个短任务，共 112 点；这是必要的同帧工程对照，不是重跑完整 anchor。若输入不足或实际配置不满足该长度，先更新并冻结任务清单，不能悄悄改帧数。
+首批八组64个短任务，四对照 Current/R3/R7-1/R7-2 共32个短任务，共96点；这是必要的同帧工程对照，不是重跑完整 anchor。若输入不足或实际配置不满足该长度，先更新并冻结任务清单，不能悄悄改帧数。
 
 停止/修复：解码失配、身份不符、状态污染必须停止；无新增映射/候选/最终 q 活动的组先给等价说明或定位，不为制造差异调参。固定旧 q shadow 无收益本身不作为淘汰会改变量化搜索的组的依据。
 
 ### 阶段 2：完整 CE 开发实验
 
-短测验收后按 1a、1b、2 顺序跑 LBeu CE、QP22/27/32/37。配置读取 `scripts/HHI测试cfg/LBeu/ConfigLB.ini`：BasketballDrill=250、BQMall=300、PartyScene=250、RaceHorsesC=150、FourPeople/Johnny/KristenAndSara=300 帧。已经是半帧，**不再除 2**，不传 `--full-sequence`。不限制为 8×8；现有 lowdelay cfg 启用 RDOQTS、TS 最大 log2=5，真实可达/观察尺寸仍由 SPS、工具竞争与日志区分。
+短测验收后先跑第一批八组 LBeu CE、QP22/27/32/37，其余组按后续阶段评估。配置读取 `scripts/HHI测试cfg/LBeu/ConfigLB.ini`：BasketballDrill=250、BQMall=300、PartyScene=250、RaceHorsesC=150、FourPeople/Johnny/KristenAndSara=300 帧。已经是半帧，**不再除 2**，不传 `--full-sequence`。不限制为 8×8；现有 lowdelay cfg 启用 RDOQTS、TS 最大 log2=5，真实可达/观察尺寸仍由 SPS、工具竞争与日志区分。
 
-- 1a 六组：168 正式编码点。
-- 1b 四组：112 点。首批合计 280 点。
-- 第 2 批十组：280 点。
+- 第一批八组：224 正式编码点，不包含已有对照。
+- 第 2 批十二组：336 点（未来上限，不是本轮任务）。
 - C01/C02：56 点；C03/C04：56 点。
 - 全 24 组上限 672 点，不含短测、旧对照缺失点或追加验证，不代表小时估计。
 
