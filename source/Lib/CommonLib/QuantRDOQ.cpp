@@ -1258,7 +1258,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   // Estimator input, NOT necessarily actual final Writer context. No writeback.
   Ctx rateTrial;
-  const bool useRateModel = TsFixedPrediction::rateMode(TsFixedPrediction::mode());
+  const bool useRateModel = TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode());
   bool trackRateModel = useRateModel;
 #if JVET_BJUT_TS_R7_SHADOW
   const bool probeRateModel = TsFixedPrediction::rateRdoqShadow();

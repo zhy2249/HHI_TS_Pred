@@ -22,7 +22,7 @@ static void equalCtx(const Ctx &a,const Ctx &b)
 int main()
 {
   using namespace TsFixedPrediction;
-  require(mode()==13 || rateMode(mode())); initROM();
+  require(mode()==13 || needsTsRateContext(mode())); initROM();
   std::mt19937 rng(20260924);
   RateTable neutral;
   for(auto *b:{&neutral.gt1,&neutral.parity,&neutral.gt[0],&neutral.gt[1],&neutral.gt[2],&neutral.gt[3]})
@@ -60,6 +60,8 @@ int main()
     for(auto &a:q)a=rng()%3?int(rng()%(trial%2?21:4096))-10:0;
     if(trial%9==0)std::fill(q.begin(),q.end(),0);
     q[0]=-3;
+    if(r8(mode()) && trial%31==0)
+      for(int i=0;i<w*h;++i)q[i]=i%3==0?-32768:i%3==1?32767:1;
     OutputBitstream bits; BinEncoder_Std bin; CABACWriter writer(bin,nullptr);
     writer.initBitstream(&bits); bin.reset(cu.qp,I_SLICE);
     std::vector<int> budgets;

@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import batch_test as batch
+from ts_predictor_naming import R8_MODE_NUMBERS
 
 
 class FixedDefaultsTests(unittest.TestCase):
@@ -24,7 +25,7 @@ class FixedDefaultsTests(unittest.TestCase):
         cls.r5 = ('r5_margin_first','r5_current_veto')
         cls.r6 = ('r6_dense_nopred','r6_reject_nopred','r6_trim_cost','r6_trim_saving','r6_sparse_max','r6_sparse_mean','r6_sparse_min')
         cls.rate = ('rate_raw','rate_guard')
-        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate)
+        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate, *R8_MODE_NUMBERS)
         for mode in (*cls.modes, 'off'):
             exe = Path(cls.tmp.name)/mode
             defines = ['-DJVET_BJUT_TS_FIXED_PREDICTOR='+('0' if mode=='off' else '1')]
@@ -38,6 +39,7 @@ class FixedDefaultsTests(unittest.TestCase):
             defines.append('-DJVET_BJUT_TS_R6_MODE='+str(cls.r6.index(mode)+1 if mode in cls.r6 else 0))
             defines.append('-DJVET_BJUT_TS_R7_MODE='+str(cls.rate.index(mode)+1 if mode in cls.rate else 0))
             defines.append('-DJVET_BJUT_TS_R7_SHADOW=0')
+            defines.append('-DJVET_BJUT_TS_R8_MODE='+str(R8_MODE_NUMBERS.get(mode,0)))
             subprocess.run(cls.base_cmd+defines+['-o',str(exe)],check=True,capture_output=True)
             cls.binaries[mode] = exe
 
@@ -62,6 +64,8 @@ class FixedDefaultsTests(unittest.TestCase):
             self.assertIn('selection: TypeDef.h default',r.stdout)
             if mode in self.rate:
                 self.assertIn(f'TS R7 experiment=R7-{self.rate.index(mode)+1};',r.stdout)
+            if mode in R8_MODE_NUMBERS:
+                self.assertIn(f'mode={R8_MODE_NUMBERS[mode]}; runtime={mode};',r.stdout)
 
     def test_all_overrides(self):
         for default in self.modes:
@@ -129,6 +133,21 @@ class FixedDefaultsTests(unittest.TestCase):
         with patch.dict(os.environ,{'TS_FIXED_PREDICTOR':'directional'}):
             banner = batch._detect_experiment_line(self.binaries['gradient'],self.root)
             self.assertIn('TS_FIXED_PREDICTOR=gradient;',banner)
+
+    def test_r8_invalid_and_old_conflicts(self):
+        values = set(R8_MODE_NUMBERS.values()) | {0}
+        cases = [[f'-DJVET_BJUT_TS_R8_MODE={n}'] for n in range(-1,26) if n not in values]
+        for old in ('TS_FIXED_NOPRED','TS_FIXED_GRADIENT','TS_FIXED_DIRECTIONAL',
+                    'TS_CONDITIONAL_MODE','TS_R2_MODE','TS_R3_MODE','TS_R4_MODE','TS_R5_MODE',
+                    'TS_R6_MODE','TS_R7_MODE','TS_RATE_MODE'):
+            cases.append(['-DJVET_BJUT_TS_R8_MODE=19',f'-DJVET_BJUT_{old}=1'])
+        cases.append(['-DJVET_BJUT_TS_R8_MODE=1','-DJVET_BJUT_TS_FIXED_PREDICTOR=0'])
+        for defines in cases:
+            r = subprocess.run(self.base_cmd+defines+['-fsyntax-only'],capture_output=True,text=True)
+            self.assertNotEqual(r.returncode,0)
+            self.assertIn('error:',r.stderr)
+        for mode in ('r8_raw_sparse_mean','r8_2_raw_sparse_mean','r8_path'):
+            self.assertNotEqual(self.run_probe('current',mode).returncode,0)
 
     def test_r6_invalid_and_old_conflicts(self):
         cases = [[f'-DJVET_BJUT_TS_R6_MODE={n}'] for n in (-1,8)]

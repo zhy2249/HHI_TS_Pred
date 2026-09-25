@@ -20,9 +20,16 @@ R6_MODE_NUMBERS = {
     'r6_sparse_max': 5, 'r6_sparse_mean': 6, 'r6_sparse_min': 7,
 }
 R7_MODE_NUMBERS = {'rate_raw': 1, 'rate_guard': 2}  # Stable pre-rename runtime names.
+R8_MODE_NUMBERS = {
+    'r8_raw_sparse_max': 1, 'r8_guard_sparse_max': 4, 'r8_reject_nopred': 8,
+    'r8_mixed_raw': 13, 'r8_complete_raw': 15, 'r8_complete_sparse_max': 16,
+    'r8_minimax': 17, 'r8_smoothed_dense': 19,
+}
 
 
 def directory_name(mode: str) -> str:
+    if mode in R8_MODE_NUMBERS:
+        return f'r8_{R8_MODE_NUMBERS[mode]}_{mode.removeprefix("r8_")}'
     if mode in R7_MODE_NUMBERS:
         return f'r7_{R7_MODE_NUMBERS[mode]}_{mode.removeprefix("rate_")}'
     if mode in R6_MODE_NUMBERS:

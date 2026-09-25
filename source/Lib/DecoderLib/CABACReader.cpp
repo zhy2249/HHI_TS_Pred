@@ -4484,7 +4484,7 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   // Capture BEFORE any CG bins. Immediate pass-3 contexts would be too late.
-  if (TsFixedPrediction::rateMode(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
+  if (TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
 #endif
   // NOTE: All coefficients of the subblock must be set to zero before calling this function
 #if RExt__DECODER_DEBUG_BIT_STATISTICS

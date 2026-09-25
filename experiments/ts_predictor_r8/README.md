@@ -1,10 +1,10 @@
-# R8 实验收件：24 组，尚未编码
+# R8 实验收件：首批八组已实现，正式CTC尚未运行
 
 设计与分组见 [R8 实验设计](../../TS_Predictor_R8_Experiment_Design.md)。
 机器可读规格见 [manifest](../../scripts/ts_r8_experiment_manifest.json)；它不是当前 batch 接受的运行 manifest。
 
 目录命名为 `r8_<公开MODE数字>_<方法名>`：1..12 对应 A01..A12，13..20 对应 B01..B08，21..24 对应 C01..C04。
-各目录 README 给出预留宏、runtime、父对照；**当前 R8 宏和运行参数均未实现**。
+各目录 README 给出宏、runtime、父对照；**仅首批MODE 1/4/8/13/15/16/17/19可运行**，其余请求将报错。
 
 每组实际完成后，在对应配置子目录存放：
 
@@ -26,6 +26,7 @@ r8_<MODE>_<name>/
 首轮完整LB CE为224个新增编码点；工程短测含四个旧对照为96点，不重跑完整Current anchor。
 
 正式 Current anchor；R3-1 是增量对照。Y/U/V 分别 BD 后 6:1:1，CE 七序列等权、BCE 十二序列等权。
-共享任务池、逐组完成即写表、无重建、resume 的现有脚本行为应保留；目前没有新 R8 编码命令。
+共享任务池、逐组完成即写表、无重建、resume均沿用现有batch。
+运行命令见 [实现说明](../../TS_Predictor_R8_Implementation.md)，本地验收见 [验证](../../TS_Predictor_R8_Validation.md)。
 
 本轮文档按约定上传 Git，实际结果源表、码流和大体积日志保留本地。

@@ -59,7 +59,7 @@
 // 总开关=1且所有实验模式=0 -> Current=max(|L|,|U|)，唯一正式 anchor。
 // TS_FIXED_PREDICTOR 环境变量 / batch --fixed-predictors 可以覆盖编译默认模式。
 // 改宏后须重新编译 Encoder/Decoder，并核对每个任务的 EXPERIMENT 启动行。
-// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R7 实验，并非启用 NoPred。
+// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R8 实验，并非启用 NoPred。
 #ifndef JVET_BJUT_TS_FIXED_PREDICTOR
 #define JVET_BJUT_TS_FIXED_PREDICTOR                       1
 #endif
@@ -136,6 +136,27 @@
 #else
 #define JVET_BJUT_TS_R7_MODE                               0
 #endif
+#endif
+// R8首批（R8-DESIGN-20260925-v2），0=不选择；沿用公开编号，不重编号为1..8。
+// 1=A01：R7-1 raw + 稀疏Smax；4=A04：R7-2 guard + Smax；
+// 8=A08：R7-2的raw候选被guard拒绝时改NoPred，稀疏仍Current；
+// 13=B01：A01评分改为integer(Q15)+fractional(1:1)，不除2；
+// 15=B03：R7-1候选补齐a+1断点；16=B04：B03 + Smax；
+// 17=B05：A01候选集，完整/逐位置删一的minimax regret，无额外guard；
+// 19=B07：B04改为clip(a-1),a,clip(a+1)的1:2:1平滑经验分布，n不变。
+// Smax：n<3时仅n=2且直接L/U均非零保留Current，其余NoPred；n为非零位置数。
+// 其余非零编号尚未实现，编译失败；与固定/条件/R2..R7默认模式互斥。
+#ifndef JVET_BJUT_TS_R8_MODE
+#define JVET_BJUT_TS_R8_MODE                               0
+#endif
+#if JVET_BJUT_TS_R8_MODE != 0 && JVET_BJUT_TS_R8_MODE != 1 && JVET_BJUT_TS_R8_MODE != 4 && JVET_BJUT_TS_R8_MODE != 8 && JVET_BJUT_TS_R8_MODE != 13 && JVET_BJUT_TS_R8_MODE != 15 && JVET_BJUT_TS_R8_MODE != 16 && JVET_BJUT_TS_R8_MODE != 17 && JVET_BJUT_TS_R8_MODE != 19
+#error Unimplemented or invalid TS R8 mode
+#endif
+#if JVET_BJUT_TS_R8_MODE && (JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R8 and previous TS experiment defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R8_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R8 requires the fixed-predictor master
 #endif
 // R7观察能力：0=不编译；1=编译shadow，不是新的预测模式，默认不改变实际决策。
 // 观察原R3-1时：R3_MODE=1、R7_MODE=0，并在运行时设置TS_RATE_SHADOW=1。

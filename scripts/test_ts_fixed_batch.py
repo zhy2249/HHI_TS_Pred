@@ -12,7 +12,7 @@ import threading
 import unittest
 from unittest.mock import patch
 import batch_test as batch
-from ts_predictor_naming import R4_MODE_NUMBERS, R5_MODE_NUMBERS, R6_MODE_NUMBERS, R7_MODE_NUMBERS, directory_name, experiment_directory
+from ts_predictor_naming import R4_MODE_NUMBERS, R5_MODE_NUMBERS, R6_MODE_NUMBERS, R7_MODE_NUMBERS, R8_MODE_NUMBERS, directory_name, experiment_directory
 
 
 class FixedBatchTests(unittest.TestCase):
@@ -67,6 +67,11 @@ class FixedBatchTests(unittest.TestCase):
     def test_r6_macro_directory_numbers(self):
         for mode, number in R6_MODE_NUMBERS.items():
             self.assertEqual(directory_name(mode), f'r6_{number}_{mode[3:]}')
+
+    def test_r8_modes_and_shared_pool(self):
+        self.exercise_modes_and_shared_pool(tuple(R8_MODE_NUMBERS))
+        for mode,n in R8_MODE_NUMBERS.items():
+            self.assertEqual(directory_name(mode),f'r8_{n}_{mode[3:]}')
 
     def test_r7_modes_and_shared_pool(self):
         self.exercise_modes_and_shared_pool(tuple(R7_MODE_NUMBERS))

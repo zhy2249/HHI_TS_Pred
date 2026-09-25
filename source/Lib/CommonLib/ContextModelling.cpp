@@ -48,6 +48,8 @@
 #include "TsR4Stats.h"
 #include "TsR5Stats.h"
 #include "TsR6Stats.h"
+#include "TsR8Stats.h"
+#include "TsRateReplay.h"
 #endif
 
 const int CoeffCodingContext::prefixCtx[] = { 0, 0, 0, 3, 6, 10, 15, 21, 28 };
@@ -182,6 +184,7 @@ void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bo
 {
   using namespace TsFixedPrediction;
   const int policy = mode();
+  if (r8(policy)) { finishTsR8CG(coeff, trace, verifyBudget, report); return; }
   if (r6(policy)) { finishTsR6CG(coeff, trace, verifyBudget, report); return; }
   if (r5(policy)) { finishTsR5CG(coeff, trace, verifyBudget, report); return; }
   if (r4(policy)) { finishTsR4CG(coeff, trace, verifyBudget, report); return; }
@@ -493,7 +496,107 @@ void CoeffCodingContext::finishTsR4CG(const TCoeff *coeff, bool trace, bool veri
                  int(m_compID), m_width, m_height, m_tsQp, m_subSetId, policy, policy, m_tsHistoryBins, last,
                  (unsigned long long)counts[R4Stats::DIFFERENT], (unsigned long long)counts[R4Stats::MAPPED], (unsigned long long)hash);
 }
-// R6 replay observes final coefficients only; none of these counters affect RDOQ.
+// R8 replay observes final coefficients only; none of these counters affect RDOQ.
+void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
+{
+  using namespace TsFixedPrediction;
+  static const bool enabled = !std::getenv("TS_R8_STATS") || std::strcmp(std::getenv("TS_R8_STATS"), "0");
+  static const bool tracing = std::getenv("TS_R8_TRACE") && std::strcmp(std::getenv("TS_R8_TRACE"), "0");
+  const bool collect = report && enabled, debug = trace && tracing;
+  if (!collect && !debug) { return; } // Never observe encoder search/RDOQ here.
+  const int publicMode = r8PublicMode(mode());
+  const auto key = [&](int n, int cutoff) -> R8Stats::Key {
+    return {publicMode,int(m_compID),m_width,m_height,m_tsQp,m_tsIntra,int(m_bdpcm),lastSubSet()+1,m_subSetId,n,cutoff};
+  };
+  std::array<int64_t,R8Stats::COUNT> census{};
+  census[R8Stats::TU] = m_subSetId == 0; census[R8Stats::CG] = 1;
+  census[R8Stats::COEFF] = m_maxSubPos - m_minSubPos + 1;
+  uint64_t hash = 1469598103934665603ULL;
+  for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+  {
+    const int q = coeff[blockPos(s)]; census[R8Stats::NZ] += q != 0;
+    hash = (hash ^ uint64_t(int64_t(q))) * 1099511628211ULL;
+  }
+  census[R8Stats::EMPTY] = census[R8Stats::NZ] == 0;
+  if (collect) { r8Stats().add(key(-1,-1),census); }
+  struct NullSink
+  {
+    void encodeBin(unsigned, unsigned) {}
+    void encodeBinEP(unsigned) {}
+    void encodeRemAbsEP(unsigned, unsigned, unsigned, unsigned) {}
+  } sink;
+  auto copy = *this;
+  const auto path = replayRateCG(copy,coeff,[&](int s) { return ratePredictor(copy,s,coeff); },m_tsHistoryBins,m_tsRice,sink);
+  if (verifyBudget) { CHECK(m_tsHistoryBins != remRegBins, "R8 diagnostic budget mismatch"); }
+  if (m_bdpcm == BdpcmMode::NONE && census[R8Stats::NZ])
+    for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+    {
+      const int cutoff = s <= path.pass2 ? 10 : s <= path.pass1 ? 2 : 0;
+      const int a = std::abs(int(coeff[blockPos(s)]));
+      const auto d = r8PredictionTS(publicMode,s,coeff);
+      hash = (hash ^ uint64_t(d.predictor + (cutoff << 20))) * 1099511628211ULL;
+      if (!collect) { continue; }
+      std::array<int64_t,R8Stats::COUNT> v{};
+      v[R8Stats::COEFF] = 1; v[R8Stats::NZ] = a != 0;
+      if (cutoff)
+      {
+        int parent = d.current;
+        if (publicMode == 1 || publicMode == 15) { parent = ratePredictionTS(s,coeff).winner; }
+        else if (publicMode == 8) { parent = ratePredictionTS(s,coeff).predictor; }
+        else { parent = r8PredictionTS(publicMode == 19 ? 16 : 1,s,coeff).predictor; }
+        const int r3p = magnitudePredictorModeTS(13,s,coeff);
+        const int mod = remap(a,d.predictor);
+        v[R8Stats::ACTIVE] = 1; v[R8Stats::ACTIVE_NZ] = a != 0;
+        v[d.predictor == d.current ? R8Stats::PCURRENT : d.predictor == 0 ? R8Stats::PIDENTITY : R8Stats::POTHER] = 1;
+        v[R8Stats::VS_CURRENT] = !equivalentPredictors(d.predictor,d.current);
+        v[R8Stats::VS_PARENT] = !equivalentPredictors(d.predictor,parent);
+        v[R8Stats::VS_R3] = !equivalentPredictors(d.predictor,r3p);
+        v[R8Stats::CURRENT_IDENTITY] = d.current == 0;
+        v[R8Stats::MAP_CURRENT] = mod != remap(a,d.current);
+        v[R8Stats::MAP_PARENT] = mod != remap(a,parent);
+        v[R8Stats::MAP_R3] = mod != remap(a,r3p);
+        v[mod == 0 ? R8Stats::MOD0 : mod == 1 ? R8Stats::MOD1 : mod == 2 ? R8Stats::MOD2 : R8Stats::MODHIGH] = 1;
+        int l,u; neighTS(l,u,s,coeff); v[R8Stats::LU_ONLY] = d.n == 2 && l && u;
+        if (d.n >= 3)
+        {
+          const auto p0 = ratePredictionTS(s,coeff);
+          bool inP0 = false;
+          for (int k = 0; k < p0.count; ++k) { inP0 |= equivalentPredictors(d.predictor,p0.candidates[k]); }
+          v[R8Stats::NEW_CANDIDATE] = !inP0;
+          v[R8Stats::VS_RAW] = d.predictor != d.rawWinner;
+          const bool accepted = d.rawWinner != d.current && d.margin > 0;
+          bool parentAccepted = p0.accepted();
+          if (publicMode != 1 && publicMode != 8 && publicMode != 15)
+          {
+            const auto pd = r8PredictionTS(publicMode == 19 ? 16 : 1,s,coeff);
+            parentAccepted = pd.rawWinner != pd.current && pd.margin > 0;
+          }
+          v[R8Stats::GUARD_VS_PARENT] = accepted != parentAccepted;
+          v[d.margin < 0 ? R8Stats::MARGIN_NEG : d.margin == 0 ? R8Stats::MARGIN_ZERO :
+            d.margin < (1 << SCALE_BITS) ? R8Stats::MARGIN_LT1 : R8Stats::MARGIN_GE1] = 1;
+          for (int k = 0; k < d.count; ++k)
+            if (d.candidates[k] == d.predictor)
+            {
+              v[R8Stats::SELECTED_SCORE] = d.scores[k];
+              if (publicMode == 17) { v[R8Stats::SELECTED_REGRET] = d.regrets[k]; }
+            }
+          v[d.rawWinner == d.current ? R8Stats::RAW_CURRENT : d.rawWinner == 0 ? R8Stats::RAW_IDENTITY : R8Stats::RAW_OTHER] = 1;
+          if (d.rawWinner != d.current)
+            v[d.margin > 0 ? R8Stats::ACCEPT : d.rawWinner == 0 ? R8Stats::REJECT_IDENTITY : R8Stats::REJECT_OTHER] = 1;
+          int64_t currentScore = 0;
+          for (int k = 0; k < d.count; ++k) { if (d.candidates[k] == d.current) { currentScore = d.scores[k]; } }
+          for (int k = 0; k < d.count; ++k)
+            if (d.candidates[k] != d.current && d.scores[k] == currentScore) { v[R8Stats::TIE_CURRENT] = 1; }
+          v[R8Stats::GAIN_Q15] = d.gain; v[R8Stats::MARGIN_Q15] = d.margin; v[R8Stats::CANDIDATES] = d.count;
+        }
+      }
+      r8Stats().add(key(d.n,cutoff),v);
+    }
+  if (debug)
+    std::fprintf(stderr,"TS_R8_TRACE mode=%d c=%d w=%u h=%u qp=%d cg=%d bdpcm=%d pass1=%d pass2=%d bins=%d hash=%llu\n",
+      publicMode,int(m_compID),m_width,m_height,m_tsQp,m_subSetId,int(m_bdpcm),path.pass1,path.pass2,m_tsHistoryBins,(unsigned long long)hash);
+}
+
 void CoeffCodingContext::finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;

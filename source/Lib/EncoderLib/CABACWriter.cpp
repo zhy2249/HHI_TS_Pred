@@ -4088,7 +4088,7 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
                                              const int riceParam, bool ricePresentFlag)
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
-  if (TsFixedPrediction::rateMode(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
+  if (TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode())) { cctx.freezeTsRateContext(getCtx()); }
 #endif
   const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
 #if JVET_BJUT_TS_PRED_ANALYSIS

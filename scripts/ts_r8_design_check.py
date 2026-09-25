@@ -67,7 +67,7 @@ def regret_brute(loss):
 def check_manifest(path):
     manifest = json.loads(path.read_text())
     rows = manifest['experiments']
-    assert manifest['status'] == 'design_only'
+    assert manifest['status'] == 'first8_implemented'
     assert [r['mode'] for r in rows] == list(range(1, 25))
     assert [r['id'] for r in rows] == ([f'A{i:02}' for i in range(1, 13)] +
                                      [f'B{i:02}' for i in range(1, 9)] +
@@ -76,7 +76,7 @@ def check_manifest(path):
     assert len({r['runtime_reserved'] for r in rows}) == 24
     for r in rows:
         assert r['directory'].startswith(f"r8_{r['mode']}_")
-        assert r['status'] == 'not_implemented'
+        assert r['status'] == ('implemented' if r['mode'] in (1,4,8,13,15,16,17,19) else 'not_implemented')
         assert r['needs_rate_context'] == (r['cost'] != 'integer')
         assert r['direct_controls']
     by_id = {r['id']: r for r in rows}

@@ -4,7 +4,8 @@
 本轮选择 **A01、A04、A08、B01、B03、B04、B05、B07**，公开 MODE 为 **1、4、8、13、15、16、17、19**。
 不重新编号为1..8，避免与原24组和收件目录混淆；其它16组保留后续设计，不默认安排运行。
 
-**状态：八组详细设计和可执行 Python 数学参考完成，尚未接入 C++ 编解码器、宏或 batch，也未运行新编码。**
+**状态：首批八组已接入 C++ 编解码器、TypeDef.h 宏及现有 batch。人工工程验证完成；96项真实内容短测与正式CTC尚未运行。**
+启用方法及命令见 [实现说明](TS_Predictor_R8_Implementation.md)，实际验证证据见 [验收记录](TS_Predictor_R8_Validation.md)。
 正式 anchor 仍为 Current；R3-1 为增量对照。源数据依据见 [R7 核验](TS_Predictor_R7_Evidence_for_R8.md)，共同工程要求见 [R8 总设计](TS_Predictor_R8_Experiment_Design.md)。
 
 ## 1. 为什么选这八组
@@ -144,7 +145,7 @@ Current与R3-1始终同时报告；机制父对照只是解释增量，不替换
 
 ## 5. 首轮工程实现边界
 
-拟新增`TsR8Prediction.h`承载只读局部模板、候选生成、loss和选择；公共配置字段为cost/sample/candidates/decision/sparse。八组均不新增跨CG学习权重；沿用R7的CG snapshot和私有RDOQ回放。
+已新增`TsR8Prediction.h`承载候选生成、loss和选择；各公开编号按表选择cost/sample/candidates/decision/sparse。八组均不新增跨CG学习权重；沿用R7的CG snapshot和私有RDOQ回放。
 
 生产代码按需要缓存有限幅值cost，不照搬Python参考程序的整幅值表分配。最多21候选×5原样本的64位loss矩阵是840字节，另有候选/score/缓存空间；实际栈与运行开销须实测。平滑每位置至多三项，不引入动态分配。
 
@@ -161,7 +162,7 @@ decision: predictor, support, candidateCount, rawWinner,
 
 必须同时接入公共RDOQ/Writer/Reader入口，统一`needsTsRateContext`，不能仍只识别旧policy32/33。统计比较父法时显式传其配置，不临时改全局环境/模式污染真实编码。
 
-未来`TypeDef.h`仅放一个R8_MODE总选择，0不启用；首轮合法非零值为1/4/8/13/15/16/17/19，其余预留值请求时明确报“尚未实现”，禁止静默Current。旧固定/条件/R2–R7互斥；总开关关闭却请求R8时报错。省略batch覆盖参数使用宏默认，显式`--fixed-predictors`覆盖并在Encoder/Decoder记录相同有效模式。
+`TypeDef.h`已有R8_MODE总选择，交付默认0；首轮合法非零值为1/4/8/13/15/16/17/19，其余预留值请求时明确报“尚未实现”，禁止静默Current。旧固定/条件/R2–R7互斥；总开关关闭却请求R8时报错。省略batch覆盖参数使用宏默认，显式`--fixed-predictors`覆盖并在Encoder/Decoder记录相同有效模式。
 
 八组不改`xGetICRateTS`、round/min/up插入规则、lambda、CG全零RD判断，也不改变正式bitstream语法。实际实验码流仍要求用相同预测策略的实验Decoder解码，不能冒称与未修改的Current解码器兼容。
 
@@ -181,9 +182,9 @@ Current p<=1等价、pure bypass不应用remap和BDPCM排除必须单列。TU/CG
 4. 新八组逐一有有效模式banner、解码hash与实际映射活动证据；无活动先解释，不调参数制造差异。
 
 本次已经运行Python参考：1024个五邻域模板×3个合成cost表×10个公式（八组加R7两个对照），共30720次决策；八组都找到相对主父法的映射差异反例。另验证混合cost缩放、dense父法保持、P1全域小范围最优与fallback边界。
-这只证明公式在人工域不等价，不证明对应CABAC状态可达、CTC有活动或BD收益；尚无任何新R8编解码验证。
+这部分只证明公式在人工域不等价，不证明对应CABAC状态可达、CTC有活动或BD收益。后续C++对照、原生CABAC、闭环人工smoke已完成，见验收记录；仍没有正式BD收益证据。
 
-本轮全部84项TS Python测试通过，其中10项R8设计测试；不能据脚本测试通过声称新编码算法已经实现或验证。
+设计阶段的84项TS Python测试是历史记录；实现后的完整测试数及结果见验收记录，避免把两阶段的验证混为一谈。
 
 ## 7. 运行规模与后续选择
 
@@ -205,4 +206,4 @@ python3 scripts/ts_r8_first8_reference.py
 python3 -m unittest discover -s scripts -p 'test_ts_r8_design.py'
 ```
 
-`scripts/ts_r8_experiment_manifest.json`保存首轮八组、主/辅助父对照与224/96任务计数；各结果目录数字不变。以上是设计检查命令，不是编码命令；此时设置R8宏不能启动实验。
+`scripts/ts_r8_experiment_manifest.json`保存首轮八组、主/辅助父对照与224/96任务计数；各结果目录数字不变。以上是设计检查命令，不是编码命令；现在可通过实现说明中的宏与脚本启动八组已实现方法。

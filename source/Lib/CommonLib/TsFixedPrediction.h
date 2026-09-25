@@ -8,6 +8,34 @@
 
 namespace TsFixedPrediction
 {
+// Public R8 numbers are deliberately distinct from internal dispatch IDs.
+inline int r8PublicMode(int policy)
+{
+  static const int ids[] = {1, 4, 8, 13, 15, 16, 17, 19};
+  return policy >= 34 && policy <= 41 ? ids[policy - 34] : 0;
+}
+inline const char *r8Name(int publicMode)
+{
+  switch (publicMode)
+  {
+  case 1: return "r8_raw_sparse_max";
+  case 4: return "r8_guard_sparse_max";
+  case 8: return "r8_reject_nopred";
+  case 13: return "r8_mixed_raw";
+  case 15: return "r8_complete_raw";
+  case 16: return "r8_complete_sparse_max";
+  case 17: return "r8_minimax";
+  case 19: return "r8_smoothed_dense";
+  default: return nullptr;
+  }
+}
+inline int r8Policy(const char *name)
+{
+  for (int p = 34; p <= 41; ++p)
+    if (!std::strcmp(name, r8Name(r8PublicMode(p)))) { return p; }
+  return 0;
+}
+inline bool r8(int policy) { return r8PublicMode(policy) != 0; }
 inline const char *defaultName()
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_NOPRED
@@ -17,7 +45,8 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R7_MODE == 1 ? "rate_raw" :
+  return JVET_BJUT_TS_R8_MODE ? r8Name(JVET_BJUT_TS_R8_MODE) :
+         JVET_BJUT_TS_R7_MODE == 1 ? "rate_raw" :
          JVET_BJUT_TS_R7_MODE == 2 ? "rate_guard" :
          JVET_BJUT_TS_R6_MODE == 1 ? "r6_dense_nopred" :
          JVET_BJUT_TS_R6_MODE == 2 ? "r6_reject_nopred" :
@@ -70,7 +99,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard"))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -122,7 +151,8 @@ inline int mode()
                           !std::strcmp(name(), "r6_sparse_mean") ? 30 :
                           !std::strcmp(name(), "r6_sparse_min") ? 31 :
                           !std::strcmp(name(), "rate_raw") ? 32 :
-                          !std::strcmp(name(), "rate_guard") ? 33 : 1;
+                          !std::strcmp(name(), "rate_guard") ? 33 :
+                          r8Policy(name()) ? r8Policy(name()) : 1;
   return value;
 }
 inline void announce()
@@ -158,6 +188,8 @@ inline void announce()
     // Retain legacy identity/schema for existing log readers and results.
     std::printf("TS RATE revision=RATE-20260924-v1; mode=%d; CG-entry-frozen-CABAC; full-regular-local-model; anchor=current\n", mode() - 31);
   }
+  if (r8(mode()))
+    std::printf("TS R8 revision=R8-DESIGN-20260925-v2; mode=%d; runtime=%s; anchor=current; scope=YUV; CG-entry-frozen-CABAC; full-regular-local-model; n=nonzero-positions; stats=final-Writer-only\n", r8PublicMode(mode()), name());
   if (wantShadow)
   {
     std::printf("TS R7 observation-only; parent=R3-1; actual-runtime=r3_risk_guard\n");
@@ -193,6 +225,7 @@ inline bool r4(int mode) { return mode >= 17 && mode <= 22; }
 inline bool r5(int mode) { return mode == 23 || mode == 24; }
 inline bool r6(int mode) { return mode >= 25 && mode <= 31; }
 inline bool rateMode(int mode) { return mode == 32 || mode == 33; }
+inline bool needsTsRateContext(int mode) { return rateMode(mode) || r8(mode); }
 inline bool componentEnabled(int mode, bool luma) { return luma || (mode != 14 && mode != 16); }
 inline bool equivalentPredictors(int a, int b) { return a == b || (a <= 1 && b <= 1); }
 inline bool adaptive(int mode) { return (mode >= 6 && mode <= 8) || mode == 11 || mode == 12 || r3Adaptive(mode); }

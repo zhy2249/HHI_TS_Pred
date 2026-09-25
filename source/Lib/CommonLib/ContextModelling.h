@@ -51,6 +51,7 @@
 #include "TsR5Prediction.h"
 #include "TsR6Prediction.h"
 #include "TsRateCost.h"
+#include "TsR8Prediction.h"
 #endif
 
 #include <bitset>
@@ -610,6 +611,16 @@ public:
     };
     return TsFixedPrediction::rateDecision(std::max(a[0],a[1]), nz, n, cost);
   }
+  TsFixedPrediction::R8Decision r8PredictionTS(int publicMode, int scanPos, const TCoeff *coeff) const
+  {
+    const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
+    const auto read = [&](int dx, int dy) { return x + dx < 0 || y + dy < 0 ? 0 : std::abs(int(coeff[pos + dx + dy * m_width])); };
+    const int a[] = {read(-1,0), read(0,-1), read(-1,-1), read(-2,0), read(0,-2)};
+    const auto fractional = [&](int level) { return tsRateTable((a[0] != 0) + (a[1] != 0)).cost(level, m_tsRice, m_maxLog2TrDynamicRange); };
+    const auto integer = [&](int level) { return int64_t(TsFixedPrediction::syntaxCost(level, m_tsRice, m_maxLog2TrDynamicRange)) << SCALE_BITS; };
+    // Negative legal levels may have magnitude 2^range (e.g. -32768).
+    return TsFixedPrediction::r8Decision(publicMode, a, 1 << m_maxLog2TrDynamicRange, fractional, integer);
+  }
   TsFixedPrediction::R6Result r6PredictionTS(int mode, int scanPos, const TCoeff *coeff) const
   {
     const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
@@ -639,6 +650,11 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r8(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      return r8PredictionTS(TsFixedPrediction::r8PublicMode(mode), scanPos, coeff).predictor;
+    }
     if (TsFixedPrediction::rateMode(mode))
     {
       if (m_bdpcm != BdpcmMode::NONE) { return -1; }
@@ -673,6 +689,7 @@ public:
   void finishTsR4CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR5CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
 #endif

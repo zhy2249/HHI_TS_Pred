@@ -33,7 +33,9 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r4_directional_risk", "r4_causal_models", "r4_signed_plane",
                        "r5_margin_first", "r5_current_veto",
                        "r6_dense_nopred", "r6_reject_nopred", "r6_trim_cost", "r6_trim_saving",
-                       "r6_sparse_max", "r6_sparse_mean", "r6_sparse_min", "rate_raw", "rate_guard")
+                       "r6_sparse_max", "r6_sparse_mean", "r6_sparse_min", "rate_raw", "rate_guard",
+                       "r8_raw_sparse_max", "r8_guard_sparse_max", "r8_reject_nopred", "r8_mixed_raw",
+                       "r8_complete_raw", "r8_complete_sparse_max", "r8_minimax", "r8_smoothed_dense")
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 
 _PRESET_CFGS = {
@@ -550,6 +552,9 @@ def _run_one(job: TestJob) -> dict:
             "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
             "rate_shadow": os.environ.get("TS_RATE_SHADOW", "0"),
             "rate_rdoq_shadow": os.environ.get("TS_RATE_RDOQ_SHADOW", "0"),
+            **({"r8_stats": os.environ.get("TS_R8_STATS", "1"),
+                "r8_trace": os.environ.get("TS_R8_TRACE", "0")}
+               if job.fixed_predictor and job.fixed_predictor.startswith("r8_") else {}),
             "decode": job.decode_md5, "decoder_args": job.decoder_args,
             "decoder": identity(job.decoder) if job.decode_md5 else None,
             **({"fixed_predictor": job.fixed_predictor, "no_recon": job.no_recon}
