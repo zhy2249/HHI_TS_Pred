@@ -4,7 +4,8 @@
 本轮选择 **A01、A04、A08、B01、B03、B04、B05、B07**，公开 MODE 为 **1、4、8、13、15、16、17、19**。
 不重新编号为1..8，避免与原24组和收件目录混淆；其它16组保留后续设计，不默认安排运行。
 
-**状态：首批八组已接入 C++ 编解码器、TypeDef.h 宏及现有 batch。人工工程验证完成；96项真实内容短测与正式CTC尚未运行。**
+**状态：八组已实现并完成人工验证；2026-09-26收到其中七组完整LB CE结果，19待完成。服务器96项预检/实际身份与活动尚无日志证据。**
+当前结果见 [七组分析](TS_Predictor_R8_First7_Results_20260926.md)；以下公式仍为运行前冻结规格，不因结果更改。
 启用方法及命令见 [实现说明](TS_Predictor_R8_Implementation.md)，实际验证证据见 [验收记录](TS_Predictor_R8_Validation.md)。
 正式 anchor 仍为 Current；R3-1 为增量对照。源数据依据见 [R7 核验](TS_Predictor_R7_Evidence_for_R8.md)，共同工程要求见 [R8 总设计](TS_Predictor_R8_Experiment_Design.md)。
 

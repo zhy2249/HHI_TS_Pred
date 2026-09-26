@@ -1,4 +1,9 @@
-# R8 实验收件：首批八组已实现，正式CTC尚未运行
+# R8 实验收件：七组完整LB CE已收到，R8-19待完成
+
+2026-09-26：MODE 1/4/8/13/15/16/17各28/28点，共196点，无补点。
+源文件当前直接存于本根目录 `r8_<MODE>_JVET-hhi.xlsm` 与 `<MODE>.csv`，未擅自移动。
+数值审计通过，服务器实际模式/配置/帧数/解码与活动日志尚缺；不要把表内pass等同远端身份验证。
+分析见 [首七组结果](../../TS_Predictor_R8_First7_Results_20260926.md)，R8-19未混入均值。
 
 设计与分组见 [R8 实验设计](../../TS_Predictor_R8_Experiment_Design.md)。
 机器可读规格见 [manifest](../../scripts/ts_r8_experiment_manifest.json)；它不是当前 batch 接受的运行 manifest。

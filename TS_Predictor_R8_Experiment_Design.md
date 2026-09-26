@@ -3,7 +3,8 @@
 设计版本：`R8-DESIGN-20260925-v2`。依据用户提供的 [探索计划](TS_Predictor_R8_Exploration_Plan.md)，结合本地源码与重新审计的 R7 表格。
 按用户后续要求，首轮收敛为八组；详见 [首轮八组规格](TS_Predictor_R8_First8_Design.md)。24组原公式和公开MODE数字不变。
 
-**状态：24组规格和目录保留；首批MODE 1/4/8/13/15/16/17/19已实现，完成C++/原生CABAC及人工smoke，尚无正式R8 CTC结果。其余16组仍为不可运行的预留名称。**
+**状态：24组规格和目录保留；首批八组已实现。2026-09-26收到MODE 1/4/8/13/15/16/17完整LB CE，19待完成；其余16组仍为不可运行的预留名称。**
+最新结果见 [七组分析](TS_Predictor_R8_First7_Results_20260926.md)，不得据后验结果修改下方预注册公式。
 当前可运行方法、命令及验证边界见 [实现说明](TS_Predictor_R8_Implementation.md) 和 [验收记录](TS_Predictor_R8_Validation.md)。
 
 ## 1. 本轮决定

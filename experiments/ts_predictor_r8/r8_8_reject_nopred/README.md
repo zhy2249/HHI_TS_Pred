@@ -1,6 +1,8 @@
 # R8-8 / A08：r8_8_reject_nopred
 
-状态：C++、宏及batch已实现；人工smoke通过，正式CTC尚未运行。本目录不是已完成正式实验的证据。
+状态（2026-09-26）：服务器LB CE已收到28/28点，无补点，CSV/工作簿与Current Reference审计通过。
+结果当前在父目录 `r8_8_JVET-hhi.xlsm` / `8.csv`，未移动源文件；CE加权BD=-0.029361%。
+服务器宏/配置/帧数/解码hash与活动仍缺日志证据。详见 [七组结果分析](../../../TS_Predictor_R8_First7_Results_20260926.md)。
 
 - 宏：`JVET_BJUT_TS_R8_MODE=8`；总开关需为1，其它轮MODE为0，重新编译两端。
 - runtime：`r8_reject_nopred`；batch显式覆盖宏，省略覆盖参数使用编译默认。
