@@ -9,7 +9,8 @@
 机器可读规格见 [manifest](../../scripts/ts_r8_experiment_manifest.json)；它不是当前 batch 接受的运行 manifest。
 
 目录命名为 `r8_<公开MODE数字>_<方法名>`：1..12 对应 A01..A12，13..20 对应 B01..B08，21..24 对应 C01..C04。
-各目录 README 给出宏、runtime、父对照；**仅首批MODE 1/4/8/13/15/16/17/19可运行**，其余请求将报错。
+各目录 README 给出宏、runtime、父对照；**2026-09-26已实现全部MODE 1..24**，代码可用不表示已完成CTC。
+新增16组实现/验证与命令见 [全量实现](../../TS_Predictor_R8_All24_Implementation.md)。原首八组脚本默认清单不变，可显式覆盖为新增组。
 
 每组实际完成后，在对应配置子目录存放：
 

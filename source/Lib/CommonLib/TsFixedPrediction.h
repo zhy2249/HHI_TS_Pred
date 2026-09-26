@@ -11,31 +11,49 @@ namespace TsFixedPrediction
 // Public R8 numbers are deliberately distinct from internal dispatch IDs.
 inline int r8PublicMode(int policy)
 {
-  static const int ids[] = {1, 4, 8, 13, 15, 16, 17, 19};
-  return policy >= 34 && policy <= 41 ? ids[policy - 34] : 0;
+  // Append new policies: preserve every previously recorded internal ID.
+  static const int ids[] = {1, 4, 8, 13, 15, 16, 17, 19, 2, 3, 5, 6, 7, 9, 10, 11, 12, 14, 18, 20, 21, 22, 23, 24};
+  return policy >= 34 && policy <= 57 ? ids[policy - 34] : 0;
 }
 inline const char *r8Name(int publicMode)
 {
   switch (publicMode)
   {
   case 1: return "r8_raw_sparse_max";
+  case 2: return "r8_raw_sparse_mean";
+  case 3: return "r8_raw_sparse_min";
   case 4: return "r8_guard_sparse_max";
+  case 5: return "r8_guard_sparse_mean";
+  case 6: return "r8_guard_sparse_min";
+  case 7: return "r8_dense_nopred";
   case 8: return "r8_reject_nopred";
+  case 9: return "r8_trim_cost";
+  case 10: return "r8_trim_saving";
+  case 11: return "r8_reject_sparse_max";
+  case 12: return "r8_trim_sparse_max";
   case 13: return "r8_mixed_raw";
+  case 14: return "r8_mixed_guard";
   case 15: return "r8_complete_raw";
   case 16: return "r8_complete_sparse_max";
   case 17: return "r8_minimax";
+  case 18: return "r8_minimax_complete";
   case 19: return "r8_smoothed_dense";
+  case 20: return "r8_smoothed_all_support";
+  case 21: return "r8_dual_path";
+  case 22: return "r8_causal_path";
+  case 23: return "r8_r3_dual_quant";
+  case 24: return "r8_raw_dual_quant";
   default: return nullptr;
   }
 }
 inline int r8Policy(const char *name)
 {
-  for (int p = 34; p <= 41; ++p)
+  for (int p = 34; p <= 57; ++p)
     if (!std::strcmp(name, r8Name(r8PublicMode(p)))) { return p; }
   return 0;
 }
 inline bool r8(int policy) { return r8PublicMode(policy) != 0; }
+inline bool r8DualQuant(int policy) { return r8PublicMode(policy) >= 23; }
 inline const char *defaultName()
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_NOPRED
@@ -189,7 +207,16 @@ inline void announce()
     std::printf("TS RATE revision=RATE-20260924-v1; mode=%d; CG-entry-frozen-CABAC; full-regular-local-model; anchor=current\n", mode() - 31);
   }
   if (r8(mode()))
-    std::printf("TS R8 revision=R8-DESIGN-20260925-v2; mode=%d; runtime=%s; anchor=current; scope=YUV; CG-entry-frozen-CABAC; full-regular-local-model; n=nonzero-positions; stats=final-Writer-only\n", r8PublicMode(mode()), name());
+  {
+    const int m = r8PublicMode(mode());
+    std::printf("TS R8 revision=R8-DESIGN-20260925-v2; mode=%d; runtime=%s; anchor=current; scope=YUV; %s; n=nonzero-positions; stats=final-Writer-only\n", m, name(),
+      m == 23 ? "integer-proxy-R3" : m == 21 || m == 22 ? "CG-entry-frozen-CABAC; dual-regular-path-model" :
+      "CG-entry-frozen-CABAC; full-regular-local-model");
+    if (m >= 21)
+      std::printf("TS R8 extension=R8-ALL-20260926-v1; path=%s; owner-search=%s; search-stats=separate-from-final-Writer\n",
+        m == 22 ? "TU-local-final-CG-weights" : m == 21 ? "fixed-1:1" : "parent",
+        m >= 23 ? "paired-q0-q1-tie-q0" : "native");
+  }
   if (wantShadow)
   {
     std::printf("TS R7 observation-only; parent=R3-1; actual-runtime=r3_risk_guard\n");
@@ -225,7 +252,7 @@ inline bool r4(int mode) { return mode >= 17 && mode <= 22; }
 inline bool r5(int mode) { return mode == 23 || mode == 24; }
 inline bool r6(int mode) { return mode >= 25 && mode <= 31; }
 inline bool rateMode(int mode) { return mode == 32 || mode == 33; }
-inline bool needsTsRateContext(int mode) { return rateMode(mode) || r8(mode); }
+inline bool needsTsRateContext(int mode) { return rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
 inline bool componentEnabled(int mode, bool luma) { return luma || (mode != 14 && mode != 16); }
 inline bool equivalentPredictors(int a, int b) { return a == b || (a <= 1 && b <= 1); }
 inline bool adaptive(int mode) { return (mode >= 6 && mode <= 8) || mode == 11 || mode == 12 || r3Adaptive(mode); }

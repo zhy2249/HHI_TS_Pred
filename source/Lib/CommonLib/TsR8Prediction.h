@@ -1,4 +1,4 @@
-// R8 first-eight frozen specification. Pure causal function; no CABAC writes.
+// R8 frozen specification. Pure causal function; no CABAC writes.
 #pragma once
 #include "TsRateCost.h"
 
@@ -30,13 +30,20 @@ R8Decision r8Decision(int publicMode, const int (&a)[5], int limit,
     if (v) { nz[d.n++] = v; }
   }
   d.current = d.predictor = d.rawWinner = r8Canonical(std::max(a[0], a[1]));
-  if (d.n < 3)
+  if (d.n < 3 && !(publicMode == 20 && d.n))
   {
-    if (publicMode != 8 && publicMode != 15 && !(d.n == 2 && a[0] && a[1])) { d.predictor = 0; }
+    const bool s0 = (publicMode >= 7 && publicMode <= 10) || publicMode == 15 || publicMode == 23;
+    if (!s0)
+    {
+      d.predictor = 0;
+      if (d.n == 2 && a[0] && a[1])
+        d.predictor = r8Canonical(publicMode == 2 || publicMode == 5 ? (a[0] + a[1] + 1) / 2 :
+                                 publicMode == 3 || publicMode == 6 ? std::min(a[0],a[1]) : std::max(a[0],a[1]));
+    }
     return d;
   }
-  const bool smoothed = publicMode == 19;
-  const bool complete = publicMode == 15 || publicMode == 16 || smoothed;
+  const bool smoothed = publicMode == 19 || publicMode == 20;
+  const bool complete = publicMode == 15 || publicMode == 16 || publicMode == 18 || smoothed || publicMode == 21 || publicMode == 22;
   const auto clip = [&](int v) { return std::max(0, std::min(limit, v)); };
   const auto add = [&](int v) {
     v = r8Canonical(v);
@@ -54,7 +61,10 @@ R8Decision r8Decision(int publicMode, const int (&a)[5], int limit,
       if (complete) { add(clip(v + 1)); }
     }
   std::sort(d.candidates, d.candidates + d.count);
-  const auto cost = [&](int v) -> int64_t { return fractional(v) + (publicMode == 13 ? integer(v) : 0); };
+  // The caller supplies the immutable CF10/CF2 mixture for C01/C02.
+  const auto cost = [&](int v) -> int64_t {
+    return publicMode == 23 ? integer(v) : fractional(v) + (publicMode == 13 || publicMode == 14 ? integer(v) : 0);
+  };
   // M(v,p) has only three possible costs: C(1), C(v), C(v+1).
   // Precompute per support position: <=11 cost calls for empirical, <=31
   // for smoothing, instead of up to 21*5*3 repeated CABAC/Rice evaluations.
@@ -93,9 +103,25 @@ R8Decision r8Decision(int publicMode, const int (&a)[5], int limit,
   int64_t bestPositive = 0;
   for (int i = 0; i < d.n; ++i) { bestPositive = std::max(bestPositive, loss[cur][i] - loss[raw][i]); }
   d.margin = d.gain - bestPositive;
-  if (publicMode == 4 && d.margin <= 0) { d.predictor = d.current; }
-  if (publicMode == 8 && d.rawWinner != d.current && d.margin <= 0) { d.predictor = 0; }
-  if (publicMode == 17)
+  if (((publicMode >= 4 && publicMode <= 6) || publicMode == 14 || publicMode == 23) && d.margin <= 0) { d.predictor = d.current; }
+  if (publicMode == 7 && d.margin <= 0) { d.predictor = 0; }
+  if ((publicMode == 8 || publicMode == 11) && d.rawWinner != d.current && d.margin <= 0) { d.predictor = 0; }
+  if (publicMode == 9 || publicMode == 10 || publicMode == 12)
+  {
+    int chosen = 0;
+    int64_t robust[21]{};
+    for (int k = 0; k < d.count; ++k)
+    {
+      int64_t adjustment = publicMode == 9 ? loss[k][0] : 0;
+      for (int i = 0; i < d.n; ++i)
+        adjustment = publicMode == 9 ? std::min(adjustment,loss[k][i]) : std::max(adjustment,loss[0][i]-loss[k][i]);
+      robust[k] = d.scores[k] + (publicMode == 9 ? -adjustment : adjustment);
+      if (robust[k] < robust[chosen] || (robust[k] == robust[chosen] &&
+          r8TieLess(d.candidates[k],d.candidates[chosen],d.current))) { chosen = k; }
+    }
+    d.predictor = d.candidates[chosen];
+  }
+  if (publicMode == 17 || publicMode == 18)
   {
     // Scenario -1=full; 0..n-1=delete one original nonzero position.
     // Keep P0 FIXED across scenarios (including a uniquely occurring magnitude).

@@ -912,6 +912,10 @@ void TransformUnit::initData()
   depth                 = 0;
   noResidual            = false;
   jointCbCr             = 0;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  tsR8ExtendedSearch = false;
+  tsR8ExtraCandidates = 0;
+#endif
   m_chromaResScaleInv   = 0;
   derivedIntraDirsLuma  = std::make_pair<int8_t, int8_t>(0, 1);
   derivedIntraDirChroma = int8_t { 0 };

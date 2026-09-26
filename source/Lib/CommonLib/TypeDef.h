@@ -137,19 +137,26 @@
 #define JVET_BJUT_TS_R7_MODE                               0
 #endif
 #endif
-// R8首批（R8-DESIGN-20260925-v2），0=不选择；沿用公开编号，不重编号为1..8。
+// R8（R8-DESIGN-20260925-v2），0=不选择；公开编号保持1..24，首批八组定义不变。
 // 1=A01：R7-1 raw + 稀疏Smax；4=A04：R7-2 guard + Smax；
 // 8=A08：R7-2的raw候选被guard拒绝时改NoPred，稀疏仍Current；
 // 13=B01：A01评分改为integer(Q15)+fractional(1:1)，不除2；
 // 15=B03：R7-1候选补齐a+1断点；16=B04：B03 + Smax；
 // 17=B05：A01候选集，完整/逐位置删一的minimax regret，无额外guard；
 // 19=B07：B04改为clip(a-1),a,clip(a+1)的1:2:1平滑经验分布，n不变。
+// 2/3=A02/A03：A01稀疏L/U分支改mean/min；5/6=A05/A06：A04对应mean/min。
+// 7=A07：R7-2所有dense未接受出口改NoPred；9=A09：R7评分sum-min；
+// 10=A10：R7评分相对identity删最大正节省；11=A11：A08+Smax；12=A12：A10+Smax。
+// 14=B02：B01+原H>0 guard；18=B06：B05 minimax候选补齐a+1。
+// 20=B08：B07平滑评分延伸到所有n>=1区域（不用稀疏捷径）。
+// 21=C01：CF10+CF2固定双路径评分，P1/Smax；22=C02：已完成CG非零regular位置更新双路径权重。
+// 23=C03：原R3-1 predictor+owner层成对TU量化RD搜索；24=C04：A01 predictor+相同成对搜索。
 // Smax：n<3时仅n=2且直接L/U均非零保留Current，其余NoPred；n为非零位置数。
-// 其余非零编号尚未实现，编译失败；与固定/条件/R2..R7默认模式互斥。
+// 与固定/条件/R2..R7默认模式互斥；默认0；运行时显式参数仍可覆盖宏选择。
 #ifndef JVET_BJUT_TS_R8_MODE
 #define JVET_BJUT_TS_R8_MODE                               0
 #endif
-#if JVET_BJUT_TS_R8_MODE != 0 && JVET_BJUT_TS_R8_MODE != 1 && JVET_BJUT_TS_R8_MODE != 4 && JVET_BJUT_TS_R8_MODE != 8 && JVET_BJUT_TS_R8_MODE != 13 && JVET_BJUT_TS_R8_MODE != 15 && JVET_BJUT_TS_R8_MODE != 16 && JVET_BJUT_TS_R8_MODE != 17 && JVET_BJUT_TS_R8_MODE != 19
+#if JVET_BJUT_TS_R8_MODE < 0 || JVET_BJUT_TS_R8_MODE > 24
 #error Unimplemented or invalid TS R8 mode
 #endif
 #if JVET_BJUT_TS_R8_MODE && (JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)

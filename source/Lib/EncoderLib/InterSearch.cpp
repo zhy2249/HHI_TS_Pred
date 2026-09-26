@@ -36,6 +36,7 @@
  */
 
 #include "InterSearch.h"
+#include "TsR8Search.h"
 
 #include "CommonLib/CommonDef.h"
 #include "CommonLib/Rom.h"
@@ -7620,205 +7621,200 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
           {
             continue;
           }
-          tu.mtsIdx[compID] = tr;
-          trTested          = trTested || tr != MtsType::SKIP;
+          TCoeff currAbsSum = 0;
+          uint64_t currCompFracBits = 0, nonCoeffFracBits = 0;
+          Distortion currCompDist = 0, nonCoeffDist = 0;
+          double currCompCost = 0, nonCoeffCost = 0;
+          const auto evaluate = [&]() -> double {
+            tu.mtsIdx[compID] = tr;
+            trTested          = trTested || tr != MtsType::SKIP;
 
-          //----- init QP and lambda -----
-          QpParam cQP(tu, compID);
+            //----- init QP and lambda -----
+            QpParam cQP(tu, compID);
 #if RDOQ_CHROMA_LAMBDA
-          m_pcTrQuant->selectLambda(compID);
+            m_pcTrQuant->selectLambda(compID);
 #endif
-          if (slice.m_lmcsEnabledFlag && isChroma(compID) && slice.m_picHeader->m_lmcsChromaResidualScaleFlag)
-          {
-            double cRescale = (double)(1 << CSCALE_FP_PREC) / (double)(tu.getChromaAdj());
-            m_pcTrQuant->setLambda(m_pcTrQuant->getLambda() / (cRescale * cRescale));
-          }
-          if (sps.m_jointCbCrEnabledFlag && isChroma(compID) && (tu.cu->cs->slice->m_iSliceQp > 18))
-          {
-            m_pcTrQuant->setLambda(1.05 * m_pcTrQuant->getLambda());
-          }
-
-          //----- quantization -----
-          m_CABACEstimator->getCtx() = ctxStart;
-          TCoeff currAbsSum          = 0;
-          m_pcTrQuant->quantNxN(tu, compID, cQP, currAbsSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
-
-          //----- calculate rd-costs -----
-          m_CABACEstimator->resetBits();
-          uint64_t   currCompFracBits = 0;
-          Distortion currCompDist     = 0;
-          double     currCompCost     = 0;
-          uint64_t   nonCoeffFracBits = 0;
-          Distortion nonCoeffDist     = 0;
-          double     nonCoeffCost     = 0;
-
-          if (isFirstTr)
-          {
-            // initialized with zero residual distortion
-            const CPelBuf zeroBuf(m_pTempPel, compArea);
-            nonCoeffDist =
-              m_pcRdCost->getDistPart(zeroBuf, csFull->getOrgResiBuf(compArea), channelBitDepth, compID, DFunc::SSE);
-            if (!tu.noResidual)
+            if (slice.m_lmcsEnabledFlag && isChroma(compID) && slice.m_picHeader->m_lmcsChromaResidualScaleFlag)
             {
-              const bool prevCbf = (compID == COMP_Cr ? tu.cbf[COMP_Cb] : false);
-              m_CABACEstimator->cbf_comp(false, compArea, currDepth, prevCbf, BdpcmMode::NONE);
+              double cRescale = (double)(1 << CSCALE_FP_PREC) / (double)(tu.getChromaAdj());
+              m_pcTrQuant->setLambda(m_pcTrQuant->getLambda() / (cRescale * cRescale));
             }
-            nonCoeffFracBits = m_CABACEstimator->getEstFracBits();
-#if WCG_EXT
-            if (m_encCfg->m_lumaLevelToDeltaQPMapping.isEnabled())
+            if (sps.m_jointCbCrEnabledFlag && isChroma(compID) && (tu.cu->cs->slice->m_iSliceQp > 18))
             {
-              nonCoeffCost = m_pcRdCost->calcRdCost(nonCoeffFracBits, nonCoeffDist, false);
-            }
-            else
-#endif
-            {
-              nonCoeffCost = m_pcRdCost->calcRdCost(nonCoeffFracBits, nonCoeffDist);
+              m_pcTrQuant->setLambda(1.05 * m_pcTrQuant->getLambda());
             }
 
-            if (puiZeroDist != nullptr)
-            {
-              *puiZeroDist += nonCoeffDist;   // initialized with zero residual distortion
-            }
-          }
+            //----- quantization -----
+            m_CABACEstimator->getCtx() = ctxStart;
+            currAbsSum                = 0;
+            m_pcTrQuant->quantNxN(tu, compID, cQP, currAbsSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
 
-          if (currAbsSum >
-              0)   // if non-zero coefficients are present, a residual needs to be derived for further prediction
-          {
+            //----- calculate rd-costs -----
+            m_CABACEstimator->resetBits();
+            currCompFracBits = nonCoeffFracBits = 0;
+            currCompDist = nonCoeffDist = 0;
+            currCompCost = nonCoeffCost = 0;
+
             if (isFirstTr)
             {
-              m_CABACEstimator->getCtx() = ctxStart;
-              m_CABACEstimator->resetBits();
-            }
-
-            const bool prevCbf = (compID == COMP_Cr ? tu.cbf[COMP_Cb] : false);
-            m_CABACEstimator->cbf_comp(true, compArea, currDepth, prevCbf, BdpcmMode::NONE);
-            if (compID == COMP_Cr)
-            {
-              const int cbfMask = (tu.cbf[COMP_Cb] ? CBF_MASK_CB : 0) + CBF_MASK_CR;
-              m_CABACEstimator->joint_cb_cr(tu, cbfMask);
-            }
-
-            bool invalidTrans = false;
-            if (isMTS(tu.mtsIdx[compID]) || isNST(tu.mtsIdx[compID]))
-            {
-              auto   tclevels = tu.getCoeffs(COMP_Y);
-              TCoeff sumAbsAC = currAbsSum - abs(tclevels.buf[0]);
-              invalidTrans    = (sumAbsAC == 0);
-            }
-
-            bool hasSignPred = false;
-
-            if (!invalidTrans)
-            {
-              hasSignPred = m_pcTrQuant->prdCoeffSigns(tu, compID, lumaReshaping ? &m_pcReshape->m_fwdLUT : nullptr);
-
-              CUCtx cuCtx;
-              cuCtx.isDQPCoded         = true;
-              cuCtx.isChromaQpAdjCoded = true;
-              m_CABACEstimator->residual_coding_last(tu, compID, &cuCtx);
-              m_CABACEstimator->residual_coding_coef(tu, compID, &cuCtx);
-              m_CABACEstimator->residual_coding_sign(tu, compID);
-              m_CABACEstimator->nst_idx(tu, cuCtx);
-              m_CABACEstimator->mts_idx(tu, cuCtx);
-              if (isMTS(tu.mtsIdx[compID]))
+              // initialized with zero residual distortion
+              const CPelBuf zeroBuf(m_pTempPel, compArea);
+              nonCoeffDist =
+                m_pcRdCost->getDistPart(zeroBuf, csFull->getOrgResiBuf(compArea), channelBitDepth, compID, DFunc::SSE);
+              if (!tu.noResidual)
               {
-                invalidTrans = (!cuCtx.mtsLastScanPos || cuCtx.violatesMtsCoeffConstraint);
+                const bool prevCbf = (compID == COMP_Cr ? tu.cbf[COMP_Cb] : false);
+                m_CABACEstimator->cbf_comp(false, compArea, currDepth, prevCbf, BdpcmMode::NONE);
               }
-              else if (isNST(tu.mtsIdx[compID]))
+              nonCoeffFracBits = m_CABACEstimator->getEstFracBits();
+#if WCG_EXT
+              if (m_encCfg->m_lumaLevelToDeltaQPMapping.isEnabled())
               {
-                invalidTrans = (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[toChannelType(compID)]);
+                nonCoeffCost = m_pcRdCost->calcRdCost(nonCoeffFracBits, nonCoeffDist, false);
               }
+              else
+#endif
+              {
+                nonCoeffCost = m_pcRdCost->calcRdCost(nonCoeffFracBits, nonCoeffDist);
+              }
+
             }
 
-            if (invalidTrans)
+            if (currAbsSum >
+                0)   // if non-zero coefficients are present, a residual needs to be derived for further prediction
+            {
+              if (isFirstTr)
+              {
+                m_CABACEstimator->getCtx() = ctxStart;
+                m_CABACEstimator->resetBits();
+              }
+
+              const bool prevCbf = (compID == COMP_Cr ? tu.cbf[COMP_Cb] : false);
+              m_CABACEstimator->cbf_comp(true, compArea, currDepth, prevCbf, BdpcmMode::NONE);
+              if (compID == COMP_Cr)
+              {
+                const int cbfMask = (tu.cbf[COMP_Cb] ? CBF_MASK_CB : 0) + CBF_MASK_CR;
+                m_CABACEstimator->joint_cb_cr(tu, cbfMask);
+              }
+
+              bool invalidTrans = false;
+              if (isMTS(tu.mtsIdx[compID]) || isNST(tu.mtsIdx[compID]))
+              {
+                auto   tclevels = tu.getCoeffs(COMP_Y);
+                TCoeff sumAbsAC = currAbsSum - abs(tclevels.buf[0]);
+                invalidTrans    = (sumAbsAC == 0);
+              }
+
+              bool hasSignPred = false;
+
+              if (!invalidTrans)
+              {
+                hasSignPred = m_pcTrQuant->prdCoeffSigns(tu, compID, lumaReshaping ? &m_pcReshape->m_fwdLUT : nullptr);
+
+                CUCtx cuCtx;
+                cuCtx.isDQPCoded         = true;
+                cuCtx.isChromaQpAdjCoded = true;
+                m_CABACEstimator->residual_coding_last(tu, compID, &cuCtx);
+                m_CABACEstimator->residual_coding_coef(tu, compID, &cuCtx);
+                m_CABACEstimator->residual_coding_sign(tu, compID);
+                m_CABACEstimator->nst_idx(tu, cuCtx);
+                m_CABACEstimator->mts_idx(tu, cuCtx);
+                if (isMTS(tu.mtsIdx[compID]))
+                {
+                  invalidTrans = (!cuCtx.mtsLastScanPos || cuCtx.violatesMtsCoeffConstraint);
+                }
+                else if (isNST(tu.mtsIdx[compID]))
+                {
+                  invalidTrans = (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[toChannelType(compID)]);
+                }
+              }
+
+              if (invalidTrans)
+              {
+                currCompCost = MAX_DOUBLE;
+              }
+              else
+              {
+                currCompFracBits   = m_CABACEstimator->getEstFracBits();
+                PelBuf  resiBuf    = csFull->getResiBuf(compArea);
+                CPelBuf orgResiBuf = csFull->getOrgResiBuf(compArea);
+
+                m_pcTrQuant->invTransformNxN(tu, compID, resiBuf, cQP, hasSignPred);
+                if (slice.m_lmcsEnabledFlag && isChroma(compID) && slice.m_picHeader->m_lmcsChromaResidualScaleFlag &&
+                    tu.blocks[compID].area() > 4)
+                {
+                  resiBuf.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(compID));
+                }
+                // getCbf() is going to be 1 since currAbsSum > 0 here, according to the if-statement a couple of lines
+                // up.
+                if (cs.pps->m_BIF && isLuma(compID) && m_bilateralFilter->getApplyBIF(tu, compID))
+                {
+                  CompArea tmpArea1(compID, tu.chromaFormat, Position(0, 0), Size(resiBuf.width, resiBuf.height));
+
+                  PelBuf tmpRecLuma = m_tmpStorageCtu.getBuf(tmpArea1);
+                  tmpRecLuma.copyFrom(resiBuf);
+
+                  const CPelBuf predBuf     = csFull->getPredBuf(compArea);
+                  PelBuf        recIPredBuf = csFull->slice->m_pic->getRecoBuf(compArea);
+                  CPelBuf       reco        = csFull->getRecoBuf(compID);
+                  m_bilateralFilter->bilateralFilterRDOdiamond5x5(compID, tmpRecLuma, predBuf, tmpRecLuma, tu.cu->qp,
+                                                                  recIPredBuf, reco, cs.slice->clpRng(compID), tu, false);
+                  currCompDist = m_pcRdCost->getDistPart(orgResiBuf, tmpRecLuma, channelBitDepth, compID, DFunc::SSE);
+                }
+                else
+                {
+                  if (isChroma(compID))
+                  {
+                    if (cs.pps->m_chromaBIF && isChroma(compID) && m_bilateralFilter->getApplyBIF(tu, compID))
+                    {
+                      // chroma and bilateral
+                      CompArea tmpArea1(compID, tu.chromaFormat, Position(0, 0), Size(resiBuf.width, resiBuf.height));
+                      PelBuf   tmpRecChroma = m_tmpStorageCtu.getBuf(tmpArea1);
+                      tmpRecChroma.copyFrom(resiBuf);
+
+                      const CPelBuf predBuf     = csFull->getPredBuf(compArea);
+                      PelBuf        recIPredBuf = csFull->slice->m_pic->getRecoBuf(compArea);
+                      CPelBuf       reco        = csFull->getRecoBuf(compID);
+                      m_bilateralFilter->bilateralFilterRDOdiamond5x5(compID, tmpRecChroma, predBuf, tmpRecChroma,
+                                                                      tu.cu->qp, recIPredBuf, reco,
+                                                                      cs.slice->clpRng(compID), tu, false);
+                      currCompDist =
+                        m_pcRdCost->getDistPart(orgResiBuf, tmpRecChroma, channelBitDepth, compID, DFunc::SSE);
+                    }
+                    else
+                    {   // chroma but not bilateral
+                      currCompDist = m_pcRdCost->getDistPart(orgResiBuf, resiBuf, channelBitDepth, compID, DFunc::SSE);
+                    }
+                  }
+                  else
+                  {   // luma but not bilateral
+                    currCompDist = m_pcRdCost->getDistPart(orgResiBuf, resiBuf, channelBitDepth, compID, DFunc::SSE);
+                  }
+                }
+
+#if WCG_EXT
+                currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDist, false);
+#else
+                currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDist);
+#endif
+              }
+            }
+            else if (!isFirstTr)
             {
               currCompCost = MAX_DOUBLE;
             }
             else
             {
-              currCompFracBits   = m_CABACEstimator->getEstFracBits();
-              PelBuf  resiBuf    = csFull->getResiBuf(compArea);
-              CPelBuf orgResiBuf = csFull->getOrgResiBuf(compArea);
-
-              m_pcTrQuant->invTransformNxN(tu, compID, resiBuf, cQP, hasSignPred);
-              if (slice.m_lmcsEnabledFlag && isChroma(compID) && slice.m_picHeader->m_lmcsChromaResidualScaleFlag &&
-                  tu.blocks[compID].area() > 4)
-              {
-                resiBuf.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(compID));
-              }
-              // getCbf() is going to be 1 since currAbsSum > 0 here, according to the if-statement a couple of lines
-              // up.
-              if (cs.pps->m_BIF && isLuma(compID) && m_bilateralFilter->getApplyBIF(tu, compID))
-              {
-                CompArea tmpArea1(compID, tu.chromaFormat, Position(0, 0), Size(resiBuf.width, resiBuf.height));
-
-                PelBuf tmpRecLuma = m_tmpStorageCtu.getBuf(tmpArea1);
-                tmpRecLuma.copyFrom(resiBuf);
-
-                const CPelBuf predBuf     = csFull->getPredBuf(compArea);
-                PelBuf        recIPredBuf = csFull->slice->m_pic->getRecoBuf(compArea);
-                CPelBuf       reco        = csFull->getRecoBuf(compID);
-                m_bilateralFilter->bilateralFilterRDOdiamond5x5(compID, tmpRecLuma, predBuf, tmpRecLuma, tu.cu->qp,
-                                                                recIPredBuf, reco, cs.slice->clpRng(compID), tu, false);
-                currCompDist = m_pcRdCost->getDistPart(orgResiBuf, tmpRecLuma, channelBitDepth, compID, DFunc::SSE);
-              }
-              else
-              {
-                if (isChroma(compID))
-                {
-                  if (cs.pps->m_chromaBIF && isChroma(compID) && m_bilateralFilter->getApplyBIF(tu, compID))
-                  {
-                    // chroma and bilateral
-                    CompArea tmpArea1(compID, tu.chromaFormat, Position(0, 0), Size(resiBuf.width, resiBuf.height));
-                    PelBuf   tmpRecChroma = m_tmpStorageCtu.getBuf(tmpArea1);
-                    tmpRecChroma.copyFrom(resiBuf);
-
-                    const CPelBuf predBuf     = csFull->getPredBuf(compArea);
-                    PelBuf        recIPredBuf = csFull->slice->m_pic->getRecoBuf(compArea);
-                    CPelBuf       reco        = csFull->getRecoBuf(compID);
-                    m_bilateralFilter->bilateralFilterRDOdiamond5x5(compID, tmpRecChroma, predBuf, tmpRecChroma,
-                                                                    tu.cu->qp, recIPredBuf, reco,
-                                                                    cs.slice->clpRng(compID), tu, false);
-                    currCompDist =
-                      m_pcRdCost->getDistPart(orgResiBuf, tmpRecChroma, channelBitDepth, compID, DFunc::SSE);
-                  }
-                  else
-                  {   // chroma but not bilateral
-                    currCompDist = m_pcRdCost->getDistPart(orgResiBuf, resiBuf, channelBitDepth, compID, DFunc::SSE);
-                  }
-                }
-                else
-                {   // luma but not bilateral
-                  currCompDist = m_pcRdCost->getDistPart(orgResiBuf, resiBuf, channelBitDepth, compID, DFunc::SSE);
-                }
-              }
-
-#if WCG_EXT
-              currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDist, false);
-#else
-              currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDist);
-#endif
+              csFull->getResiBuf(compArea).fill(0);
+              tu.getCoeffs(compID).fill(0);
+              TU::setCbfAtDepth(tu, compID, currDepth, false);
+              currCompFracBits = nonCoeffFracBits;
+              currCompDist     = nonCoeffDist;
+              currCompCost     = nonCoeffCost;
             }
-          }
-          else if (!isFirstTr)
-          {
-            currCompCost = MAX_DOUBLE;
-          }
-          else
-          {
-            csFull->getResiBuf(compArea).fill(0);
-            tu.getCoeffs(compID).fill(0);
-            TU::setCbfAtDepth(tu, compID, currDepth, false);
-            currCompFracBits = nonCoeffFracBits;
-            currCompDist     = nonCoeffDist;
-            currCompCost     = nonCoeffCost;
-          }
 
-          //----- compare costs -----
-          if (currCompCost < minCost[compID])
-          {
-            // copy component
-            if (isFirstTr && nonCoeffCost < currCompCost)   // check for forced null
+            // Apply the SAME owner all-zero competitor before comparing q0/q1.
+            if (currCompCost < minCost[compID] && isFirstTr && nonCoeffCost < currCompCost)
             {
               csFull->getResiBuf(compArea).fill(0);
               tu.getCoeffs(compID).fill(0);
@@ -7829,6 +7825,17 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
               currCompCost     = nonCoeffCost;
             }
 
+            return currCompCost;
+          };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+          TsFixedPrediction::r8OwnerSearch(tu,compID,false,tr,*m_CABACEstimator,4,evaluate);
+#else
+          evaluate();
+#endif
+          if (isFirstTr && puiZeroDist) { *puiZeroDist += nonCoeffDist; }
+          //----- compare costs -----
+          if (currCompCost < minCost[compID])
+          {
             uiSingleDistComp[compID] = currCompDist;
             minCost[compID]          = currCompCost;
 
@@ -7907,71 +7914,83 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
           Distortion currCompDistCr = 0;
           double     currCompCost   = 0;
           lastIsBest                = false;
-          tu.jointCbCr              = (uint8_t)cbfMask;
-          tu.mtsIdx[codedComp]      = trType;
-          tu.mtsIdx[otherComp]      = trType;
+          const auto evaluate = [&]() -> double {
+            absSum=0; currCompDistCb=currCompDistCr=0; currCompCost=0;
+            // Invalid q0 must not prevent testing q1, and only the winner may
+            // drive the original early-stop decision for later transforms.
+            JCCRInvalid=false;
+            tu.jointCbCr              = (uint8_t)cbfMask;
+            tu.mtsIdx[codedComp]      = trType;
+            tu.mtsIdx[otherComp]      = trType;
 
-          m_CABACEstimator->getCtx() = ctxStart;
-          m_CABACEstimator->resetBits();
+            m_CABACEstimator->getCtx() = ctxStart;
+            m_CABACEstimator->resetBits();
 
-          QpParam qpCbCr(tu, codedComp);
-          m_pcTrQuant->quantNxN(tu, codedComp, qpCbCr, absSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
+            QpParam qpCbCr(tu, codedComp);
+            m_pcTrQuant->quantNxN(tu, codedComp, qpCbCr, absSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
 
-          if (absSum)
-          {
-            TU::setCbfAtDepth(tu, otherComp, tu.depth, tu.jointCbCr == 3);
-            tu.getCoeffs(otherComp).fill(0);
-
-            //----- reconstruct residuals -----
-            PelBuf resCb = csFull->getResiBuf(cbArea);
-            PelBuf resCr = csFull->getResiBuf(crArea);
-            m_pcTrQuant->invTransformNxN(tu, codedComp, (codedComp == COMP_Cb ? resCb : resCr), qpCbCr);
-            m_pcTrQuant->invTransformICT(tu, resCb, resCr);
-            if (reshape)
+            if (absSum)
             {
-              resCb.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(COMP_Cb));
-              resCr.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(COMP_Cr));
-            }
+              TU::setCbfAtDepth(tu, otherComp, tu.depth, tu.jointCbCr == 3);
+              tu.getCoeffs(otherComp).fill(0);
 
-            //----- calculate distortion -----
-            currCompDistCb =
-              m_pcRdCost->getDistPart(csFull->getOrgResiBuf(cbArea), resCb, channelBitDepth, COMP_Cb, DFunc::SSE);
-            currCompDistCr =
-              m_pcRdCost->getDistPart(csFull->getOrgResiBuf(crArea), resCr, channelBitDepth, COMP_Cr, DFunc::SSE);
+              //----- reconstruct residuals -----
+              PelBuf resCb = csFull->getResiBuf(cbArea);
+              PelBuf resCr = csFull->getResiBuf(crArea);
+              m_pcTrQuant->invTransformNxN(tu, codedComp, (codedComp == COMP_Cb ? resCb : resCr), qpCbCr);
+              m_pcTrQuant->invTransformICT(tu, resCb, resCr);
+              if (reshape)
+              {
+                resCb.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(COMP_Cb));
+                resCr.scaleSignal(tu.getChromaAdj(), 0, tu.cu->cs->slice->clpRng(COMP_Cr));
+              }
 
-            //----- estimate rate -----
-            const bool cbfCb = (cbfMask & CBF_MASK_CB) != 0;
-            const bool cbfCr = (cbfMask & CBF_MASK_CR) != 0;
-            m_CABACEstimator->cbf_comp(cbfCb, cbArea, currDepth, false, BdpcmMode::NONE);
-            m_CABACEstimator->cbf_comp(cbfCr, crArea, currDepth, cbfCb, BdpcmMode::NONE);
-            m_CABACEstimator->joint_cb_cr(tu, cbfMask);
-            if (cbfCb)
-            {
-              m_CABACEstimator->residual_coding_last(tu, COMP_Cb);
-              m_CABACEstimator->residual_coding_coef(tu, COMP_Cb);
-              m_CABACEstimator->residual_coding_sign(tu, COMP_Cb);
-            }
-            if (cbfCr)
-            {
-              m_CABACEstimator->residual_coding_last(tu, COMP_Cr);
-              m_CABACEstimator->residual_coding_coef(tu, COMP_Cr);
-              m_CABACEstimator->residual_coding_sign(tu, COMP_Cr);
-            }
-            uint64_t currCompFracBits = m_CABACEstimator->getEstFracBits();
+              //----- calculate distortion -----
+              currCompDistCb =
+                m_pcRdCost->getDistPart(csFull->getOrgResiBuf(cbArea), resCb, channelBitDepth, COMP_Cb, DFunc::SSE);
+              currCompDistCr =
+                m_pcRdCost->getDistPart(csFull->getOrgResiBuf(crArea), resCr, channelBitDepth, COMP_Cr, DFunc::SSE);
 
-            //----- set rd-cost -----
+              //----- estimate rate -----
+              const bool cbfCb = (cbfMask & CBF_MASK_CB) != 0;
+              const bool cbfCr = (cbfMask & CBF_MASK_CR) != 0;
+              m_CABACEstimator->cbf_comp(cbfCb, cbArea, currDepth, false, BdpcmMode::NONE);
+              m_CABACEstimator->cbf_comp(cbfCr, crArea, currDepth, cbfCb, BdpcmMode::NONE);
+              m_CABACEstimator->joint_cb_cr(tu, cbfMask);
+              if (cbfCb)
+              {
+                m_CABACEstimator->residual_coding_last(tu, COMP_Cb);
+                m_CABACEstimator->residual_coding_coef(tu, COMP_Cb);
+                m_CABACEstimator->residual_coding_sign(tu, COMP_Cb);
+              }
+              if (cbfCr)
+              {
+                m_CABACEstimator->residual_coding_last(tu, COMP_Cr);
+                m_CABACEstimator->residual_coding_coef(tu, COMP_Cr);
+                m_CABACEstimator->residual_coding_sign(tu, COMP_Cr);
+              }
+              uint64_t currCompFracBits = m_CABACEstimator->getEstFracBits();
+
+              //----- set rd-cost -----
 #if WCG_EXT
-            currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDistCr + currCompDistCb, false);
+              currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDistCr + currCompDistCb, false);
 #else
-            currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDistCr + currCompDistCb);
+              currCompCost = m_pcRdCost->calcRdCost(currCompFracBits, currCompDistCr + currCompDistCb);
 #endif
-          }
-          else
-          {
-            currCompCost = MAX_DOUBLE;
-            JCCRInvalid  = true;
-          }
+            }
+            else
+            {
+              currCompCost = MAX_DOUBLE;
+              JCCRInvalid  = true;
+            }
 
+            return currCompCost;
+          };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+          TsFixedPrediction::r8OwnerSearch(tu,codedComp,true,trType,*m_CABACEstimator,5,evaluate);
+#else
+          evaluate();
+#endif
           //----- evaluate -----
           if (currCompCost < minCostCbCr)
           {

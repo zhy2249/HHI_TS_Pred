@@ -227,6 +227,17 @@ python3 scripts/ts_fixed_analyze.py \
 
 ### 更新历史
 
+- 2026-09-26：按“先将剩余的几个实验代码都设计完成”，补齐R8剩余16组，MODE 1..24全部可运行。
+  原八组冻结公式不变，旧policy编号不重排；TypeDef直接选MODE，默认0=Current，旧轮互斥/参数覆盖保留。
+  22使用TU-local最终CG路径权重，私有原生预算回放；23/24在Intra/Inter owner层成对完整局部RD比较，非仅扩大RDOQ搜索。
+  新增独立search聚合及解析，区分试编码q变化与最终Writer；各组数字目录、manifest、说明同步。
+  95项Python测试通过；全部24组native CABAC/因果测试通过；新增6888公式对照，旧24672对照仍通过。
+  288项人工闭环hash通过，旧34模式bit-exact，24组关统计/禁TS同流，六case新旧master-OFF同流；历史168份共享码流未变。
+  15874个两端CG trace和619个C02权重记录相同；原生量化压力测试23/24各512次、各300次q改变。
+  人工编码23/24分别391/2185次试编码q改变、217/1423次q1局部获胜，但六case最终码流均与父法相同；先真实活动短测，不据此宣称BD收益。
+  剩余16组LB CE dry-run448点；23/24配对预检dry-run32点。未启动正式CTC、未改源表；原首八组批量默认清单不变。
+  详见TS_Predictor_R8_All24_Implementation.md，证据runs/ts_r8_all_smoke_final/；正式baseline仍Current。
+
 - 2026-09-26：只读核验R8七组LB CE（1/4/8/13/15/16/17），各28/28点、无QP22补点；
   CSV与工作簿B–J一致，完整Reference与Current一致，公式交叉验证差<4.24e−13个百分点，源表SHA不变。
   Y/U/V各自BD后6:1:1、七序列等权；CE依次−0.004577/−0.043397/−0.029361/+0.050328/

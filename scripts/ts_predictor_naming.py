@@ -24,6 +24,13 @@ R8_MODE_NUMBERS = {
     'r8_raw_sparse_max': 1, 'r8_guard_sparse_max': 4, 'r8_reject_nopred': 8,
     'r8_mixed_raw': 13, 'r8_complete_raw': 15, 'r8_complete_sparse_max': 16,
     'r8_minimax': 17, 'r8_smoothed_dense': 19,
+    'r8_raw_sparse_mean': 2, 'r8_raw_sparse_min': 3,
+    'r8_guard_sparse_mean': 5, 'r8_guard_sparse_min': 6,
+    'r8_dense_nopred': 7, 'r8_trim_cost': 9, 'r8_trim_saving': 10,
+    'r8_reject_sparse_max': 11, 'r8_trim_sparse_max': 12,
+    'r8_mixed_guard': 14, 'r8_minimax_complete': 18,
+    'r8_smoothed_all_support': 20, 'r8_dual_path': 21, 'r8_causal_path': 22,
+    'r8_r3_dual_quant': 23, 'r8_raw_dual_quant': 24,
 }
 
 

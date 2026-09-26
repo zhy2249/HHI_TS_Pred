@@ -503,8 +503,8 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
   static const bool enabled = !std::getenv("TS_R8_STATS") || std::strcmp(std::getenv("TS_R8_STATS"), "0");
   static const bool tracing = std::getenv("TS_R8_TRACE") && std::strcmp(std::getenv("TS_R8_TRACE"), "0");
   const bool collect = report && enabled, debug = trace && tracing;
-  if (!collect && !debug) { return; } // Never observe encoder search/RDOQ here.
   const int publicMode = r8PublicMode(mode());
+  if (!collect && !debug && publicMode != 22) { return; }
   const auto key = [&](int n, int cutoff) -> R8Stats::Key {
     return {publicMode,int(m_compID),m_width,m_height,m_tsQp,m_tsIntra,int(m_bdpcm),lastSubSet()+1,m_subSetId,n,cutoff};
   };
@@ -528,7 +528,7 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
   auto copy = *this;
   const auto path = replayRateCG(copy,coeff,[&](int s) { return ratePredictor(copy,s,coeff); },m_tsHistoryBins,m_tsRice,sink);
   if (verifyBudget) { CHECK(m_tsHistoryBins != remRegBins, "R8 diagnostic budget mismatch"); }
-  if (m_bdpcm == BdpcmMode::NONE && census[R8Stats::NZ])
+  if ((collect || debug) && m_bdpcm == BdpcmMode::NONE && census[R8Stats::NZ])
     for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
     {
       const int cutoff = s <= path.pass2 ? 10 : s <= path.pass1 ? 2 : 0;
@@ -541,9 +541,10 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
       if (cutoff)
       {
         int parent = d.current;
-        if (publicMode == 1 || publicMode == 15) { parent = ratePredictionTS(s,coeff).winner; }
-        else if (publicMode == 8) { parent = ratePredictionTS(s,coeff).predictor; }
-        else { parent = r8PredictionTS(publicMode == 19 ? 16 : 1,s,coeff).predictor; }
+        const int parents[] = {0,0,1,1,1,4,4,0,0,0,0,8,10,1,13,0,1,1,17,16,19,16,21,0,1};
+        if (publicMode == 23) { parent = magnitudePredictorModeTS(13,s,coeff); }
+        else if (parents[publicMode]) { parent = r8PredictionTS(parents[publicMode],s,coeff).predictor; }
+        else { const auto pd = ratePredictionTS(s,coeff); parent = publicMode == 1 || publicMode == 15 ? pd.winner : pd.predictor; }
         const int r3p = magnitudePredictorModeTS(13,s,coeff);
         const int mod = remap(a,d.predictor);
         v[R8Stats::ACTIVE] = 1; v[R8Stats::ACTIVE_NZ] = a != 0;
@@ -557,18 +558,18 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
         v[R8Stats::MAP_R3] = mod != remap(a,r3p);
         v[mod == 0 ? R8Stats::MOD0 : mod == 1 ? R8Stats::MOD1 : mod == 2 ? R8Stats::MOD2 : R8Stats::MODHIGH] = 1;
         int l,u; neighTS(l,u,s,coeff); v[R8Stats::LU_ONLY] = d.n == 2 && l && u;
-        if (d.n >= 3)
+        if (d.count)
         {
-          const auto p0 = ratePredictionTS(s,coeff);
+          const auto p0 = ratePredictionTS(s,coeff,publicMode == 23);
           bool inP0 = false;
           for (int k = 0; k < p0.count; ++k) { inP0 |= equivalentPredictors(d.predictor,p0.candidates[k]); }
           v[R8Stats::NEW_CANDIDATE] = !inP0;
           v[R8Stats::VS_RAW] = d.predictor != d.rawWinner;
           const bool accepted = d.rawWinner != d.current && d.margin > 0;
           bool parentAccepted = p0.accepted();
-          if (publicMode != 1 && publicMode != 8 && publicMode != 15)
+          if (parents[publicMode])
           {
-            const auto pd = r8PredictionTS(publicMode == 19 ? 16 : 1,s,coeff);
+            const auto pd = r8PredictionTS(parents[publicMode],s,coeff);
             parentAccepted = pd.rawWinner != pd.current && pd.margin > 0;
           }
           v[R8Stats::GUARD_VS_PARENT] = accepted != parentAccepted;
@@ -578,7 +579,7 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
             if (d.candidates[k] == d.predictor)
             {
               v[R8Stats::SELECTED_SCORE] = d.scores[k];
-              if (publicMode == 17) { v[R8Stats::SELECTED_REGRET] = d.regrets[k]; }
+              if (publicMode == 17 || publicMode == 18) { v[R8Stats::SELECTED_REGRET] = d.regrets[k]; }
             }
           v[d.rawWinner == d.current ? R8Stats::RAW_CURRENT : d.rawWinner == 0 ? R8Stats::RAW_IDENTITY : R8Stats::RAW_OTHER] = 1;
           if (d.rawWinner != d.current)
@@ -595,6 +596,22 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
   if (debug)
     std::fprintf(stderr,"TS_R8_TRACE mode=%d c=%d w=%u h=%u qp=%d cg=%d bdpcm=%d pass1=%d pass2=%d bins=%d hash=%llu\n",
       publicMode,int(m_compID),m_width,m_height,m_tsQp,m_subSetId,int(m_bdpcm),path.pass1,path.pass2,m_tsHistoryBins,(unsigned long long)hash);
+  // Algorithmic state, independent of observation switches. The old weights
+  // above were frozen for ALL decisions in this CG, including final-q replay.
+  if (publicMode == 22 && m_bdpcm == BdpcmMode::NONE)
+  {
+    int n10 = 0, n2 = 0;
+    for (int s = m_minSubPos; s <= m_maxSubPos; ++s)
+      if (coeff[blockPos(s)] && s <= path.pass1) { if (s <= path.pass2) { ++n10; } else { ++n2; } }
+    if (n10 || n2)
+    {
+      m_tsPath10 = std::max(1,m_tsPath10 / 2 + n10);
+      m_tsPath2 = std::max(1,m_tsPath2 / 2 + n2);
+    }
+    CHECK(m_tsPath10 > 2 * (1 << m_log2CGSize) || m_tsPath2 > 2 * (1 << m_log2CGSize), "C02 weight bound");
+    if (debug)
+      std::fprintf(stderr,"TS_R8_PATH cg=%d n10=%d n2=%d next10=%d next2=%d\n",m_subSetId,n10,n2,m_tsPath10,m_tsPath2);
+  }
 }
 
 void CoeffCodingContext::finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)

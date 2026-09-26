@@ -583,6 +583,10 @@ public:
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   void freezeTsRateContext(const Ctx &ctx)
   {
+    // Also permits native low-budget tests. This is the actual CG0 entry
+    // budget; subsequent history comes exclusively from final-q replay.
+    if (TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 && m_subSetId == 0)
+      m_tsHistoryBins = remRegBins;
     const auto &bits = ctx.getFracBitsAcess();
     for (int k = 0; k < 3; ++k)
     {
@@ -616,7 +620,13 @@ public:
     const int pos = blockPos(scanPos), x = pos % m_width, y = pos / m_width;
     const auto read = [&](int dx, int dy) { return x + dx < 0 || y + dy < 0 ? 0 : std::abs(int(coeff[pos + dx + dy * m_width])); };
     const int a[] = {read(-1,0), read(0,-1), read(-1,-1), read(-2,0), read(0,-2)};
-    const auto fractional = [&](int level) { return tsRateTable((a[0] != 0) + (a[1] != 0)).cost(level, m_tsRice, m_maxLog2TrDynamicRange); };
+    const auto fractional = [&](int level) -> int64_t {
+      const auto &t = tsRateTable((a[0] != 0) + (a[1] != 0));
+      const auto cf10 = t.cost(level, m_tsRice, m_maxLog2TrDynamicRange);
+      if (publicMode != 21 && publicMode != 22) { return cf10; }
+      const auto cf2 = t.cost(level, m_tsRice, m_maxLog2TrDynamicRange, 2);
+      return publicMode == 21 ? cf10 + cf2 : m_tsPath10 * cf10 + m_tsPath2 * cf2;
+    };
     const auto integer = [&](int level) { return int64_t(TsFixedPrediction::syntaxCost(level, m_tsRice, m_maxLog2TrDynamicRange)) << SCALE_BITS; };
     // Negative legal levels may have magnitude 2^range (e.g. -32768).
     return TsFixedPrediction::r8Decision(publicMode, a, 1 << m_maxLog2TrDynamicRange, fractional, integer);
@@ -692,6 +702,8 @@ public:
   void finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
+  int tsPathWeight10() const { return m_tsPath10; }
+  int tsPathWeight2() const { return m_tsPath2; }
 #endif
 
   int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm, int prediction = -1)
@@ -770,6 +782,7 @@ private:
   int m_tsVirtualBins = 0;
   Ctx m_tsVirtualCtx; // Default Ctx allocates no probability store; lazy for R2-F only.
   TsFixedPrediction::RateSnapshot m_tsRateSnapshot;
+  int m_tsPath10 = 1, m_tsPath2 = 1; // C02: private TU-local, constant throughout a CG.
 #endif
   // constant
   const CompID             m_compID;

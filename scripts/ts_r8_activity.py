@@ -41,6 +41,24 @@ def write_csv(path, rows):
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
 
 
+def parse_search_log(text, mode):
+    """Separate owner-search population; NEVER add it to final-TU counts."""
+    header=None; rows=[]
+    for line in text.splitlines():
+        if line.startswith('TS_R8_SEARCH_HEADER '):
+            if header is not None: raise ValueError('Multiple search sections')
+            header=line.split(' ',1)[1].split(',')
+        elif line.startswith('TS_R8_SEARCH '):
+            values=line.split(' ',1)[1].split(',')
+            if header is None or len(header)!=len(values): raise ValueError('Malformed search row')
+            r={k:float(v) if k in ('j0_sum','j1_sum','local_gain_sum') else int(v) for k,v in zip(header,values)}
+            if r['mode']!=mode or mode not in (23,24): raise ValueError('Wrong paired-search mode')
+            if not 0 <= r['chosen_q1'] <= r['pairs'] or r['local_gain_sum'] < 0: raise ValueError('Invalid local minimum')
+            if not 0 <= r['q_changed'] <= r['pairs']: raise ValueError('Invalid q-change count')
+            rows.append(r)
+    return rows
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('run_root',type=Path)
@@ -56,7 +74,7 @@ def main():
                 # not guess among similarly named logs from different runs.
                 if not log.is_file(): raise FileNotFoundError(log)
                 jobs[log.resolve()]=row
-    detailed=[]; summaries=[]; status=[]
+    detailed=[]; summaries=[]; status=[]; searches=[]; search_jobs=[]
     for log,job in sorted(jobs.items()):
         mode=R8_MODE_NUMBERS[job['fixed_predictor']]
         text=log.read_text(errors='replace')
@@ -64,6 +82,11 @@ def main():
             raise ValueError(f'Missing/mismatched revision: {log}')
         rows=parse_log(text,mode); total=Counter()
         meta=dict(job=job['name'],sequence=job['sequence'],qp=job['qp'],runtime=job['fixed_predictor'],encode_log=str(log))
+        sr=parse_search_log(text,mode)
+        searches.extend({**meta,**r} for r in sr)
+        if sr:
+            fields=('pairs','extra_up_candidates','q_changed','chosen_q1','ties','both_valid','j0_sum','j1_sum','local_gain_sum')
+            search_jobs.append({**meta,**{k:sum(r[k] for r in sr) for k in fields}})
         census=('tu_count','cg_count','empty_cg','coeff_count','nonzero_count')
         dimensions=('mode','component','width','height','cu_qp','intra','bdpcm','cg_count_in_tu','cg_index','support','cutoff')
         for r in rows:
@@ -80,8 +103,11 @@ def main():
     write_csv(args.out/'by_stratum.csv',detailed)
     write_csv(args.out/'by_job.csv',summaries)
     write_csv(args.out/'log_status.csv',status)
+    write_csv(args.out/'search_by_stratum.csv',searches)
+    write_csv(args.out/'search_by_job.csv',search_jobs)
     result=dict(jobs=len(jobs),strata=len(detailed),with_stats=len(summaries),excluded=dict(excluded),
-                caveat='Final-TS selection bias; diagnostic scores are not actual rate savings. q_changed is not measured.')
+                paired_search_jobs=len(search_jobs),
+                caveat='Final-TS selection bias; scores are not actual rate savings. Separate C03/C04 search q_changed is NOT final-TS q change. DeltaR/DeltaD and final survival are not measured.')
     (args.out/'audit.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 

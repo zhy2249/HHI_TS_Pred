@@ -1,9 +1,9 @@
 # R8-23 / C03：r8_23_r3_dual_quant
 
-状态：仅设计，尚未实现或编码；本目录不是已完成实验的证据。
+状态：2026-09-26 已实现并接入宏/运行时选择；尚无本组正式 CTC 结果。见 [全量实现与验证](../../../TS_Predictor_R8_All24_Implementation.md)。
 
-- 预留宏：`JVET_BJUT_TS_R8_MODE=23`；当前编码器尚不支持。
-- 预留 runtime：`r8_r3_dual_quant`；当前 batch 尚不接受此名称。
+- 启用宏：`JVET_BJUT_TS_R8_MODE=23`；须重新编译 Encoder/Decoder。
+- 运行时覆盖：`r8_r3_dual_quant`；现有 batch 已注册，使用同一共享任务池。
 - cost / samples：`integer` / `empirical`。
 - candidates / decision / sparse：`P0` / `guard` / `S0`。
 - quantization search：`dual_tu_up`；实施批次：4。

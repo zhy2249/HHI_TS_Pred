@@ -35,7 +35,11 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r6_dense_nopred", "r6_reject_nopred", "r6_trim_cost", "r6_trim_saving",
                        "r6_sparse_max", "r6_sparse_mean", "r6_sparse_min", "rate_raw", "rate_guard",
                        "r8_raw_sparse_max", "r8_guard_sparse_max", "r8_reject_nopred", "r8_mixed_raw",
-                       "r8_complete_raw", "r8_complete_sparse_max", "r8_minimax", "r8_smoothed_dense")
+                       "r8_complete_raw", "r8_complete_sparse_max", "r8_minimax", "r8_smoothed_dense",
+                       "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
+                       "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
+                       "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
+                       "r8_r3_dual_quant", "r8_raw_dual_quant")
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 
 _PRESET_CFGS = {

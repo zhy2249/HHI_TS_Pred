@@ -38,6 +38,7 @@
 #include "IntraSearch.h"
 #include "EncModeCtrl.h"
 #include "EncCfg.h"
+#include "TsR8Search.h"
 
 #include "CommonLib/CommonDef.h"
 #include "CommonLib/Rom.h"
@@ -4100,51 +4101,69 @@ bool IntraSearch::xRecurIntraCodingLumaQT(CodingStructure &cs, Partitioner &part
         m_CABACEstimator->getCtx() = ctxStart;
       }
 
-      tu.mtsIdx[COMP_Y]       = trType;
-      tu.derivedIntraDirsLuma = ptList.derivedIntraDirs;
-      TCoeff absSum           = 0;
-      bool   valid            = xIntraCodingTUBlockLuma(tu, singleDistTmpLuma, ptList, absSum);
-      bool   modeCbf          = TU::getCbfAtDepth(tu, COMP_Y, currDepth);
-      transTested |= ((trType != MtsType::SKIP) && valid);
-      if (trType == MtsType::DCT2_DCT2)
-      {
-        int nCands = (absSum + 4 > MTS_TH_COEFF[1]) ? MTS_NCANDS[2]
-          : (absSum + 2 > MTS_TH_COEFF[0])          ? MTS_NCANDS[1]
-                                                    : MTS_NCANDS[0];
-        maxMtsType = MtsType(MtsType::MTS_1 + (nCands - 1));
-      }
-      else if (!valid && isMTS(trType))
-      {
-        numMTSInvalid++;
-      }
+      TCoeff absSum = 0;
+      bool valid = false, modeCbf = false;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      const auto r8CuCtxEntry = cuCtx;
+      const auto r8IntraEntry = cuCtxIntra;
+#endif
+      const auto evaluate = [&]() -> double {
+        singleDistTmpLuma = 0;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        cuCtx = r8CuCtxEntry; cuCtxIntra = r8IntraEntry;
+#endif
+        tu.mtsIdx[COMP_Y]       = trType;
+        tu.derivedIntraDirsLuma = ptList.derivedIntraDirs;
+        absSum = 0;
+        valid = xIntraCodingTUBlockLuma(tu, singleDistTmpLuma, ptList, absSum);
+        modeCbf = TU::getCbfAtDepth(tu, COMP_Y, currDepth);
+        transTested |= ((trType != MtsType::SKIP) && valid);
+        if (trType == MtsType::DCT2_DCT2)
+        {
+          int nCands = (absSum + 4 > MTS_TH_COEFF[1]) ? MTS_NCANDS[2]
+            : (absSum + 2 > MTS_TH_COEFF[0])          ? MTS_NCANDS[1]
+                                                      : MTS_NCANDS[0];
+          maxMtsType = MtsType(MtsType::MTS_1 + (nCands - 1));
+        }
+        else if (!valid && isMTS(trType))
+        {
+          numMTSInvalid++;
+        }
 
-      cuCtx.mtsLastScanPos                              = false;
-      cuCtx.violatesMtsCoeffConstraint                  = false;
-      cuCtx.lfnstLastScanPos                            = false;
-      cuCtx.violatesLfnstConstrained[ChannelType::LUMA] = false;
-      cuCtx.mtsCoeffAbsSum                              = 0;
+        cuCtx.mtsLastScanPos                              = false;
+        cuCtx.violatesMtsCoeffConstraint                  = false;
+        cuCtx.lfnstLastScanPos                            = false;
+        cuCtx.violatesLfnstConstrained[ChannelType::LUMA] = false;
+        cuCtx.mtsCoeffAbsSum                              = 0;
 
-      //----- determine rate and r-d cost -----
-      if ((!is1stTest && !modeCbf) || !valid)
-      {
-        singleCostTmp = MAX_DOUBLE;
-      }
-      else
-      {
-        singleTmpFracBits = xGetIntraFracBitsQT(*csFull, partitioner, true, false, &cuCtx, &cuCtxIntra);
-        const bool invalidMode =
-          ((isMTS(trType) && (!cuCtx.mtsLastScanPos || cuCtx.violatesMtsCoeffConstraint)) ||
-           (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::LUMA])));
-        if (invalidMode)
+        //----- determine rate and r-d cost -----
+        if ((!is1stTest && !modeCbf) || !valid)
         {
           singleCostTmp = MAX_DOUBLE;
         }
         else
         {
-          singleCostTmp = m_pcRdCost->calcRdCost(singleTmpFracBits, singleDistTmpLuma);
+          singleTmpFracBits = xGetIntraFracBitsQT(*csFull, partitioner, true, false, &cuCtx, &cuCtxIntra);
+          const bool invalidMode =
+            ((isMTS(trType) && (!cuCtx.mtsLastScanPos || cuCtx.violatesMtsCoeffConstraint)) ||
+             (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::LUMA])));
+          if (invalidMode)
+          {
+            singleCostTmp = MAX_DOUBLE;
+          }
+          else
+          {
+            singleCostTmp = m_pcRdCost->calcRdCost(singleTmpFracBits, singleDistTmpLuma);
+          }
         }
-      }
 
+        return singleCostTmp;
+      };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      TsFixedPrediction::r8OwnerSearch(tu,COMP_Y,false,trType,*m_CABACEstimator,0,evaluate);
+#else
+      evaluate();
+#endif
       if (singleCostTmp < singleCost)
       {
         isLstBest      = true;
@@ -4354,22 +4373,31 @@ ChromaCbfs IntraSearch::xRecurIntraCodingChromaQT(CodingStructure &cs, Partition
         }
 
         isLstBest                = false;
-        singleDistTmp            = 0;
-        tu.mtsIdx[compID]        = trType;
-        tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
-        xIntraCodingTUBlockChroma(tu, compID, singleDistTmp, ptList);
-        const bool modeCbf = TU::getCbf(tu, compID);
+        bool modeCbf = false;
+        const auto evaluate = [&]() -> double {
+          singleDistTmp            = 0;
+          tu.mtsIdx[compID]        = trType;
+          tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
+          xIntraCodingTUBlockChroma(tu, compID, singleDistTmp, ptList);
+          modeCbf = TU::getCbf(tu, compID);
 
-        //----- determine rate and r-d cost -----
-        if (!is1stTest && !modeCbf)
-        {
-          singleCostTmp = MAX_DOUBLE;
-        }
-        else
-        {
-          singleCostTmp = m_pcRdCost->calcRdCost(xGetIntraFracBitsQTChroma(tu, compID), singleDistTmp);
-        }
+          //----- determine rate and r-d cost -----
+          if (!is1stTest && !modeCbf)
+          {
+            singleCostTmp = MAX_DOUBLE;
+          }
+          else
+          {
+            singleCostTmp = m_pcRdCost->calcRdCost(xGetIntraFracBitsQTChroma(tu, compID), singleDistTmp);
+          }
 
+          return singleCostTmp;
+        };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        TsFixedPrediction::r8OwnerSearch(tu,compID,false,trType,*m_CABACEstimator,1,evaluate);
+#else
+        evaluate();
+#endif
         if (singleCostTmp < bestCostComp)
         {
           isLstBest    = true;
@@ -4421,39 +4449,47 @@ ChromaCbfs IntraSearch::xRecurIntraCodingChromaQT(CodingStructure &cs, Partition
         m_CABACEstimator->getCtx() = ctxStartTU;
 
         isLstBest                = false;
-        singleDistTmp            = 0;
-        tu.mtsIdx[COMP_Cb]       = trType;
-        tu.mtsIdx[COMP_Cr]       = trType;
-        tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
-        xIntraCodingTUBlockChroma(tu, COMP_Cb, singleDistTmp, ptList);
-        xIntraCodingTUBlockChroma(tu, COMP_Cr, singleDistTmp, ptList);
+        const auto evaluate = [&]() -> double {
+          singleDistTmp            = 0;
+          tu.mtsIdx[COMP_Cb]       = trType;
+          tu.mtsIdx[COMP_Cr]       = trType;
+          tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
+          xIntraCodingTUBlockChroma(tu, COMP_Cb, singleDistTmp, ptList);
+          xIntraCodingTUBlockChroma(tu, COMP_Cr, singleDistTmp, ptList);
 
-        //----- determine rate and r-d cost -----
-        CUCtx cuCtx;
-        cuCtx.lfnstLastScanPos                              = false;
-        cuCtx.violatesLfnstConstrained[ChannelType::CHROMA] = false;
+          //----- determine rate and r-d cost -----
+          CUCtx cuCtx;
+          cuCtx.lfnstLastScanPos                              = false;
+          cuCtx.violatesLfnstConstrained[ChannelType::CHROMA] = false;
 
-        if (!TU::getCbf(tu, COMP_Cb) && !TU::getCbf(tu, COMP_Cr) && testedTrans)
-        {
-          singleCostTmp = MAX_DOUBLE;
-        }
-        else
-        {
-          uint64_t fracBitsTmp = 0;
-          fracBitsTmp += xGetIntraFracBitsQTChroma(tu, COMP_Cb, &cuCtx);
-          fracBitsTmp += xGetIntraFracBitsQTChroma(tu, COMP_Cr, &cuCtx);
-          const bool invalidMode =
-            (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::CHROMA]));
-          if (invalidMode)
+          if (!TU::getCbf(tu, COMP_Cb) && !TU::getCbf(tu, COMP_Cr) && testedTrans)
           {
             singleCostTmp = MAX_DOUBLE;
           }
           else
           {
-            singleCostTmp = m_pcRdCost->calcRdCost(fracBitsTmp, singleDistTmp);
+            uint64_t fracBitsTmp = 0;
+            fracBitsTmp += xGetIntraFracBitsQTChroma(tu, COMP_Cb, &cuCtx);
+            fracBitsTmp += xGetIntraFracBitsQTChroma(tu, COMP_Cr, &cuCtx);
+            const bool invalidMode =
+              (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::CHROMA]));
+            if (invalidMode)
+            {
+              singleCostTmp = MAX_DOUBLE;
+            }
+            else
+            {
+              singleCostTmp = m_pcRdCost->calcRdCost(fracBitsTmp, singleDistTmp);
+            }
           }
-        }
 
+          return singleCostTmp;
+        };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        TsFixedPrediction::r8OwnerSearch(tu,COMP_Cb,true,trType,*m_CABACEstimator,2,evaluate);
+#else
+        evaluate();
+#endif
         if (singleCostTmp < bestCostCbCr)
         {
           isLstBest    = true;
@@ -4502,29 +4538,39 @@ ChromaCbfs IntraSearch::xRecurIntraCodingChromaQT(CodingStructure &cs, Partition
           m_CABACEstimator->getCtx() = ctxStartTU;
 
           isLstBest                = false;
-          tu.jointCbCr             = (uint8_t)cbfMask;
-          tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
-          tu.mtsIdx[COMP_Cb]       = trType;
-          tu.mtsIdx[COMP_Cr]       = trType;
-          Distortion distTmp       = 0;
-          xIntraCodingTUBlockChroma(tu, COMP_Cb, distTmp, ptList);
-
           double costTmp = MAX_DOUBLE;
-          if (distTmp < std::numeric_limits<Distortion>::max())
-          {
-            CUCtx cuCtx;
-            cuCtx.lfnstLastScanPos                              = false;
-            cuCtx.violatesLfnstConstrained[ChannelType::CHROMA] = false;
+          Distortion distTmp = 0;
+          const auto evaluate = [&]() -> double {
+            tu.jointCbCr             = (uint8_t)cbfMask;
+            tu.derivedIntraDirChroma = ptList.derivedIntraDirs[tu.jointCbCr];
+            tu.mtsIdx[COMP_Cb]       = trType;
+            tu.mtsIdx[COMP_Cr]       = trType;
+            distTmp                 = 0;
+            xIntraCodingTUBlockChroma(tu, COMP_Cb, distTmp, ptList);
 
-            const uint64_t fracBitsTmp = xGetIntraFracBitsQTChroma(tu, COMP_Cb, &cuCtx);
-            const bool     invalidMode =
-              (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::CHROMA]));
-            if (!invalidMode)
+            costTmp = MAX_DOUBLE;
+            if (distTmp < std::numeric_limits<Distortion>::max())
             {
-              costTmp = m_pcRdCost->calcRdCost(fracBitsTmp, distTmp);
-            }
-          }
+              CUCtx cuCtx;
+              cuCtx.lfnstLastScanPos                              = false;
+              cuCtx.violatesLfnstConstrained[ChannelType::CHROMA] = false;
 
+              const uint64_t fracBitsTmp = xGetIntraFracBitsQTChroma(tu, COMP_Cb, &cuCtx);
+              const bool     invalidMode =
+                (isNST(trType) && (!cuCtx.lfnstLastScanPos || cuCtx.violatesLfnstConstrained[ChannelType::CHROMA]));
+              if (!invalidMode)
+              {
+                costTmp = m_pcRdCost->calcRdCost(fracBitsTmp, distTmp);
+              }
+            }
+
+            return costTmp;
+          };
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+          TsFixedPrediction::r8OwnerSearch(tu,COMP_Cb,true,trType,*m_CABACEstimator,3,evaluate);
+#else
+          evaluate();
+#endif
           if (costTmp < bestCostCbCr)
           {
             isLstBest    = true;

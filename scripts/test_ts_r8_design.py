@@ -22,7 +22,7 @@ class R8DesignTest(unittest.TestCase):
     def test_manifest_rejects_false_implementation_status(self):
         source = Path(__file__).with_name('ts_r8_experiment_manifest.json')
         data = json.loads(source.read_text())
-        data['experiments'][1]['status'] = 'implemented'  # MODE 2 remains reserved.
+        data['experiments'][1]['status'] = 'not_implemented'  # Registry must agree with the delivered code.
         with tempfile.TemporaryDirectory(prefix='ts-r8-design-') as tmp:
             path = Path(tmp) / 'manifest.json'
             path.write_text(json.dumps(data))

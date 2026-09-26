@@ -146,7 +146,7 @@ class FixedDefaultsTests(unittest.TestCase):
             r = subprocess.run(self.base_cmd+defines+['-fsyntax-only'],capture_output=True,text=True)
             self.assertNotEqual(r.returncode,0)
             self.assertIn('error:',r.stderr)
-        for mode in ('r8_raw_sparse_mean','r8_2_raw_sparse_mean','r8_path'):
+        for mode in ('r8_unknown','r8_2_raw_sparse_mean','r8_path'):
             self.assertNotEqual(self.run_probe('current',mode).returncode,0)
 
     def test_r6_invalid_and_old_conflicts(self):

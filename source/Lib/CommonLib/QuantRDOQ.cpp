@@ -1331,7 +1331,16 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
                                      cctx.magnitudePredictorTS(scanPos, dstCoeff));
 
-      if (upAbsLevel != roundAbsLevel && upAbsLevel != minAbsLevel && predPixel == 1)
+      bool allowUp = predPixel == 1;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      if (tu.tsR8ExtendedSearch && roundAbsLevel > 0)
+      {
+        CHECK(!TsFixedPrediction::r8DualQuant(TsFixedPrediction::mode()), "Unexpected extended TS search");
+        if (!allowUp && upAbsLevel != roundAbsLevel && upAbsLevel != minAbsLevel) { ++tu.tsR8ExtraCandidates; }
+        allowUp = true;
+      }
+#endif
+      if (upAbsLevel != roundAbsLevel && upAbsLevel != minAbsLevel && allowUp)
       {
         coeffLevels[m_testedLevels++] = upAbsLevel;
       }

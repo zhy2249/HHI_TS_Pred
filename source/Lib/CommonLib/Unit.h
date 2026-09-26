@@ -592,6 +592,11 @@ struct TransformUnit : public UnitArea
 
   bool                      noResidual;
   uint8_t                   jointCbCr;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  // Encoder-only scoped trial request; never copied as coded TU state.
+  bool                      tsR8ExtendedSearch = false;
+  unsigned                  tsR8ExtraCandidates = 0;
+#endif
   uint8_t                   cbf[MAX_NUM_TBLOCKS];
   int                       lastPos[MAX_NUM_TBLOCKS];
   uint32_t                  numPredAreaSigns[MAX_NUM_TBLOCKS];
