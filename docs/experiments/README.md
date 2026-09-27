@@ -6,6 +6,7 @@
 ## 常用入口
 
 - [实验结果台账（仅数据与 BD-rate）](TS_Predictor_Results_Ledger.md)
+- [逐序列 / 逐 QP 明细与可筛选 CSV](results/README.md)
 - [统一实验记录（过程、分析与决策）](TS_Predictor_Experiment_Log.md)
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)

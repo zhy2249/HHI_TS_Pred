@@ -1,0 +1,779 @@
+{
+  "updated": "2026-09-27",
+  "method": "PCHIP per component, then (6Y+U+V)/8; equal sequence means",
+  "experiments": 57,
+  "sequence_records": 469,
+  "point_records": 1876,
+  "point_status": {
+    "measured": 1860,
+    "anchor_imputed": 14,
+    "missing": 2
+  },
+  "sequence_status": {
+    "complete": 453,
+    "imputed": 13,
+    "incomplete": 2,
+    "invalid_anchor": 1
+  },
+  "invalid_anchor_points": [
+    {
+      "experiment": "R3-1",
+      "configuration": "RA",
+      "sequence": "BasketballDrive",
+      "qp": 37,
+      "record_status": "fail(md5 mismatch)."
+    }
+  ],
+  "max_vba_gap_pp": 4.2318926141149404e-13,
+  "sources_unchanged": true,
+  "remote_build_config_frames_decode_hash_verified": false,
+  "sources": [
+    {
+      "path": "experiments/ts_conditional_v1/conf2/LB_BCE/JVET-hhi.xlsm",
+      "sha256": "180bb399325a368ad44d77988c3972f88fa7e564a266ca77c6560c7c08b5cc9e"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/conf2/LB_BCE/n2.csv",
+      "sha256": "a3120d38b4be5ea09e79067c22bfddae8024e75f184c7bddf274d861bb1fcb43"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/ewma/LB_BCE/A2.csv",
+      "sha256": "b9baea48e6a61c6d9a9f98b4fd62d605282b95512f376eb7d1afe43879d6c71b"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/ewma/LB_BCE/JVET-hhi.xlsm",
+      "sha256": "256291ea3381e88f897b647656de347813e66ab3641203c7616c4a497369a7fe"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/prev/LB_BCE/A1.csv",
+      "sha256": "79a27a113761e6e494dd50a05a8ca67754f1ea0249d79fe6f0943cd8e081e11c"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/prev/LB_BCE/JVET-hhi.xlsm",
+      "sha256": "4035a619025ebbcfac1ed47498bd272730b7f2097f6dae25457231af634c2926"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/q32/LB_BCE/JVET-hhi.xlsm",
+      "sha256": "9e8088ea2dd40da462fb55f60d49b2be943b4ce31318ae67546bd5bccbabb2a0"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/q32_ewma/LB_BCE/A3.csv",
+      "sha256": "453e3ac392bdeda44ccbd7471731d9a6ffe9bf29e722d99554e6dd5c2c7b58db"
+    },
+    {
+      "path": "experiments/ts_conditional_v1/q32_ewma/LB_BCE/JVET-hhi.xlsm",
+      "sha256": "d16474b7d56a62dacb5fc34e525de60cad894e48700711ee43261e6d1eef560e"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/JVET-hhi.xlsm",
+      "sha256": "a9e35c60759a181308d1da781b38656b789474789ed8d214bfc4285a390c46b1"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/R2_4.csv",
+      "sha256": "577a702d25c6e84eff52c0afd37b58a70101eea1bd112187bd97b52d30922879"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_cn_log/LB_CE/JVET-hhi.xlsm",
+      "sha256": "42c486208f353e983c2b47036bda946a42726fb6201aef00363ced6daa201cd8"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_cn_log/LB_CE/R2_3.csv",
+      "sha256": "e0063188575438256ab82d3732a6075217286d4a931271472ea38fecf9db8ec5"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_modal/LB_CE/JVET-hhi.xlsm",
+      "sha256": "61075254d6204d227f52bd6c53ee3e1de39221c91c97aeeaee6334b8d5e35018"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_modal/LB_CE/R2_1.csv",
+      "sha256": "7901f291bfba0e9743fa2e8cb058248d9c8a4fa6860c84f2bcdf811bbd365180"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_risk/LB_CE/JVET-hhi.xlsm",
+      "sha256": "77b97e2a89c38687d73dd7c4984d36d219e558e7df8d1f1136626fb3f8386b5b"
+    },
+    {
+      "path": "experiments/ts_predictor_r2/r2_risk/LB_CE/R2_2.csv",
+      "sha256": "c6870916aa953dad3960ef88b3e3b9dee13a0cb34d388f5061527099340fc35c"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_cn_guard/JVET-hhi.xlsm",
+      "sha256": "72c0bb7edcf24010e2855f385809cb1ddd406df8e9509d5e8ccc7c005202cdff"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_cn_guard/R3_3.csv",
+      "sha256": "aa049f16ee5749639338939a86f7f82717edec506d747db62256284151208c7d"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_cn_guard_y/JVET-hhi.xlsm",
+      "sha256": "12ad25bb90f31775d037f7195aebd29ee3e2624364ee910c162d4632b4630a8c"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_cn_guard_y/R3_4.csv",
+      "sha256": "bffd6ec0104e2ac06a08c5efd3cd312f925dbc66a0c4b1df682d8b5df02a68fc"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard/JVET-hhi.xlsm",
+      "sha256": "524cfcf8e1bb4e1b5e6fe26c1be5d846c5bc64d7d2c3ba24a7ff0e14046d3ddb"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard/R3_1.csv",
+      "sha256": "64dc0b3c5ce98a750dd66f551a842425006d2be1ad61d68b248146bd67897fb2"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard/R3_1_B.csv",
+      "sha256": "20eb33921b16d720fb8420d60bce73f3bbc1f064e311dda978b172bb4af722af"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard/R3_1_RA_AI.csv",
+      "sha256": "b84f0409bcf3cdad04b3e37d2b3b8c1b4fb1672e15d0d2f11a6bcf1391fdf556"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard_y/JVET-hhi.xlsm",
+      "sha256": "78b540f5fff1ef56c23e40610af62074f03a4281db6165007f82de2ebd0a79b8"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard_y/R3_2.csv",
+      "sha256": "070e7bccf3e02da37b054a92badc1e008ccafa3ed828e0d938b8e6673a387248"
+    },
+    {
+      "path": "experiments/ts_predictor_r3/r3_risk_guard_y/R3_2_B.csv",
+      "sha256": "e85df771678d8a5695027301764f4c22e30a3bd843dd32ca6665e1bbd33c6c80"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_1_identity_only/R4_1.csv",
+      "sha256": "783ba34e65177c75bd7a8ab2080a513beba44382f77c4a67a624f162a40620b7"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_1_identity_only/R4_1_JVET-hhi.xlsm",
+      "sha256": "76a75cea6edef5ba6cdecfd99f9f50d3513567eaf660c4dfe02e877f3524e975"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_2_magnitude_only/R4_2.csv",
+      "sha256": "5b17b141843f436a75fb44739a1f6e0b86a3ac79b426cb03e4087c3b63534db2"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_2_magnitude_only/R4_2_JVET-hhi.xlsm",
+      "sha256": "754d28e942f2bb7d297a8749819580c1481cc5a372167cd71eb3ed234c5f5eba"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_3_guard_rescue/R4_3.csv",
+      "sha256": "bb3eb942ba36bb41e021a0624c0772c306c98837857fdfa25571c5935ba3207c"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_3_guard_rescue/R4_3_JVET-hhi.xlsm",
+      "sha256": "09459384bb5b74b16cb85d312e8dcade432dd3e9f605acc447aea8ef81709b8a"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_4_directional_risk/R4_4.csv",
+      "sha256": "1773da9993702fc08e34bd325d7c2c8e23f601ddb1f29a4f2aac30a08d3e1136"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_4_directional_risk/R4_4_JVET-hhi.xlsm",
+      "sha256": "9ae471091a0b8bf28842bbea28acb50fd056ea9f02d2af899a74e9435af81642"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_5_causal_models/R4_5.csv",
+      "sha256": "e37c236645ab02f50671001d6c85ab17f2be9118b90e2038fc2c1608c50de15d"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_5_causal_models/R4_5_JVET-hhi.xlsm",
+      "sha256": "519982e5a6fe21c2ec09a5eaf805b14cc3986a49fcb7ed3312f17d188235eb67"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_6_signed_plane/R4_6.csv",
+      "sha256": "b7bf464e16be5a69e6cfabb9c4858ef1eaf5bbf4b28a0114d3df16af29ca500a"
+    },
+    {
+      "path": "experiments/ts_predictor_r4/r4_6_signed_plane/R4_6_JVET-hhi.xlsm",
+      "sha256": "377bab9b6c063456520ce162057e2817a9497e52f4bf0c883f234123ad0476f0"
+    },
+    {
+      "path": "experiments/ts_predictor_r5/JVET-hhi.xlsm",
+      "sha256": "f71ddf0dc2b3f48992474ed6ba29a5a9fe5ed5140d394a5bace195d8982f07b5"
+    },
+    {
+      "path": "experiments/ts_predictor_r5/R5_2.csv",
+      "sha256": "d9d1e9d39f171241eeb892e13c9e2e128867b98564f721932bfa40e409c56d95"
+    },
+    {
+      "path": "experiments/ts_predictor_r5/r5_1_margin_first/JVET-hhi.xlsm",
+      "sha256": "e72b90b78522313925d291f82261848c8bd17fdcae3525166625e10485e607e5"
+    },
+    {
+      "path": "experiments/ts_predictor_r5/r5_1_margin_first/R5_1.csv",
+      "sha256": "e0a05632c5b165ba26a9c17bdfbbc0bfd35256003662f387e25278f21a9480fb"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_1.csv",
+      "sha256": "d6e9894847057eefeaac561e34c4cf947cfeef73a9d92add61cd1ea31b31b49d"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_1_JVET-hhi.xlsm",
+      "sha256": "6190da4cf7c63b88e5563a3a754d44d00b99d12391137076412ad78777acedd7"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_2.csv",
+      "sha256": "ab9d514c598625e187424efb7252d1892a1ef60cbba0f6c5ea1ea99a898aa8e1"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_2_B.csv",
+      "sha256": "fd67a167254e20ef11ad37e6f0dcd8f53fad46726cc30f2acadfd5a64edfae0e"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_2_JVET-hhi.xlsm",
+      "sha256": "d3034a2723a3c5f978fb85a455e3b878987d723449cfe787cc7c7dfc329bfd37"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_3.csv",
+      "sha256": "08eac7c1add911b94d02ba115548bc2bb9a77432c0f7a86839f2ffbe2e103974"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_3_JVET-hhi.xlsm",
+      "sha256": "3c88135bddf25fb71dc53ee5229ba2c5aa5a953d2434e6e8fa4fd6828427148e"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_4.csv",
+      "sha256": "9e959e1a36c7812be27b336cf0f3b8d51e5bdc073782e67939ecc8915eb12b0f"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_4_JVET-hhi.xlsm",
+      "sha256": "95c97b8ea8b939393821778e081f225efec3dc7f556d20bbb370eb6218837b7f"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_5.csv",
+      "sha256": "00e27aefa1c5ed97a635c3efeb1cde1a131468a32c8c8e18bd413fb67354f70c"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_5_JVET-hhi.xlsm",
+      "sha256": "98710d259f2daa72d0a64058f1cceec4f35d6eaa666f78e68ad5ecc43cb8a005"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_6.csv",
+      "sha256": "075483c0d5eae72c09c8655f0d6aa48590b711f28f6aea9ecdc6939c1fa46a60"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_6_JVET-hhi.xlsm",
+      "sha256": "85704f3106344aa8c1439736775aae8faabc6ea9234940b68411c19ad02714fc"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_7.csv",
+      "sha256": "448797f70853b71c95c6e3f4cf613171f7234427a0212c0a8d3d9522d0003e20"
+    },
+    {
+      "path": "experiments/ts_predictor_r6/R6_7_JVET-hhi.xlsm",
+      "sha256": "a4d7bd926bec7a35f847be353c6ec8c0681fff0e1d60756390e7a19173265c8f"
+    },
+    {
+      "path": "experiments/ts_predictor_r7/R7_1.csv",
+      "sha256": "ee8fcbaa0b971c18eda2b6a00162856227513cbafefcda239863653e91f11abb"
+    },
+    {
+      "path": "experiments/ts_predictor_r7/R7_1_JVET-hhi.xlsm",
+      "sha256": "befb171f54eb7e60faf71099c3dc138e650f33a418d042477eaf370428053a23"
+    },
+    {
+      "path": "experiments/ts_predictor_r7/R7_2.csv",
+      "sha256": "a84444c0f2cac10f4df6c6ca7c2253b0aec4e3a725513e070da87e65616df196"
+    },
+    {
+      "path": "experiments/ts_predictor_r7/R7_2_JVET-hhi.xlsm",
+      "sha256": "eafd35c1481c25907b44204ea0bb1a261a00fbf7eaf5e33a55171949f367bf37"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/1.csv",
+      "sha256": "1684734c13e707609ae11c1d3f001649b2a4b8d3ce96c6d36127c56b9ec76ca9"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/10.csv",
+      "sha256": "f4ddae38084b58257c945fe44708fee28cb570066a402e1767d46c2ee63d1c87"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/11.csv",
+      "sha256": "782c8211101a6ed31f3f7449590b8fe99262bbf76a687f3baf3bb37538eca72d"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/12.csv",
+      "sha256": "670c403f514bb05193a6bc2d0812b72f80a64000fcd1bf18ecbb0f2dd285ff58"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/13.csv",
+      "sha256": "222c29cdcba6dc7d87863d2b3ba3735df04a3e47914d7a75bbace5556ce75f90"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/14.csv",
+      "sha256": "4abc348945cad53cfb987b6bcef498fad6510cf6be0b5e0afab5c6b15335ac95"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/15.csv",
+      "sha256": "9fff33d52b11c7151a6a2ece17dca845b0b7e88cb33b3dc1037765a18b78058a"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/16.csv",
+      "sha256": "93550970f318f818bcd7a0a713c983d07b44304a9c3f54bc232bb0c3edd10973"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/17.csv",
+      "sha256": "fab8594d8c80cca8145052caebe31c224c4d51a852c2810de32f8789faf0df4d"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/18.csv",
+      "sha256": "43b2e3ccc1abfe5d7b80cd05cee2f2d2d36abac0075df425e99415438353db25"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/19.csv",
+      "sha256": "958837471ab0b179428698b96aca6a3453f3db58b646c789bb177e79786eff20"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/2.csv",
+      "sha256": "8b8cda872630e157a26842b5bd05ee85d8a10f4dd42b9acccbf6034b0fd0396d"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/20.csv",
+      "sha256": "4b89eb7b05bd8c1cbae5266764409ae31db67b683cfd5cc3dc6b1e1f5faf3e02"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/21.csv",
+      "sha256": "afa573b43b0ca203bbb2b3c9f2c3049f80a8cd146c9deaff5c42efd8c409c080"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/22.csv",
+      "sha256": "6de3af1aec8528dd67042263d95847aee04d28e3f44ddd3c25b720c907b3be6b"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/23.csv",
+      "sha256": "6d082bc10e9c6e81948913ef43eeb0a6f4750777dff02697aa974f8b6d166ff4"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/24.csv",
+      "sha256": "168ad59e9de9059062ab908145b09eaaef43372a0272385d0f9ab4838ac10298"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/3.csv",
+      "sha256": "04339e5914669097451d10c03bfcde221863212a505f8c8be2569a668c7f3545"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/4.csv",
+      "sha256": "132309bc3ced7861b6474188d3a894eeab1aab00bf9598f2d3db2f430c658080"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/5.csv",
+      "sha256": "09d48efb08786446c8a99bbb4935df7994eb3fc1581110cb7eb54498bf836988"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/6.csv",
+      "sha256": "8433aeda0b137a4e6de5bc1f7be2a55a0ec26b62d4ba0bc55764aa69e787377e"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/7.csv",
+      "sha256": "659ab1996efa1cff6764cb60c803cc8632a0b65a148306a857b3914cf602146b"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/8.csv",
+      "sha256": "c356fe218cd2ece3ff51875ac637905702a8a93449243989851e1603a79432c6"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/9.csv",
+      "sha256": "e293544590bd14668ae7302521b5bd43d6f06436a2ffe663ee7d6228ce07eb0e"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_10_JVET-hhi.xlsm",
+      "sha256": "ffc16fc343f289c3064ababc15e5148c21f5abd5b3d16a7f7841a1378bc8e5a4"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_11_JVET-hhi.xlsm",
+      "sha256": "82b1124fb04ac3f92196729fe74459ce49429fb5a2d5c8c5edb3be22ca518c57"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_12_JVET-hhi.xlsm",
+      "sha256": "2a8480b5932bc7badd129c0e8ba4d4a49a3cf16cfbf8122c8ff832af439a29b6"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_14_JVET-hhi.xlsm",
+      "sha256": "c17fc7ecc671906b318c8d706568a833757ac6f4945e9f92459e06223ad0ab23"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_18_JVET-hhi.xlsm",
+      "sha256": "ffa1d6d48f8757732b0d784c91bc84830a48c3daa1d489a1fdc055ee6a7d4891"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_19_JVET-hhi.xlsm",
+      "sha256": "cbd02ce6ed86808f93fa213086f0c892857c444a30f2db11a82e33efe1ec365b"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_20_JVET-hhi.xlsm",
+      "sha256": "725f507c8d35dcc10fca03eca3b86a99d5748122666355a3359198d737947efc"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_21_JVET-hhi.xlsm",
+      "sha256": "734339c9691b758893c59cfda4c03a03ad96d8810c2e074e09449704897c1633"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_22_JVET-hhi.xlsm",
+      "sha256": "945ad527cd272025212e85a8ef78f81a2e1002219ce8e002126534a6e062a129"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_23_JVET-hhi.xlsm",
+      "sha256": "4c02a1e34558ac453b9e08fb43603bd39834d2bbfd0201ec82c852aa7335f808"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_24_JVET-hhi.xlsm",
+      "sha256": "e20a8c126ee5b4aee88a37c243d183e237d5457419b67e2f6b5ce45ccc877b46"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_2_JVET-hhi.xlsm",
+      "sha256": "ec5cf1f42549e2e5e935e1e75983d45e7cd9013566e70263bb713a65823949d9"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_3_JVET-hhi.xlsm",
+      "sha256": "56b78b736f938f1632763f69bd63b5a7838eca2ca573263791c05e472e47086c"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_5_JVET-hhi.xlsm",
+      "sha256": "25940c7195787b60dd9683baf06c51f4601d98504449caa3f940ab8e4d60a671"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_6_JVET-hhi.xlsm",
+      "sha256": "9821b7324183cd27c1ddff7b8a718fd13ba0989aa2492ab4d20dc7dd5c38ea41"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_7_JVET-hhi.xlsm",
+      "sha256": "23c4e15d4c2a7528654f78af38fc7c5a1804224b5bd267e4dc4ea3b56a1085f4"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/R8_9_JVET-hhi.xlsm",
+      "sha256": "52d7640f363b89cd9890508fa32101a45f073a0b87a04c870292e7e6cf7b9d1c"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_13_JVET-hhi.xlsm",
+      "sha256": "b4a9385baddc0459998e32850258643f78ad0edd04aa2f3f41266a8a19d77a91"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_15_JVET-hhi.xlsm",
+      "sha256": "7ecdd9bae81b5f48b16d5de1ab04bd99ea9861269dacd125abf2f4d03f704f45"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_16_JVET-hhi.xlsm",
+      "sha256": "da773e223267fc12d9f56092af60a2b8ae7abdcb0a4f13b16784b828865ff343"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_17_JVET-hhi.xlsm",
+      "sha256": "6b7f01e5ebdefdb5411d9ced0ed77bf5a5beab7db9335d9cb4acc889b4d91562"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_1_JVET-hhi.xlsm",
+      "sha256": "e2689f29b7912c9b7c174e3a88ea57d8b20d27109d831de34d9373d9ee83a79a"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_4_JVET-hhi.xlsm",
+      "sha256": "4b4bc790d2ec2c288046452070b7cc2e8d2800819854db3d6a3e4d6c9d8c2dec"
+    },
+    {
+      "path": "experiments/ts_predictor_r8/r8_8_JVET-hhi.xlsm",
+      "sha256": "ab6afc196da97b1fdce47bf749d01044d725b8b46c7c3a26309f6d78ea94613e"
+    },
+    {
+      "path": "runs/ts_fixed_LB_CE_half/directional/JVET-hhi.xlsm",
+      "sha256": "10b32ccc6acb4e7b76feefdc5104e5c28529f30ac06bd5ddc718aa83d4a298da"
+    },
+    {
+      "path": "runs/ts_fixed_LB_CE_half/gradient/JVET-hhi.xlsm",
+      "sha256": "ce8ba77bc3c58bd98c11805b948796429a642412f79f32cc9a7aab70b119348a"
+    },
+    {
+      "path": "runs/ts_fixed_LB_CE_half/nopred/JVET-hhi.xlsm",
+      "sha256": "d88d76dfbd570d49e6e6b9bfbd5e9eb8af39cb886eca8ca3987715656ea75d5d"
+    },
+    {
+      "path": "scripts/JVET-hhi.xlsm",
+      "sha256": "3e5dda606666fe38dd37b5597e6ec9cf69a25d5d91e4ec11488fec786d1423f1"
+    }
+  ],
+  "csv_checks": [
+    {
+      "experiment": "N2",
+      "source": "experiments/ts_conditional_v1/conf2/LB_BCE/n2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "A1",
+      "source": "experiments/ts_conditional_v1/prev/LB_BCE/A1.csv",
+      "matched_points": 27
+    },
+    {
+      "experiment": "A2",
+      "source": "experiments/ts_conditional_v1/ewma/LB_BCE/A2.csv",
+      "matched_points": 25
+    },
+    {
+      "experiment": "A3",
+      "source": "experiments/ts_conditional_v1/q32_ewma/LB_BCE/A3.csv",
+      "matched_points": 22
+    },
+    {
+      "experiment": "R2-1",
+      "source": "experiments/ts_predictor_r2/r2_modal/LB_CE/R2_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R2-2",
+      "source": "experiments/ts_predictor_r2/r2_risk/LB_CE/R2_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R2-3",
+      "source": "experiments/ts_predictor_r2/r2_cn_log/LB_CE/R2_3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R2-4",
+      "source": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/R2_4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R3-1",
+      "source": "experiments/ts_predictor_r3/r3_risk_guard/R3_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R3-1",
+      "source": "experiments/ts_predictor_r3/r3_risk_guard/R3_1_B.csv",
+      "matched_points": 20
+    },
+    {
+      "experiment": "R3-1",
+      "source": "experiments/ts_predictor_r3/r3_risk_guard/R3_1_RA_AI.csv",
+      "matched_points": 83
+    },
+    {
+      "experiment": "R3-2",
+      "source": "experiments/ts_predictor_r3/r3_risk_guard_y/R3_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R3-2",
+      "source": "experiments/ts_predictor_r3/r3_risk_guard_y/R3_2_B.csv",
+      "matched_points": 17
+    },
+    {
+      "experiment": "R3-3",
+      "source": "experiments/ts_predictor_r3/r3_cn_guard/R3_3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R3-4",
+      "source": "experiments/ts_predictor_r3/r3_cn_guard_y/R3_4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-1",
+      "source": "experiments/ts_predictor_r4/r4_1_identity_only/R4_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-2",
+      "source": "experiments/ts_predictor_r4/r4_2_magnitude_only/R4_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-3",
+      "source": "experiments/ts_predictor_r4/r4_3_guard_rescue/R4_3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-4",
+      "source": "experiments/ts_predictor_r4/r4_4_directional_risk/R4_4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-5",
+      "source": "experiments/ts_predictor_r4/r4_5_causal_models/R4_5.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R4-6",
+      "source": "experiments/ts_predictor_r4/r4_6_signed_plane/R4_6.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R5-1",
+      "source": "experiments/ts_predictor_r5/r5_1_margin_first/R5_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R5-2",
+      "source": "experiments/ts_predictor_r5/R5_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-1",
+      "source": "experiments/ts_predictor_r6/R6_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-2",
+      "source": "experiments/ts_predictor_r6/R6_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-2",
+      "source": "experiments/ts_predictor_r6/R6_2_B.csv",
+      "matched_points": 16
+    },
+    {
+      "experiment": "R6-3",
+      "source": "experiments/ts_predictor_r6/R6_3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-4",
+      "source": "experiments/ts_predictor_r6/R6_4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-5",
+      "source": "experiments/ts_predictor_r6/R6_5.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-6",
+      "source": "experiments/ts_predictor_r6/R6_6.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R6-7",
+      "source": "experiments/ts_predictor_r6/R6_7.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R7-1",
+      "source": "experiments/ts_predictor_r7/R7_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R7-2",
+      "source": "experiments/ts_predictor_r7/R7_2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-1",
+      "source": "experiments/ts_predictor_r8/1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-2",
+      "source": "experiments/ts_predictor_r8/2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-3",
+      "source": "experiments/ts_predictor_r8/3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-4",
+      "source": "experiments/ts_predictor_r8/4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-5",
+      "source": "experiments/ts_predictor_r8/5.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-6",
+      "source": "experiments/ts_predictor_r8/6.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-7",
+      "source": "experiments/ts_predictor_r8/7.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-8",
+      "source": "experiments/ts_predictor_r8/8.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-9",
+      "source": "experiments/ts_predictor_r8/9.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-10",
+      "source": "experiments/ts_predictor_r8/10.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-11",
+      "source": "experiments/ts_predictor_r8/11.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-12",
+      "source": "experiments/ts_predictor_r8/12.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-13",
+      "source": "experiments/ts_predictor_r8/13.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-14",
+      "source": "experiments/ts_predictor_r8/14.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-15",
+      "source": "experiments/ts_predictor_r8/15.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-16",
+      "source": "experiments/ts_predictor_r8/16.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-17",
+      "source": "experiments/ts_predictor_r8/17.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-18",
+      "source": "experiments/ts_predictor_r8/18.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-19",
+      "source": "experiments/ts_predictor_r8/19.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-20",
+      "source": "experiments/ts_predictor_r8/20.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-21",
+      "source": "experiments/ts_predictor_r8/21.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-22",
+      "source": "experiments/ts_predictor_r8/22.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R8-23",
+      "source": "experiments/ts_predictor_r8/23.csv",
+      "matched_points": 27
+    },
+    {
+      "experiment": "R8-24",
+      "source": "experiments/ts_predictor_r8/24.csv",
+      "matched_points": 27
+    }
+  ]
+}

@@ -16,6 +16,7 @@
 
 - 项目维护的实验设计、实现、验证、结果分析及统一台账放在 `docs/experiments/`；新增文档更新该目录索引，不再散落仓库根目录。
 - 收到或核验实验结果后，同步维护 `docs/experiments/TS_Predictor_Results_Ledger.md`。该文件只登记实验、配置/范围、分量与 6:1:1 BD-rate、完整性和来源，不加入分析；补点、外部转录、未测范围必须明确标记。更新结果时保留旧暂估值的变更记录，过程和判断仍写入 `TS_Predictor_Experiment_Log.md` 或专门报告。
+- 结果台账同时维护 `docs/experiments/results/` 的逐序列/逐 QP 明细：总码率、Y/U/V PSNR、Current 参考点、分量及 6:1:1 BD-rate、源表定位和状态。复用 `scripts/ts_results_ledger.py` 生成 Markdown/CSV 并测试；源表只读。新的实验应登记 catalog，不混合共享目录中的其它模式 CSV；只按已授权白名单补点，失败参考曲线不计算 BD-rate。这些小体积查询文档/派生表可随台账同步，不上传原始工作簿。
 - 用户上传的外部分析、实验要求和原始方案放在 `docs/external_inputs/`，保留原文；本地核验与实施结论另写入 `docs/experiments/`，不要覆盖外部原稿。
 - 外部原稿的结论或状态不自动视为已经本地验证。原先未跟踪的上传文件不因目录整理而自动提交。
 - `scripts/` 保留运行脚本及脚本说明，`experiments/` 保留结果收件目录，`runs/` 保留本地输出；文档中的运行命令默认仍在仓库根目录执行。
