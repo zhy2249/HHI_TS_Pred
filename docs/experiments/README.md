@@ -5,7 +5,8 @@
 
 ## 常用入口
 
-- [统一实验台账](TS_Predictor_Experiment_Log.md)
+- [实验结果台账（仅数据与 BD-rate）](TS_Predictor_Results_Ledger.md)
+- [统一实验记录（过程、分析与决策）](TS_Predictor_Experiment_Log.md)
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)
 - [脚本使用说明](../../scripts/README_TS_PRED.md)
@@ -31,7 +32,7 @@
 
 ## 放置约定
 
-- 新的项目设计、实施记录、验收和分析继续放本目录；维护总台账及上方索引。
+- 新的项目设计、实施记录、验收和分析继续放本目录；维护实验记录及上方索引。收到新结果时同步更新独立结果台账，不在结果台账中加入分析。
 - 外部原稿放旁边的 `external_inputs/`，本地核验或实施说明另写，不修改外部原稿的结论。
 - 结果工作簿和日志继续放 `experiments/` / `runs/`，不放进文档目录。
 - 所有运行命令默认从仓库根目录执行，不能在本目录直接照抄相对路径命令。
