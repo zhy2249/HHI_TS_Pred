@@ -2,7 +2,7 @@
 
 日期：2026-09-16。以下保留早期三组设计用于追溯。
 后续用户要求同时比较无历史和历史自适应，当前已实现的五组 N1/N2/A1/A2/A3
-以 `TS_Conditional_Predictor_Implementation.md` 为准；本文 G3=q32_conf2 **未实现**，
+以 [TS_Conditional_Predictor_Implementation.md](TS_Conditional_Predictor_Implementation.md) 为准；本文 G3=q32_conf2 **未实现**，
 不能与当前 A3=q32_ewma 混淆。CTC 尚未运行。
 
 ## 1. 目标与边界

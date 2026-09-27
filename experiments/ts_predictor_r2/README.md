@@ -1,10 +1,10 @@
 # R2 结果收件目录
 
 2026-09-19已收到四组LB CE服务器结果：111/112点，缺实验4 PartyScene QP22。
-按用户要求用对应Current点暂估；分析见 [CE结果报告](../../TS_Predictor_R2_LB_CE_Results_20260919.md)。
+按用户要求用对应Current点暂估；分析见 [CE结果报告](../../docs/experiments/TS_Predictor_R2_LB_CE_Results_20260919.md)。
 没有本轮B/RA结果。下面的数量为计划，不代表全部完成。
 
-完整规范：[下一轮实验协议](../../TS_Predictor_R2_Experiment_Protocol.md)。
+完整规范：[下一轮实验协议](../../docs/experiments/TS_Predictor_R2_Experiment_Protocol.md)。
 
 唯一正式anchor为Current，沿用原工作簿Reference；各实验的BD-rate和收益门槛均相对Current。
 NoPred仅为候选/辅助对照，不替换Reference，也不是进入B验证的硬性比较门槛。
@@ -20,4 +20,4 @@ NoPred仅为候选/辅助对照，不替换Reference，也不是进入B验证的
 LB_B为条件性后续验证，最多两组共40项。编码由外部服务器运行，本地不启动正式CTC。
 未来每目录放 `JVET-hhi.xlsm`、`run_metadata.json`、`logs/`；不要上传重建视频。
 四个模式已由R2二进制和现有批量脚本支持；旧revision1二进制不支持。
-宏、命令与验证见 [实现说明](../../TS_Predictor_R2_Implementation.md)。
+宏、命令与验证见 [实现说明](../../docs/experiments/TS_Predictor_R2_Implementation.md)。

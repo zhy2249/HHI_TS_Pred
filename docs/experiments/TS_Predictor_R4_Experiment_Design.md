@@ -1,14 +1,14 @@
 # R4：分解R3局部预测收益，并补全失败候选后的稳健选择
 
 实施更新（2026-09-20）：六组现已接入codec/宏，见 [实现与使用](TS_Predictor_R4_Implementation.md)。
-当前验证状态以 `TS_Predictor_R4_Validation.md` 为准；公式不变，文末单列设计阶段历史。
+当前验证状态以 [TS_Predictor_R4_Validation.md](TS_Predictor_R4_Validation.md) 为准；公式不变，文末单列设计阶段历史。
 
 核心三组版本：R4-20260920-v1，公式冻结不变。当前总计划已扩展为v2：
 [非消融扩展](TS_Predictor_R4_NonAblation_Extension.md)新增R4-4/5/6，不改变本文R4-1/2/3。
 状态：**六组已接入codec/宏/batch，完成本地合成验证，尚未启动正式CTC。**
 本文模式名已经实现，可作为batch参数；算法宏使用见实现文档。
 R3继续按原版本测试；本轮不修改R3源码逻辑、二进制、门槛或结果。
-依据：`TS_Predictor_R3_LB_CE_Results_20260920.md`。
+依据：[TS_Predictor_R3_LB_CE_Results_20260920.md](TS_Predictor_R3_LB_CE_Results_20260920.md)。
 
 ## 1. 结论与实验矩阵
 

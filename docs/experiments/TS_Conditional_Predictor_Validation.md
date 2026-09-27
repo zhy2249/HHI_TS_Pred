@@ -41,4 +41,4 @@ DQP/BDPCM 场景启用对应工具，不代表每一个内部子分支均有命�
 旧 anchor 二进制沿用先前已经与原版核对的构建；本轮没有重新归档/重建最初提交的源码。
 
 机器可读本地结果：`runs/ts_conditional_smoke/validation.json`、`summary.csv` 与逐任务编码/解码日志。
-复现方式见 `TS_Conditional_Predictor_Implementation.md`。正式长跑勿启用 CG trace。
+复现方式见 [TS_Conditional_Predictor_Implementation.md](TS_Conditional_Predictor_Implementation.md)。正式长跑勿启用 CG trace。

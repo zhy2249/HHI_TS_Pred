@@ -1,14 +1,14 @@
 # R4非消融扩展：空间条件风险、因果规则选择、带符号平面预测
 
 实施更新（2026-09-20）：六组现已接入codec/宏，见 [实现与使用](TS_Predictor_R4_Implementation.md)。
-当前验证状态见 `TS_Predictor_R4_Validation.md`；公式不变，文末单列设计阶段历史。
+当前验证状态见 [TS_Predictor_R4_Validation.md](TS_Predictor_R4_Validation.md)；公式不变，文末单列设计阶段历史。
 
 版本：R4-20260920-v2。用户在原R4设计之后明确要求增加非消融实验。
 **原R4-1/2/3公式、编号不变；新增R4-4/5/6。六组现已接入codec/宏/batch，尚无正式CTC结果。**
 R3后续测试照常进行，不改变原程序、正在运行的任务、已有结果或先前结论。
 
-主数据依据：`TS_Predictor_R3_LB_CE_Results_20260920.md`、`TS_Predictor_Cross_Round_Analysis_20260919.md`。
-原R4：`TS_Predictor_R4_Experiment_Design.md`。正式基线一直是Current，R3-1只作增量对照和部分新规则的默认预测器。
+主数据依据：[TS_Predictor_R3_LB_CE_Results_20260920.md](TS_Predictor_R3_LB_CE_Results_20260920.md)、[TS_Predictor_Cross_Round_Analysis_20260919.md](TS_Predictor_Cross_Round_Analysis_20260919.md)。
+原R4：[TS_Predictor_R4_Experiment_Design.md](TS_Predictor_R4_Experiment_Design.md)。正式基线一直是Current，R3-1只作增量对照和部分新规则的默认预测器。
 
 ## 1. 从数据出发，而不是从公式数量出发
 

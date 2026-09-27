@@ -4,8 +4,8 @@
 2026-09-23已收到两组服务器LB CE各28/28点，全部RD数据同R3-1；CE均−0.093288%，新增收益0。
 R5-1工作簿在编号目录根层；R5-2工作簿暂在本目录根层，按配套R5_2.csv归属，未移动源文件。
 唯一R5-1远端日志确认该运行的有效模式，但无活动统计；其他运行身份及全组bit-exact尚未认证。
-详见根目录 `TS_Predictor_R5_LB_CE_Results_20260923.md`；不继续扩展两组B/RA。
-设计/使用/验证见根目录 `TS_Predictor_R5_Experiment_Design.md`、`TS_Predictor_R5_Implementation.md`、`TS_Predictor_R5_Validation.md`。
+详见[TS_Predictor_R5_LB_CE_Results_20260923.md](../../docs/experiments/TS_Predictor_R5_LB_CE_Results_20260923.md)；不继续扩展两组B/RA。
+设计/使用/验证见[TS_Predictor_R5_Experiment_Design.md](../../docs/experiments/TS_Predictor_R5_Experiment_Design.md)、[TS_Predictor_R5_Implementation.md](../../docs/experiments/TS_Predictor_R5_Implementation.md)、[TS_Predictor_R5_Validation.md](../../docs/experiments/TS_Predictor_R5_Validation.md)。
 
 | R5_MODE | 文件夹 | 运行名称 |
 |---|---|---|

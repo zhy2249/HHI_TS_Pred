@@ -1,6 +1,6 @@
 # R9 实施说明与运行入口
 
-日期：2026-09-27；算法版本 `R9-20260927-v1`。原始规格为 `R9_Experiment_Plan.md`。
+日期：2026-09-27；算法版本 `R9-20260927-v1`。原始规格为 [R9_Experiment_Plan.md](../external_inputs/R9_Experiment_Plan.md)。
 本轮是 **R9-1～R9-13 的一轮实验**，不是只实现编号 9。Current 仍是唯一正式 anchor。
 没有运行正式 CTC，没有新增 BD-rate 结论。
 
@@ -193,4 +193,4 @@ Smoke 使用人工2帧64×64输入，含AI22/0、LB22、RA37、禁TS、BDPCM；
 原生测试覆盖2～32的方形/矩形TU、YUV、Rice1～8、低预算、幅值上限和未来系数污染。
 旧程序默认为 `build/ts-r8-all/bin/EncoderApp`；可用 `--legacy` 指定服务器上的旧版本。
 `--off` 指定新构建的master关闭程序，`--anchor-off`指定历史关闭程序；缺失对照不能冒称验证。
-实际验收结果见 `TS_Predictor_R9_Validation.md`，不将原计划参考脚本的通过次数当作本版验证。
+实际验收结果见 [TS_Predictor_R9_Validation.md](TS_Predictor_R9_Validation.md)，不将原计划参考脚本的通过次数当作本版验证。

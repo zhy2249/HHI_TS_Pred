@@ -182,4 +182,4 @@ fallback计数是分支被执行次数，不等于p或映射实际改变；candi
    CE是已多轮开发集，最佳组也须B外部验证；BCE目标−0.05%、不错−0.08%、可观−0.10%保持不变。
 9. 只有独立实验完成后才讨论组合；本版没有组合开关。最多两组扩展B，按直接对R3收益和复杂度排序，不新增参数网格。
 
-已执行检查与实际活动数据另见 `TS_Predictor_R6_Validation.md`；本设计不预写BD结果。
+已执行检查与实际活动数据另见 [TS_Predictor_R6_Validation.md](TS_Predictor_R6_Validation.md)；本设计不预写BD结果。

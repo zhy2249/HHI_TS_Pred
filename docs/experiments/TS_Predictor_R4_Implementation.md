@@ -1,9 +1,9 @@
 # R4算法实现与使用
 
 版本：R4-20260920-v2。六组接入统一TS-RDOQ / Writer / Reader入口；Current仍是唯一正式anchor。
-冻结公式见 `TS_Predictor_R4_Experiment_Design.md` 和 `TS_Predictor_R4_NonAblation_Extension.md`。
+冻结公式见 [TS_Predictor_R4_Experiment_Design.md](TS_Predictor_R4_Experiment_Design.md) 和 [TS_Predictor_R4_NonAblation_Extension.md](TS_Predictor_R4_NonAblation_Extension.md)。
 本轮只做实现与正确性短测，不启动正式CTC、不改服务器R3结果、不覆盖旧R3程序。
-本地验证范围与限制见 `TS_Predictor_R4_Validation.md`。
+本地验证范围与限制见 [TS_Predictor_R4_Validation.md](TS_Predictor_R4_Validation.md)。
 
 ## 1. 直接用头文件宏选择
 

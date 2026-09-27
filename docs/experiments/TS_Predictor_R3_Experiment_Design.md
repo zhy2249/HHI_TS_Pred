@@ -1,10 +1,10 @@
 # R3：有证据才偏离Current的TS predictor实验
 
 版本：R3-20260919-v1。状态：**四组已实现并通过本地回归；2026-09-20已收到完整服务器LB CE结果。**
-结果分析见 `TS_Predictor_R3_LB_CE_Results_20260920.md`；尚无R3 B/RA结果。下文冻结规则不作事后改动。
-本文冻结算法与实验规则；运行说明见 `TS_Predictor_R3_Implementation.md`，
-已验证范围与尚未覆盖事项见 `TS_Predictor_R3_Validation.md`。
-依据：`TS_Predictor_Cross_Round_Analysis_20260919.md`。
+结果分析见 [TS_Predictor_R3_LB_CE_Results_20260920.md](TS_Predictor_R3_LB_CE_Results_20260920.md)；尚无R3 B/RA结果。下文冻结规则不作事后改动。
+本文冻结算法与实验规则；运行说明见 [TS_Predictor_R3_Implementation.md](TS_Predictor_R3_Implementation.md)，
+已验证范围与尚未覆盖事项见 [TS_Predictor_R3_Validation.md](TS_Predictor_R3_Validation.md)。
+依据：[TS_Predictor_Cross_Round_Analysis_20260919.md](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 
 ## 1. 目标与边界
 

@@ -1,7 +1,7 @@
 # R3本地实现验证（2026-09-19）
 
 版本：R3-20260919-v1。四组算法已实现、构建并通过下述测试。**没有正式CTC或R3收益结论。**
-算法与启用方式分别见 `TS_Predictor_R3_Experiment_Design.md`、`TS_Predictor_R3_Implementation.md`。
+算法与启用方式分别见 [TS_Predictor_R3_Experiment_Design.md](TS_Predictor_R3_Experiment_Design.md)、[TS_Predictor_R3_Implementation.md](TS_Predictor_R3_Implementation.md)。
 
 ## 1. 代码范围与状态
 

@@ -1,6 +1,6 @@
 # R6 使用与复现
 
-算法解释见 `TS_Predictor_R6_Experiment_Design.md`；冻结版本 R6-20260923-v1。
+算法解释见 [TS_Predictor_R6_Experiment_Design.md](TS_Predictor_R6_Experiment_Design.md)；冻结版本 R6-20260923-v1。
 
 ## 宏优先
 

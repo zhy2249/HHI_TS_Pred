@@ -156,7 +156,7 @@ smoke 是64×64两帧合成内容，不是批量 CTC 工具，也不是性能评
 脚本逐行比较编码器最终输出路径和解码器；RDO 搜索试算不会写这些 trace。
 只在小输入调试使用此开关，避免正式编码大日志。
 smoke 输出 `runs/ts_conditional_smoke/validation.json`；其记录与测试结果见实验日志最新条目。
-本轮已通过99项编解码任务和另外5项trace-off编码；详细范围见 `TS_Conditional_Predictor_Validation.md`。
+本轮已通过99项编解码任务和另外5项trace-off编码；详细范围见 [TS_Conditional_Predictor_Validation.md](TS_Conditional_Predictor_Validation.md)。
 高 QP / TS off 的 bit-exact 检查与有效切换检查同时存在，避免“从未启用也通过”的假验证。
 
 ## 6. 结果目录与外部服务器要求

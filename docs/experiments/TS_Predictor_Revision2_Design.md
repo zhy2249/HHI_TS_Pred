@@ -1,8 +1,8 @@
 # TS predictor revision 2：从空间方向转向离散幅值与 remapping 成本
 
 日期：2026-09-18。**本文保留早期方案，不是当前实现规范，不替换revision1结果。**
-R2最终四组实现见 `TS_Predictor_R2_Implementation.md`；不要按本文已被替代的初版公式编码。
-更新：加入NoPred和严格消融后的完整规范见 `TS_Predictor_R2_Experiment_Protocol.md`，以该文件为准。
+R2最终四组实现见 [TS_Predictor_R2_Implementation.md](TS_Predictor_R2_Implementation.md)；不要按本文已被替代的初版公式编码。
+更新：加入NoPred和严格消融后的完整规范见 [TS_Predictor_R2_Experiment_Protocol.md](TS_Predictor_R2_Experiment_Protocol.md)，以该文件为准。
 本文保留初版构想；特别是原Current/directional评分主线已调整为Current/NoPred两组评分对照，
 modal已改为严格多数，并按可用邻居处理边界，不再要求五邻居全部存在。
 正式anchor始终为Current；NoPred仅为候选和辅助对照，所有正式BD-rate与用户目标均相对Current。

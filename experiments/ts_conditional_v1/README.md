@@ -15,5 +15,5 @@ LB 每组 BCE 12 序列 × 4 QP =48 点，CTC 半帧；RA CD 8 序列 × 4 QP =3
 保持原 Reference；Test 中标签为 `<sequence>.Q<qp>.ecm.lb` 或 `.ecm.ra`。
 后续读取脚本可根据目录名区分模式，无需从表格文件名猜测。
 
-完整规则及直接编解码方法见仓库根目录 `TS_Conditional_Predictor_Implementation.md`。
+完整规则及直接编解码方法见[TS_Conditional_Predictor_Implementation.md](../../docs/experiments/TS_Conditional_Predictor_Implementation.md)。
 这里仅约定结果结构，不提供批量运行脚本，不包含任何已测 BD-rate。

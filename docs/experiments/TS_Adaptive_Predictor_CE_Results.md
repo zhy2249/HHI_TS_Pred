@@ -258,7 +258,7 @@ RDOQ feedback仍未消除：q来自Current的rate model，换predictor后重优�
 
 输出：
 
-* 本报告：`TS_Adaptive_Predictor_CE_Results.md`。
+* 本报告：[TS_Adaptive_Predictor_CE_Results.md](TS_Adaptive_Predictor_CE_Results.md)。
 * 完整重算：`runs/ts_CE/review_verified/ts_pred_summary.csv`、`ts_pred_transitions.csv`、`ts_pred_sequence_stability.csv`、`ts_pred_confidence_exploratory.csv`等。
 * 独立核查/机制分解：`runs/ts_CE/ce_audit/ce_audit.json`、`ce_decomposition.csv`、`ce_jobs.csv`。
 * 可复用核查脚本：`scripts/ts_pred_ce_audit.py`。它验证冻结的56项CE任务并计算whole-sequence bootstrap，不拟合selector。

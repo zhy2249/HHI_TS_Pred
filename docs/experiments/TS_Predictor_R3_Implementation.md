@@ -1,8 +1,8 @@
 # R3算法实现与使用
 
 四组已接入统一TS-RDOQ、CABACWriter、CABACReader预测入口。
-2026-09-20已收到服务器完整LB CE结果，见 `TS_Predictor_R3_LB_CE_Results_20260920.md`；B/RA尚未收到。
-规则见 `TS_Predictor_R3_Experiment_Design.md`；Current是唯一正式anchor。
+2026-09-20已收到服务器完整LB CE结果，见 [TS_Predictor_R3_LB_CE_Results_20260920.md](TS_Predictor_R3_LB_CE_Results_20260920.md)；B/RA尚未收到。
+规则见 [TS_Predictor_R3_Experiment_Design.md](TS_Predictor_R3_Experiment_Design.md)；Current是唯一正式anchor。
 
 ## 1. 宏优先选择
 
@@ -139,4 +139,4 @@ python3 scripts/ts_conditional_smoke.py --r3 \
   --legacy-encoder build/ts-r2/bin/EncoderApp --out runs/ts_r3_smoke --jobs 4
 ```
 
-短帧为合成64×64输入，不是CTC效果或复杂度基准。校验结果和限制见 `TS_Predictor_R3_Validation.md`。
+短帧为合成64×64输入，不是CTC效果或复杂度基准。校验结果和限制见 [TS_Predictor_R3_Validation.md](TS_Predictor_R3_Validation.md)。

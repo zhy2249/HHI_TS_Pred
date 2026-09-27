@@ -228,7 +228,11 @@ python3 scripts/ts_fixed_analyze.py \
 
 ### 更新历史
 
-- 2026-09-27：按 `R9_Experiment_Plan.md` 完成R9全部13个配置，旧58模式编号和算法保持。
+- 2026-09-27：文档归档整理。项目设计/实现/验收/分析和本台账集中至 `docs/experiments/`，
+  用户外部原稿移至 `docs/external_inputs/` 并保留原文；增加目录索引，同步脚本说明和结果目录README链接。
+  源码、运行脚本、结果工作簿及 `experiments/` / `runs/` 数据路径均不变，没有新增编码或分析结论。
+
+- 2026-09-27：按 [R9_Experiment_Plan.md](../external_inputs/R9_Experiment_Plan.md) 完成R9全部13个配置，旧58模式编号和算法保持。
   TypeDef直接选R9_MODE（默认0），新旧互斥与运行时覆盖保留；各组数字目录/metadata/manifest已建。
   7/8共享(p,k)贯通RDOQ、Writer、Reader和回放；9/10只验证同CG已知目标且用其自身分类的入口CF10。
   11/12保留完整q0，独立D/U提案由相同owner入口评估，严格J改善才接受；暂拒绝TU-CBF翻转和联合色度编辑。
@@ -237,7 +241,7 @@ python3 scripts/ts_fixed_analyze.py \
   13组均有相对基础的码流活动，但1/2/6仅在人工QP0出现；推荐先做固定内容8帧活动预检，不据此调公式。
   11/12最终编辑分别D4和D4/U6；大量owner获胜未最终提交，搜索与真实Writer计数已分开。
   复用原批量共享队列/无重建/resume/逐组即时写表；阶段I dry-run196点、短测56点通过。
-  未运行正式CTC、未改工作簿；文档 `TS_Predictor_R9_Implementation.md` / `TS_Predictor_R9_Validation.md`，证据 `runs/ts_r9_smoke_final/`。
+  未运行正式CTC、未改工作簿；文档 [TS_Predictor_R9_Implementation.md](TS_Predictor_R9_Implementation.md) / [TS_Predictor_R9_Validation.md](TS_Predictor_R9_Validation.md)，证据 `runs/ts_r9_smoke_final/`。
 
 - 2026-09-26：按“先将剩余的几个实验代码都设计完成”，补齐R8剩余16组，MODE 1..24全部可运行。
   原八组冻结公式不变，旧policy编号不重排；TypeDef直接选MODE，默认0=Current，旧轮互斥/参数覆盖保留。
@@ -311,7 +315,7 @@ python3 scripts/ts_fixed_analyze.py \
   cutoff2区域指出路径误差，事后path诊断仅用于定位、未部署；new NoPred winner绕过guard的诊断未支持扩组。
   42项短测全部hash通过，Current/R3/OFF对保留程序bit-exact；3模式各160 native TU同步/上下文/因果测试通过。
   新旧宏默认/覆盖/互斥9项、batch18项、shadow解析4项通过；默认仍Current，不改既有实验数据或anchor。
-  报告`TS_Predictor_Rate_Shadow_Results_20260924.md`，源码说明`TS_Predictor_Rate_Estimator_Study.md`；
+  报告[TS_Predictor_Rate_Shadow_Results_20260924.md](TS_Predictor_Rate_Shadow_Results_20260924.md)，源码说明[TS_Predictor_Rate_Estimator_Study.md](TS_Predictor_Rate_Estimator_Study.md)；
   数据`runs/ts_rate_shadow_audit/analysis/`。算法增量暂Weak，先同内容自然短测，最多两组完整CE；不声称BD收益。
 
 - 2026-09-24：TS-013收到R6七组完整LB CE共196个实测点；根目录R6_1..7 CSV的B–J列均与对应XLSM一致，
@@ -374,7 +378,7 @@ python3 scripts/ts_fixed_analyze.py \
   R4六组CE168/168点完整、CSV与表格匹配、Reference同Current。R4-3的28个RD点全同R3-1，
   不冒充码流bit-exact/活动已验证；其他五组均值均不如R3-1。R4-5改善RaceHorsesC/Kristen，
   但削弱Party、恶化BQMall，共同低质量区间退步；六组无一通过事先冻结门槛，不建议全铺B/RA。
-  报告 `TS_Predictor_R3B_R4_Results_20260921.md`；复算脚本 `scripts/ts_r34_results_analysis.py`，
+  报告 [TS_Predictor_R3B_R4_Results_20260921.md](TS_Predictor_R3B_R4_Results_20260921.md)；复算脚本 `scripts/ts_r34_results_analysis.py`，
   数据 `runs/ts_r34_results_20260921/`；默认严格，显式 `--impute-r3-b-qp22` 才允许本次补点。
   新增9项、连同既有分析23项测试通过；独立VBA最大差2.97e-13个百分点，所有源SHA未变。
   只有结果表，远端模式/半帧/配置/hash/活动与复杂度仍不可独立验证；未修改算法或运行编码。
@@ -401,7 +405,7 @@ python3 scripts/ts_fixed_analyze.py \
   不写XLSM、不输出重建、不作RD结论。R4-4/5/6相对R3映射改变5/6/1，码流均不同；
   R4-2与Current同流且对Current映射改变0，R4-3与R3同流且补查159/接受0，仍需更广真实覆盖。
   核对本地输入前两帧数据相同、第三帧不同，不能把此两帧预检当作充分运动验证；未据此改冻结公式。
-  实现与验证文档 `TS_Predictor_R4_Implementation.md`、`TS_Predictor_R4_Validation.md`；结果在 `runs/ts_r4_smoke/`。
+  实现与验证文档 [TS_Predictor_R4_Implementation.md](TS_Predictor_R4_Implementation.md)、[TS_Predictor_R4_Validation.md](TS_Predictor_R4_Validation.md)；结果在 `runs/ts_r4_smoke/`。
   正式CTC、BCE收益、复杂度和四序列四QP预检尚未完成，未替换任何服务器R3数据或正式anchor。
 
 - 2026-09-20：按用户要求在原三组外增加非消融方法，冻结R4-20260920-v2，R4-1/2/3公式不变。
@@ -411,7 +415,7 @@ python3 scripts/ts_fixed_analyze.py \
   在R3/Current/NoPred/directional间选择；R4-6 SP引入带符号clipped plane，并由相同因果回看保护，低优先级。
   三组独立，不叠加R4-3补查；只作逐系数局部自适应，不冒充原始整CG历史选择问题已解决。
   Reader的sign要到第三遍结束才写回coeff，SP未来实现需只读sign视图，不能直接读取尚未恢复的数组符号。
-  新设计 `TS_Predictor_R4_NonAblation_Extension.md`；原型 `scripts/ts_r4_extension_design_check.cpp`
+  新设计 [TS_Predictor_R4_NonAblation_Extension.md](TS_Predictor_R4_NonAblation_Extension.md)；原型 `scripts/ts_r4_extension_design_check.cpp`
   复用真实R3/remapping/cost，在32000个人工目标上通过保护、边界、当前/未来及自身目标污染、signed范围检查。
   三组映射差异184/6569/7342只是非等价人工例子，不是CTC活动率/收益；尚未验证真实Reader多遍或闭环RD。
   新收件目录已建立；原84项CE外，优先4/5共56项、6另28项；全六组168项，合计最多一组扩展52项，上限220。
@@ -425,7 +429,7 @@ python3 scripts/ts_fixed_analyze.py \
   原代码成本例子[L,U,D,LL,UU]=[2,1,10,1,1]、Rice=1：原winner10的G=5/H=−2被拒绝，
   但NoPred有G=4/H=2，构成补查与R3非等价的结构性反例，不是实际收益证据。
   独立代数程序复用真实函数，3,145,728人工模板/Rice组合通过分支分解/接受保持/保护条件检查，2520组合出现rescue。
-  文档 `TS_Predictor_R4_Experiment_Design.md`，程序 `scripts/ts_r4_design_check.cpp`，收件目录 `experiments/ts_predictor_r4/`。
+  文档 [TS_Predictor_R4_Experiment_Design.md](TS_Predictor_R4_Experiment_Design.md)，程序 `scripts/ts_r4_design_check.cpp`，收件目录 `experiments/ts_predictor_r4/`。
   计划LB CE三组84项，最多一个候选经门槛进入RA/B；只是设计，未改codec、宏、CMake、batch或已运行二进制，未启动编码。
   R3继续按原版本测试，后续结果不据此追溯改写；新组只用Current作正式anchor，R3-1/NoPred作为增量/辅助比较。
 
@@ -441,7 +445,7 @@ python3 scripts/ts_fixed_analyze.py \
   R3-1对R2-R、NoPred、directional直接配对BD分别−0.058082/−0.035511/−0.055210%，配对CI仍跨0。
   总体正式评级仍Weak；局部保护优先保留R3-1，历史保护本规则的扩展证据Negative。按协议先核验日志再RA CD，
   RA通过后LB B；不同时扩大同族两组、不调整公式/阈值。R3-1达到BCE−0.05%所需B均值≤+0.01060%，仅为条件计算。
-  报告 `TS_Predictor_R3_LB_CE_Results_20260920.md`，复算 `scripts/ts_r3_results_analysis.py`，
+  报告 [TS_Predictor_R3_LB_CE_Results_20260920.md](TS_Predictor_R3_LB_CE_Results_20260920.md)，复算 `scripts/ts_r3_results_analysis.py`，
   输出 `runs/ts_r3_results_20260920/{base,detail}/`；新增共同区间3测试、旧跨轮3测试、分析6测试通过。
   本次只分析，未启动任何编码、未改codec/宏/源表；没有B/RA、复杂度、Oracle/η、TU尺寸/CG活动实测结论。
 
@@ -454,11 +458,11 @@ python3 scripts/ts_fixed_analyze.py \
   Python宏/调度/分析分别6/10/6项通过。batch仅扩展四个名字，共享池/逐组写表保持；112项LB CE半帧dry-run通过。
   新构建使用 `build/ts-r3/`、`build/ts-r3-off/`；保留的旧build目录二进制未变。
   初次构建曾更新顶层bin/lib构建产物，随后改为隔离目录；请勿将顶层默认程序当作已记录旧实验程序续跑。
-  验证 `runs/ts_r3_smoke/validation.json`，文档 `TS_Predictor_R3_Implementation.md`、`TS_Predictor_R3_Validation.md`。
+  验证 `runs/ts_r3_smoke/validation.json`，文档 [TS_Predictor_R3_Implementation.md](TS_Predictor_R3_Implementation.md)、[TS_Predictor_R3_Validation.md](TS_Predictor_R3_Validation.md)。
   真实序列短帧预检尚未做（默认输入路径缺文件）；未运行正式CTC、未写新结果XLSM或改Current Reference。
   1790行聚合仅是合成输入最终TS条件活动统计；不能解释为BD-rate或对选择偏差的消除证明。
 
-- 2026-09-19：TS-010按跨轮分析设计四组R3，文档 `TS_Predictor_R3_Experiment_Design.md`。
+- 2026-09-19：TS-010按跨轮分析设计四组R3，文档 [TS_Predictor_R3_Experiment_Design.md](TS_Predictor_R3_Experiment_Design.md)。
   RG沿用R2-R的模板/cost/winner，仅在固定候选优势G减去最大正贡献B仍>0时离开Current；RGY仅Y启用。
   NG保留R2-N的log代理与EWMA，仅S>0且紧邻上一最终CG的G−B>0时选NoPred；NGY仅Y启用。
   CG0 Current，全零/无有效历史CG清除近期通过证据，不等待两个历史CG，不跨TU；不新增QP阈值。
@@ -475,7 +479,7 @@ python3 scripts/ts_fixed_analyze.py \
   R2-N/F的U均值损失高度集中在KristenAndSara，不能泛称U在多数序列失败。
   R2-N直接相对固定NoPred为+0.044680%（完整CE），证明当前历史选择尚无稳定增量；NoPred仍仅辅助对照。
   B收益集中于Cactus且该序列主要是色度收益；RA的改善也集中，不能从class均值推断分辨率或TU尺寸因果效应。
-  报告 `TS_Predictor_Cross_Round_Analysis_20260919.md`，脚本 `scripts/ts_predictor_cross_round_analysis.py`，
+  报告 [TS_Predictor_Cross_Round_Analysis_20260919.md](TS_Predictor_Cross_Round_Analysis_20260919.md)，脚本 `scripts/ts_predictor_cross_round_analysis.py`，
   输出 `runs/ts_cross_round_20260919/`。三个新增数值测试及全部分段积分重建检查通过，源表SHA不变。
   结论仍Weak；优先补点和定位中低质量失效机制，不依据本次探索性分解反复调阈值。
 
@@ -485,7 +489,7 @@ python3 scripts/ts_fixed_analyze.py \
   去掉PartyScene共同六序列分别+0.114901%/+0.007916%/+0.045488%/+0.019731%，均为正；CE bootstrap CI均跨0。
   评级：1 Negative（本CE）、2 Weak且本轮优先、3 Weak、4 Weak/接近零且补点敏感。没有本轮BCE/RA结论。
   实验4完整六序列直接相对实验3改善约−0.024784%，但不稳定，不能据暂估七序列断言复杂评分必然更差。
-  先补唯一缺点，不建议四组直接铺开B；不修改公式/阈值。报告 `TS_Predictor_R2_LB_CE_Results_20260919.md`，
+  先补唯一缺点，不建议四组直接铺开B；不修改公式/阈值。报告 [TS_Predictor_R2_LB_CE_Results_20260919.md](TS_Predictor_R2_LB_CE_Results_20260919.md)，
   可复算输出 `runs/ts_r2_partial_20260919/`。远端编译宏、实际帧数、hash及内部切换不由表格独立认证。
 
 - 2026-09-18：TS-008四组R2实现完成：r2_modal/r2_risk/r2_cn_log/r2_cn_frac，
@@ -495,7 +499,7 @@ python3 scripts/ts_fixed_analyze.py \
   原生评分对照Current/NoPred各6014个CG零fractional差异，N/F各5718个未来污染/状态检查；
   110项两帧smoke全部hash通过，Current/OFF对旧anchor bit-exact，4项关闭统计及3项旧固定回归通过。
   6宏+9调度+3分析测试通过；645行在线活动汇总不是RD结论。
-  新说明 `TS_Predictor_R2_Implementation.md`、`TS_Predictor_R2_Validation.md`，结果目录状态已同步。
+  新说明 [TS_Predictor_R2_Implementation.md](TS_Predictor_R2_Implementation.md)、[TS_Predictor_R2_Validation.md](TS_Predictor_R2_Validation.md)，结果目录状态已同步。
   LB CE dry-run112项半帧确认；RAeu默认64/32帧单段，外部RA anchor帧数/分段未确认前不能正式比较。
   未运行正式CTC、未生成新正式结果工作簿、未改anchor Reference、未覆盖旧实验二进制。
 
@@ -504,14 +508,14 @@ python3 scripts/ts_fixed_analyze.py \
   取消“不差于NoPred”的B准入硬门槛，正式收益与推广门槛均对Current；
   方法间配对分析仅作复杂度/增量诊断。已同步协议、初版设计、目录说明与元数据模板，未改codec或结果表。
 
-- 2026-09-18：TS-008形成完整R2协议 `TS_Predictor_R2_Experiment_Protocol.md`：
+- 2026-09-18：TS-008形成完整R2协议 [TS_Predictor_R2_Experiment_Protocol.md](TS_Predictor_R2_Experiment_Protocol.md)：
   M严格多数幅值、R含NoPred的局部成本最小、N原A2评分的Current/NoPred、F同候选虚拟CABAC评分。
   候选替换与评分升级分开对照；共同使用可用因果邻居，避免旧设计对窄矩形的整窗口限制。
   计划CE28+RA CD32项/组、四组共240项，B仅按预设条件最多两组追加40项。
   宏优先、误配置不得静默Current、完整数据判定、直接相对NoPred BD-rate、作用覆盖与decoder开销纳入规范。
   结果目录骨架 `experiments/ts_predictor_r2/` 已建立；**仍仅设计，未修改codec、未新增可运行模式或启动编码**。
 
-- 2026-09-18：新增revision2设计 `TS_Predictor_Revision2_Design.md`（仅设计、未实现）：
+- 2026-09-18：新增revision2设计 [TS_Predictor_Revision2_Design.md](TS_Predictor_Revision2_Design.md)（仅设计、未实现）：
   R2-1因果邻域离散众数；R2-2以TSRC语法成本近似最小化局部remapping风险；
   R2-3保持Current/directional与原A2更新规则，仅将历史评价换成TU-local确定性虚拟CABAC双分支评分。
   不修改正在收集结果的revision1，不预设正收益，不增加QP/分量专用阈值；
@@ -522,7 +526,7 @@ python3 scripts/ts_fixed_analyze.py \
   N1/N2完整CE为+0.030428%/+0.043798%；A1/A2补点暂估−0.017523%/−0.005227%；
   A3为6序列子集+0.022220%，不可当完整CE比较。去除PartyScene的共同6序列五组均退化。
   源表/CSV数值一致、Reference与原anchor一致，但没有远端模式/配置/hash日志核实；RD点相同不等于码流bit-exact。
-  报告 `TS_Conditional_Predictor_Preliminary_Results_20260918.md`，复现脚本
+  报告 [TS_Conditional_Predictor_Preliminary_Results_20260918.md](TS_Conditional_Predictor_Preliminary_Results_20260918.md)，复现脚本
   `scripts/ts_conditional_partial_analysis.py`，数据输出 `runs/ts_conditional_partial_20260918/`。
   当前N1/N2在CE证据为Negative，A1/A2为Weak，A3证据不足；先补齐，不根据补点结果调参或扩大B长跑。
 
@@ -543,12 +547,12 @@ python3 scripts/ts_fixed_analyze.py \
   不把 RDOQ 的近似预算误作历史评分的有效 remapping 范围。三组历史评分为整数代理，不宣称 CABAC bits。
 - 2026-09-16：TS-006 本地验证通过：99项短帧 encode/decode hash、Writer/Reader CG状态一致，
   Current/OFF 对旧anchor bit-exact，五项 trace-off 编码 bit-exact；10项Python测试和C++扫描/状态测试通过。
-  详情见 `TS_Conditional_Predictor_Validation.md`。旧实验二进制未覆盖，未修改批量运行脚本。
+  详情见 [TS_Conditional_Predictor_Validation.md](TS_Conditional_Predictor_Validation.md)。旧实验二进制未覆盖，未修改批量运行脚本。
 - 2026-09-16：建立外部结果收件目录 `experiments/ts_conditional_v1/<mode>/{LB_BCE,RA_CD}/`，
   每目录待放 `JVET-hhi.xlsm`、`run_metadata.json` 和可选 logs；源码运行说明见
-  `TS_Conditional_Predictor_Implementation.md`。未创建空白结果表，不将计划或 smoke 标成 CTC 结果。
+  [TS_Conditional_Predictor_Implementation.md](TS_Conditional_Predictor_Implementation.md)。未创建空白结果表，不将计划或 smoke 标成 CTC 结果。
 
-- 2026-09-16：TS-006 条件启用阶段新增首轮设计 `TS_Conditional_Predictor_Experiment_Design.md`：
+- 2026-09-16：TS-006 条件启用阶段新增首轮设计 [TS_Conditional_Predictor_Experiment_Design.md](TS_Conditional_Predictor_Experiment_Design.md)：
   G1 实际 CU luma QP<=32，G2 方向分数 2:1 置信门控，G3 二者同时满足；
   均选择既有 directional 或 Current，不加入 NoPred 混合。参数为预先声明的工程假设，不是最优阈值。
   三组未来各 LB BCE 48 + RA CD 32 任务，复用统一池；当前仅设计、未实现、未编码。
@@ -564,7 +568,7 @@ python3 scripts/ts_fixed_analyze.py \
 - 2026-09-16：冻结的 nominal QP22/27 directional + QP32/37 anchor 组合：
   B −0.029567%、BCE −0.070258%，10/12 序列改善；这是曲线复用诊断，不是 TS-006 工具实现。
   判断：固定 NoPred/directional 为 Weak，gradient 为 Negative，低 QP 条件方向为有限 Promising。
-  新增 `scripts/ts_fixed_workbook_analysis.py` 和 `TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md`；
+  新增 `scripts/ts_fixed_workbook_analysis.py` 和 [TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md](TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md)；
   数据及 SHA256 输出至 `runs/ts_fixed_LB_CE_half/external_analysis_611/`。未启动新编码、未修改 codec。
 
 - 2026-09-13：增加 `JVET_BJUT_TS_FIXED_NOPRED/GRADIENT/DIRECTIONAL` 三个 0/1 默认模式宏，

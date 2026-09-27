@@ -1,6 +1,6 @@
 # R4本地正确性验证（2026-09-20）
 
-版本R4-20260920-v2；六组公式不变。实现见 `TS_Predictor_R4_Implementation.md`。
+版本R4-20260920-v2；六组公式不变。实现见 [TS_Predictor_R4_Implementation.md](TS_Predictor_R4_Implementation.md)。
 本文件是实现验证，不是正式CTC、BD-rate、复杂度或Promising结论。
 
 ## 1. 构建与身份

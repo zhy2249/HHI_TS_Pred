@@ -1,6 +1,6 @@
 # R8：机制交叉、完整候选与评分分布实验
 
-设计版本：`R8-DESIGN-20260925-v2`。依据用户提供的 [探索计划](TS_Predictor_R8_Exploration_Plan.md)，结合本地源码与重新审计的 R7 表格。
+设计版本：`R8-DESIGN-20260925-v2`。依据用户提供的 [探索计划](../external_inputs/TS_Predictor_R8_Exploration_Plan.md)，结合本地源码与重新审计的 R7 表格。
 按用户后续要求，首轮收敛为八组；详见 [首轮八组规格](TS_Predictor_R8_First8_Design.md)。24组原公式和公开MODE数字不变。
 
 **状态：2026-09-26已补齐全部24组代码，冻结公式不变；见[全量实现](TS_Predictor_R8_All24_Implementation.md)。已收到MODE 1/4/8/13/15/16/17完整LB CE，19待完成，其余16组尚无正式CTC结果。**

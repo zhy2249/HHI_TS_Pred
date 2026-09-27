@@ -2,7 +2,7 @@
 
 版本 `R9-20260927-v1`，开发基点 `7e3aad2`。
 这是工程正确性/活动检查，不是 CTC 或 BD-rate 实验结果。
-实现和已知覆盖限制见 `TS_Predictor_R9_Implementation.md`。
+实现和已知覆盖限制见 [TS_Predictor_R9_Implementation.md](TS_Predictor_R9_Implementation.md)。
 
 ## 1. 构建与规则测试
 

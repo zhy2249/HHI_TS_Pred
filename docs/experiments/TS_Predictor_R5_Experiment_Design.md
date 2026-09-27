@@ -1,12 +1,12 @@
 # R5：在不改动 R3-1 的前提下检验候选排序与保守否决
 
 版本：R5-20260921-v1。两个独立实验，**不组合**；Current 是唯一正式 anchor，R3-1 是增量对照。
-实现与初步正确性验证见 `TS_Predictor_R5_Implementation.md`、`TS_Predictor_R5_Validation.md`。
+实现与初步正确性验证见 [TS_Predictor_R5_Implementation.md](TS_Predictor_R5_Implementation.md)、[TS_Predictor_R5_Validation.md](TS_Predictor_R5_Validation.md)。
 本轮没有正式 CTC/BD-rate 结果，不把“实现完成”标为算法改进成功。
 
 ## 1. 数据依据与预检中的反证
 
-依据 `TS_Predictor_R3B_R4_Results_20260921.md`：R3-1 BCE 暂估 −0.075273%，仍缺四个 B QP22；
+依据 [TS_Predictor_R3B_R4_Results_20260921.md](TS_Predictor_R3B_R4_Results_20260921.md)：R3-1 BCE 暂估 −0.075273%，仍缺四个 B QP22；
 R4-1/2 删除 identity/幅值分支均削弱 CE；R4-3 CE 完全同 R3-1；R4-5 改善部分序列，却损伤 PartyScene/BQMall 及低质量区间。
 因此保留两类候选、YUV 范围、因果邻域和 Current 回退，仅分别改变排序或引入二选一否决。
 

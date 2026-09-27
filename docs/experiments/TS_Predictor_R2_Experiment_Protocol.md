@@ -1,8 +1,8 @@
 # TS predictor 下一轮完整实验协议（R2）
 
 日期：2026-09-18。状态：**四组源码已实现并通过本地短帧验证，未启动正式CTC编码**。
-实现/命令见 `TS_Predictor_R2_Implementation.md`，本地验证范围见 `TS_Predictor_R2_Validation.md`。
-本文取代 `TS_Predictor_Revision2_Design.md` 的首轮矩阵，加入NoPred候选与严格消融。
+实现/命令见 [TS_Predictor_R2_Implementation.md](TS_Predictor_R2_Implementation.md)，本地验证范围见 [TS_Predictor_R2_Validation.md](TS_Predictor_R2_Validation.md)。
+本文取代 [TS_Predictor_Revision2_Design.md](TS_Predictor_Revision2_Design.md) 的首轮矩阵，加入NoPred候选与严格消融。
 不修改正在收集的revision1，不保证正收益。“完善”指目标、因果性、对照及验证更完整。
 
 **唯一正式anchor为Current，沿用原 `scripts/JVET-hhi.xlsm` 的Reference。**

@@ -1,6 +1,13 @@
 NextSoftware2 used in JVET CfE
 ==============================
 
+TS predictor 实验文档
+--------------------
+
+- [实验文档索引](docs/experiments/README.md)：设计、实现、验证、结果分析与统一实验台账。
+- [外部资料收件目录](docs/external_inputs/README.md)：用户上传的外部分析、实验要求和原始方案。
+- [运行脚本说明](scripts/README_TS_PRED.md)：脚本仍在 `scripts/`；结果仍在 `experiments/` / `runs/`。
+
 This software package has been used to generate the two Call for Evidence responses from Ericsson, Fraunhofer HHI and Nokia, described in [JVET-AN0267](https://jvet-experts.org/doc_end_user/current_document.php?id=16250).
 
 The source code is stored in a Git repository. The most recent version can be retrieved using the following commands:
@@ -109,4 +116,3 @@ Call:
 ```bash
 make all
 ```
-

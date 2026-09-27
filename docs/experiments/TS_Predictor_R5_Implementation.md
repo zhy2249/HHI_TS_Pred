@@ -1,6 +1,6 @@
 # R5 实现与使用
 
-版本 R5-20260921-v1；设计见 `TS_Predictor_R5_Experiment_Design.md`。
+版本 R5-20260921-v1；设计见 [TS_Predictor_R5_Experiment_Design.md](TS_Predictor_R5_Experiment_Design.md)。
 原 R3/R4 公式和旧二进制保持不变；两个新模式已接入 TS-RDOQ/Writer/Reader 共用入口。
 **目前仅正确性/活动预检，未证明增量收益。先读验证报告，不建议直接两组完整 CTC。**
 

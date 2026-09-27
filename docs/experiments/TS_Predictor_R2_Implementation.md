@@ -1,7 +1,7 @@
 # R2 实现与运行说明
 
 日期：2026-09-18。四组已接入真实TS-RDOQ/Writer/Reader；只运行短帧正确性验证，不运行正式CTC。
-设计公式和预注册判据见 `TS_Predictor_R2_Experiment_Protocol.md`，验证结果见 `TS_Predictor_R2_Validation.md`。
+设计公式和预注册判据见 [TS_Predictor_R2_Experiment_Protocol.md](TS_Predictor_R2_Experiment_Protocol.md)，验证结果见 [TS_Predictor_R2_Validation.md](TS_Predictor_R2_Validation.md)。
 
 ## 1. 基线与四组实验
 

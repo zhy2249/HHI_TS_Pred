@@ -1,7 +1,7 @@
 # R6 结果收件
 
 版本 R6-20260923-v1；Current唯一anchor，R3-1增量对照。模式号见各目录。
-根目录设计/使用/验证文档为 `TS_Predictor_R6_Experiment_Design.md`、`TS_Predictor_R6_Implementation.md`、`TS_Predictor_R6_Validation.md`。
+设计/使用/验证文档为 [TS_Predictor_R6_Experiment_Design.md](../../docs/experiments/TS_Predictor_R6_Experiment_Design.md)、[TS_Predictor_R6_Implementation.md](../../docs/experiments/TS_Predictor_R6_Implementation.md)、[TS_Predictor_R6_Validation.md](../../docs/experiments/TS_Predictor_R6_Validation.md)。
 每组放工作簿、CSV、运行metadata与完整stdout/stderr，不放重建YUV，不创建空白结果表。
 收到文件不等于已验证模式；须检查有效banner、帧数、源码/二进制SHA、解码hash。
 日志应有TS_R6_STATS；对6/7还应检查LU分支实际remapping，不只看共用稀疏NoPred分支。
@@ -15,8 +15,8 @@ CSV的B–J与工作簿一致，Reference同Current，无缺点、无补点；Ex
 没有远端完整日志或实际metadata，模板不是身份核验证据。
 
 七组直接对R3的CE均值均退化，未通过原冻结B准入，不建议扩大本轮B/RA。
-报告见根目录 `TS_Predictor_R6_LB_CE_Results_20260924.md`；后续只读设计见
-`TS_Predictor_Post_R6_Plan_20260924.md`，不是已实现/已运行的新模式。
+报告见[TS_Predictor_R6_LB_CE_Results_20260924.md](../../docs/experiments/TS_Predictor_R6_LB_CE_Results_20260924.md)；后续只读设计见
+[TS_Predictor_Post_R6_Plan_20260924.md](../../docs/experiments/TS_Predictor_Post_R6_Plan_20260924.md)，不是已实现/已运行的新模式。
 
 在工程根目录复算：
 

@@ -2,11 +2,11 @@
 
 设计：`../../TS_Predictor_R3_Experiment_Design.md`，版本R3-20260919-v1。
 状态：四个模式及R3宏已实现；已收到服务器四组LB CE结果，各28/28点，共112点，无填补。
-CE报告：根目录 `TS_Predictor_R3_LB_CE_Results_20260920.md`。
+CE报告：[TS_Predictor_R3_LB_CE_Results_20260920.md](../../docs/experiments/TS_Predictor_R3_LB_CE_Results_20260920.md)。
 2026-09-21新增R3-1/2 B为16/20、17/20点；更新工作簿分别44/45点，与CE+B CSV并集一致。
 按用户授权仅以Current暂代缺失B QP22四点/三点，BCE暂估−0.075273%/−0.063619%，不是完整实测。
-最新报告：`TS_Predictor_R3B_R4_Results_20260921.md`；尚无R3 RA结果，远端配置/帧数/有效模式待日志核验。
-使用与验证见根目录 `TS_Predictor_R3_Implementation.md`、`TS_Predictor_R3_Validation.md`。
+最新报告：[TS_Predictor_R3B_R4_Results_20260921.md](../../docs/experiments/TS_Predictor_R3B_R4_Results_20260921.md)；尚无R3 RA结果，远端配置/帧数/有效模式待日志核验。
+使用与验证见[TS_Predictor_R3_Implementation.md](../../docs/experiments/TS_Predictor_R3_Implementation.md)、[TS_Predictor_R3_Validation.md](../../docs/experiments/TS_Predictor_R3_Validation.md)。
 唯一正式anchor为Current；先分量BD-rate后6:1:1，LB半帧。
 
 | ID | mode | mechanism | components |
