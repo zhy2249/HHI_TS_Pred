@@ -52,6 +52,7 @@
 #include "TsR6Prediction.h"
 #include "TsRateCost.h"
 #include "TsR8Prediction.h"
+#include "TsR9Prediction.h"
 #endif
 
 #include <bitset>
@@ -580,12 +581,23 @@ public:
 #endif
   }
 
+  TsFixedPrediction::MagnitudeAction magnitudeActionTS(int scanPos, const TCoeff *coeff) const
+  {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if (TsFixedPrediction::r9(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
+      return r9PredictionTS(TsFixedPrediction::r9PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action;
+#endif
+    return {magnitudePredictorTS(scanPos,coeff),0};
+  }
+
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsFixedPrediction::R9Decision r9PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
+  void r9SupportTS(int scanPos,const TCoeff *coeff,int (&a)[5],int (&positions)[5]) const;
   void freezeTsRateContext(const Ctx &ctx)
   {
     // Also permits native low-budget tests. This is the actual CG0 entry
     // budget; subsequent history comes exclusively from final-q replay.
-    if (TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 && m_subSetId == 0)
+    if ((TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 || TsFixedPrediction::r9(TsFixedPrediction::mode())) && m_subSetId == 0)
       m_tsHistoryBins = remRegBins;
     const auto &bits = ctx.getFracBitsAcess();
     for (int k = 0; k < 3; ++k)
@@ -660,6 +672,11 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r9(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      return r9PredictionTS(TsFixedPrediction::r9PublicMode(mode),scanPos,coeff).action.predictor;
+    }
     if (TsFixedPrediction::r8(mode))
     {
       if (m_bdpcm != BdpcmMode::NONE) { return -1; }
@@ -700,13 +717,14 @@ public:
   void finishTsR5CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR9CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
   int tsPathWeight10() const { return m_tsPath10; }
   int tsPathWeight2() const { return m_tsPath2; }
 #endif
 
-  int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm, int prediction = -1)
+  int deriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, const bool bdpcm, int prediction = -1, int protect = 0)
   {
 
     if (absCoeff == 0)
@@ -720,6 +738,7 @@ public:
     if (!bdpcm)
     {
       pred1 = prediction < 0 ? std::max(absBelow, absRight) : prediction;
+      if (protect) { return TsFixedPrediction::remap(int(absCoeff),{pred1,protect}); }
 
       if (absCoeffMod == pred1)
       {
@@ -734,7 +753,7 @@ public:
     return (absCoeffMod);
   }
 
-  TCoeff decDeriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, int prediction = -1)
+  TCoeff decDeriveModCoeff(int rightPixel, int belowPixel, TCoeff absCoeff, int prediction = -1, int protect = 0)
   {
 
     if (absCoeff == 0)
@@ -744,6 +763,7 @@ public:
 
     int pred1, absBelow = abs(belowPixel), absRight = abs(rightPixel);
     pred1 = prediction < 0 ? std::max(absBelow, absRight) : prediction;
+    if (protect) { return TsFixedPrediction::inverseRemap(int(absCoeff),{pred1,protect}); }
 
     TCoeff absCoeffMod;
 
@@ -783,6 +803,7 @@ private:
   Ctx m_tsVirtualCtx; // Default Ctx allocates no probability store; lazy for R2-F only.
   TsFixedPrediction::RateSnapshot m_tsRateSnapshot;
   int m_tsPath10 = 1, m_tsPath2 = 1; // C02: private TU-local, constant throughout a CG.
+  std::vector<int> m_tsScanIndex; // R9-only immutable inverse native scan.
 #endif
   // constant
   const CompID             m_compID;

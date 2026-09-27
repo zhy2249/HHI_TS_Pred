@@ -4649,7 +4649,7 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
       {
         int rightPixel, belowPixel;
         cctx.neighTS(rightPixel, belowPixel, scanPos, coeff);
-        int prediction;
+        int prediction, protect=0;
 #if JVET_BJUT_TS_FIXED_PREDICTOR
         if (TsFixedPrediction::mode() == 22)
         {
@@ -4658,8 +4658,8 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
         }
         else
 #endif
-        { prediction = cctx.magnitudePredictorTS(scanPos, coeff); }
-        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff, prediction);
+        { const auto action=cctx.magnitudeActionTS(scanPos,coeff); prediction=action.predictor; protect=action.protect; }
+        tcoeff = cctx.decDeriveModCoeff(rightPixel, belowPixel, tcoeff, prediction, protect);
       }
     }
   }

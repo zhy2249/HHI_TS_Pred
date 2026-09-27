@@ -915,6 +915,8 @@ void TransformUnit::initData()
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   tsR8ExtendedSearch = false;
   tsR8ExtraCandidates = 0;
+  tsR9Trial=nullptr;
+  tsR9EditKind.fill(0); tsR9EditPos.fill(-1);
 #endif
   m_chromaResScaleInv   = 0;
   derivedIntraDirsLuma  = std::make_pair<int8_t, int8_t>(0, 1);
@@ -964,6 +966,9 @@ TransformUnit &TransformUnit::operator=(const TransformUnit &other)
     mtsIdx[i]           = other.mtsIdx[i];
     lastPos[i]          = other.lastPos[i];
     numPredAreaSigns[i] = other.numPredAreaSigns[i];
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    tsR9EditKind[i]=other.tsR9EditKind[i]; tsR9EditPos[i]=other.tsR9EditPos[i];
+#endif
   }
 
   if (cu->slice->m_sps->m_PLTMode)
@@ -1028,6 +1033,9 @@ void TransformUnit::copyComponentFrom(const TransformUnit &other, const CompID i
   mtsIdx[i]             = other.mtsIdx[i];
   lastPos[i]            = other.lastPos[i];
   numPredAreaSigns[i]   = other.numPredAreaSigns[i];
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  tsR9EditKind[i]=other.tsR9EditKind[i]; tsR9EditPos[i]=other.tsR9EditPos[i];
+#endif
   depth                 = other.depth;
   noResidual            = other.noResidual;
   jointCbCr             = isChroma(i) ? other.jointCbCr : jointCbCr;

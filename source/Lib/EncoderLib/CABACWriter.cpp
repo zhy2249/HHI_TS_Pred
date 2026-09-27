@@ -53,6 +53,7 @@
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "CommonLib/TsVirtualCoding.h"
 #include "CommonLib/TsR2Stats.h"
+#include "CommonLib/TsR9Quant.h"
 #endif
 #if JVET_BJUT_TS_R7_SHADOW
 #include "TsRateShadow.h"
@@ -3999,6 +4000,21 @@ void CABACWriter::residual_coding_subblock(CoeffCodingContext &cctx, const TCoef
 
 void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if(isEncoding() && TsFixedPrediction::r9Quant(TsFixedPrediction::mode()) && tu.tsR9EditKind[compID])
+  {
+    TsFixedPrediction::r9QuantStats().final({TsFixedPrediction::r9PublicMode(TsFixedPrediction::mode()),int(compID),
+      int(tu.blocks[compID].width),int(tu.blocks[compID].height),tu.cu->qp,tu.cu->predMode==MODE_INTRA,-1},tu.tsR9EditKind[compID]);
+    static const bool trace=std::getenv("TS_R9_TRACE") && std::strcmp(std::getenv("TS_R9_TRACE"),"0");
+    if(trace)
+    {
+      const auto &a=tu.blocks[compID];
+      std::fprintf(stderr,"TS_R9_EDIT mode=%d poc=%d component=%d x=%d y=%d width=%u height=%u kind=%d raster_pos=%d\n",
+        TsFixedPrediction::r9PublicMode(TsFixedPrediction::mode()),tu.cu->slice->m_poc,int(compID),a.x,a.y,a.width,a.height,
+        tu.tsR9EditKind[compID],tu.tsR9EditPos[compID]);
+    }
+  }
+#endif
 #if JVET_BJUT_TS_PRED_ANALYSIS
   if (isEncoding() && std::getenv("TS_PRED_STATS"))
   {
@@ -4097,7 +4113,8 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
       return TsPred::remap(level, TsPred::predict(m_tsAnalysisMode, std::abs(left), std::abs(above)), disabled);
     }
 #endif
-    return cctx.deriveModCoeff(left, above, level, disabled, cctx.magnitudePredictorTS(scanPos, coeff));
+    const auto action=cctx.magnitudeActionTS(scanPos,coeff);
+    return cctx.deriveModCoeff(left, above, level, disabled, action.predictor, action.protect);
   };
   //===== init =====
   const int minSubPos   = cctx.maxSubPos();

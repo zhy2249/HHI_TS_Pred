@@ -1444,6 +1444,9 @@ void TrQuant::xQuant(TransformUnit &tu, const CompID &compID, const CCoeffBuf &p
                      const Ctx &ctx)
 {
   PROFILER_SCOPE(TP_ENABLE_TRQUANT_STAGES, g_timeProfiler, P_QUANT);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  tu.tsR9EditKind[compID]=0; tu.tsR9EditPos[compID]=-1;
+#endif
   m_quant->quant(tu, compID, pSrc, absSum, cQP, ctx);
 }
 

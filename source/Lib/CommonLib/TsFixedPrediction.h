@@ -8,6 +8,33 @@
 
 namespace TsFixedPrediction
 {
+inline int r9PublicMode(int policy) { return policy >= 58 && policy <= 70 ? policy - 57 : 0; }
+inline bool r9(int policy) { return r9PublicMode(policy) != 0; }
+inline bool r9Quant(int policy) { return r9PublicMode(policy) == 11 || r9PublicMode(policy) == 12; }
+inline const char *r9Code(int m)
+{
+  static const char *const codes[]={"off","P10","P12","01","02F","02A","03","04","05","06I","06F","07D","07DU","08"};
+  return m>=1 && m<=13?codes[m]:codes[0];
+}
+inline const char *r9Name(int m)
+{
+  static const char *const names[] = {nullptr,"r9_p10","r9_p12","r9_axis_sparse","r9_half_penalty",
+    "r9_feature_penalty","r9_unit_risk","r9_protect_one","r9_joint_mapping","r9_expert_integer",
+    "r9_expert_fractional","r9_quant_down","r9_quant_down_up","r9_axis_feature"};
+  return m >= 1 && m <= 13 ? names[m] : nullptr;
+}
+inline int r9Policy(const char *name)
+{
+  for (int m=1;m<=13;++m) { if (!std::strcmp(name,r9Name(m))) { return m+57; } }
+  return 0;
+}
+struct MagnitudeAction
+{
+  int predictor = -1; // -1 means native Current; k=0 for every legacy mode.
+  int protect = 0;
+  bool operator==(const MagnitudeAction &b) const { return predictor==b.predictor && protect==b.protect; }
+  bool operator!=(const MagnitudeAction &b) const { return !(*this==b); }
+};
 // Public R8 numbers are deliberately distinct from internal dispatch IDs.
 inline int r8PublicMode(int policy)
 {
@@ -63,7 +90,8 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R8_MODE ? r8Name(JVET_BJUT_TS_R8_MODE) :
+  return JVET_BJUT_TS_R9_MODE ? r9Name(JVET_BJUT_TS_R9_MODE) :
+         JVET_BJUT_TS_R8_MODE ? r8Name(JVET_BJUT_TS_R8_MODE) :
          JVET_BJUT_TS_R7_MODE == 1 ? "rate_raw" :
          JVET_BJUT_TS_R7_MODE == 2 ? "rate_guard" :
          JVET_BJUT_TS_R6_MODE == 1 ? "r6_dense_nopred" :
@@ -117,7 +145,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -170,7 +198,7 @@ inline int mode()
                           !std::strcmp(name(), "r6_sparse_min") ? 31 :
                           !std::strcmp(name(), "rate_raw") ? 32 :
                           !std::strcmp(name(), "rate_guard") ? 33 :
-                          r8Policy(name()) ? r8Policy(name()) : 1;
+                          r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) : 1;
   return value;
 }
 inline void announce()
@@ -222,6 +250,9 @@ inline void announce()
     std::printf("TS R7 observation-only; parent=R3-1; actual-runtime=r3_risk_guard\n");
     std::printf("TS RATE shadow=RATE-20260924-v1; actual-decisions=R3-old; frozen-CG-context; no-bitstream-change\n");
   }
+  if (r9(mode()))
+    std::printf("TS R9 revision=R9-20260927-v1; mode=%d; runtime=%s; engineering=%s; anchor=current; scope=YUV; CG-entry-frozen-CF10; n=nonzero-positions; owner-search=%s\n",
+      r9PublicMode(mode()),name(),r9Code(r9PublicMode(mode())),r9Quant(mode())?"q0-independent-D-U; reject-TU-CBF-changes; no-joint":"native");
 #endif
 }
 // Magnitudes are bounded by codec transform dynamic range. Use wider arithmetic
@@ -252,7 +283,7 @@ inline bool r4(int mode) { return mode >= 17 && mode <= 22; }
 inline bool r5(int mode) { return mode == 23 || mode == 24; }
 inline bool r6(int mode) { return mode >= 25 && mode <= 31; }
 inline bool rateMode(int mode) { return mode == 32 || mode == 33; }
-inline bool needsTsRateContext(int mode) { return rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
+inline bool needsTsRateContext(int mode) { return r9(mode) || rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
 inline bool componentEnabled(int mode, bool luma) { return luma || (mode != 14 && mode != 16); }
 inline bool equivalentPredictors(int a, int b) { return a == b || (a <= 1 && b <= 1); }
 inline bool adaptive(int mode) { return (mode >= 6 && mode <= 8) || mode == 11 || mode == 12 || r3Adaptive(mode); }
@@ -273,6 +304,17 @@ inline int64_t updateState(int mode, int64_t state, int64_t gain)
   return std::max(-limit, std::min(limit, state - decay + gain));
 }
 inline int remap(int a, int p) { return !a ? 0 : a == p ? 1 : a < p ? a + 1 : a; }
+inline MagnitudeAction canonicalAction(int p, int k=0) { return p<=k+1 ? MagnitudeAction{0,0} : MagnitudeAction{p,k}; }
+inline int remap(int a, MagnitudeAction action)
+{
+  const int p=action.predictor,k=action.protect;
+  return p<=k+1 || a<=k ? a : a==p ? k+1 : a<p ? a+1 : a;
+}
+inline int inverseRemap(int a, MagnitudeAction action)
+{
+  const int p=action.predictor,k=action.protect;
+  return p<=k+1 || a<=k ? a : a==k+1 ? p : a<=p ? a-1 : a;
+}
 // Integer proxy only; NOT TSRC bits. Final effectiveness is measured by closed-loop BD-rate.
 inline int proxyCost(unsigned a)
 {

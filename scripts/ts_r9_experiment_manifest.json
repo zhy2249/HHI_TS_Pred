@@ -1,0 +1,124 @@
+{
+  "revision": "R9-20260927-v1",
+  "anchor": "current",
+  "weight": "component_BD_then_6_1_1",
+  "experiments": [
+    {
+      "mode": 1,
+      "engineering": "P10",
+      "runtime": "r9_p10",
+      "stage": "I",
+      "parent": "r8_trim_saving",
+      "directory": "r9_1_p10",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 2,
+      "engineering": "P12",
+      "runtime": "r9_p12",
+      "stage": "I",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_2_p12",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 3,
+      "engineering": "01",
+      "runtime": "r9_axis_sparse",
+      "stage": "I",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_3_axis_sparse",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 4,
+      "engineering": "02F",
+      "runtime": "r9_half_penalty",
+      "stage": "I",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_4_half_penalty",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 5,
+      "engineering": "02A",
+      "runtime": "r9_feature_penalty",
+      "stage": "I",
+      "parent": "r9_half_penalty",
+      "directory": "r9_5_feature_penalty",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 6,
+      "engineering": "03",
+      "runtime": "r9_unit_risk",
+      "stage": "I",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_6_unit_risk",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 7,
+      "engineering": "04",
+      "runtime": "r9_protect_one",
+      "stage": "III",
+      "parent": "r9_p12",
+      "directory": "r9_7_protect_one",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 8,
+      "engineering": "05",
+      "runtime": "r9_joint_mapping",
+      "stage": "III",
+      "parent": "r9_p12",
+      "directory": "r9_8_joint_mapping",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 9,
+      "engineering": "06I",
+      "runtime": "r9_expert_integer",
+      "stage": "II",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_9_expert_integer",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 10,
+      "engineering": "06F",
+      "runtime": "r9_expert_fractional",
+      "stage": "II",
+      "parent": "r9_expert_integer",
+      "directory": "r9_10_expert_fractional",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 11,
+      "engineering": "07D",
+      "runtime": "r9_quant_down",
+      "stage": "IV",
+      "parent": "r8_trim_sparse_max",
+      "directory": "r9_11_quant_down",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 12,
+      "engineering": "07DU",
+      "runtime": "r9_quant_down_up",
+      "stage": "IV",
+      "parent": "r9_quant_down",
+      "directory": "r9_12_quant_down_up",
+      "status": "implemented_validated_ctc_pending"
+    },
+    {
+      "mode": 13,
+      "engineering": "08",
+      "runtime": "r9_axis_feature",
+      "stage": "I",
+      "parent": "r9_axis_sparse",
+      "directory": "r9_13_axis_feature",
+      "status": "implemented_validated_ctc_pending"
+    }
+  ]
+}

@@ -19,6 +19,43 @@ static void equalCtx(const Ctx &a,const Ctx &b)
     for(int j=0;j<2;++j)require(x[i].getAdaptRateOffset(j)==y[i].getAdaptRateOffset(j));
   }
 }
+// Independent R9-9/10 reference: call the EXISTING three expert modes, resolve
+// geometry/scan directly, and use each historical target's own L/U class.
+static void expertReference(const CoeffCodingContext &ctx,int s,const std::vector<TCoeff> &q,int rice,int range)
+{
+  using namespace TsFixedPrediction;
+  const int m=r9PublicMode(mode());
+  const auto expert=[&](int j) {
+    return std::array<MagnitudeAction,3>{{canonicalAction(ctx.r8PredictionTS(12,j,q.data()).predictor),
+      canonicalAction(ctx.magnitudePredictorModeTS(10,j,q.data())),
+      canonicalAction(ctx.magnitudePredictorModeTS(13,j,q.data()))}};
+  };
+  const auto actions=expert(s); const auto actual=ctx.r9PredictionTS(m,s,q.data());
+  int count=1+(actions[1]!=actions[0])+(actions[2]!=actions[0] && actions[2]!=actions[1]);
+  require(count==actual.experts);
+  if(count==1) { require(actual.action==actions[0] && actual.validation==0); return; }
+  const int w=ctx.width(),pos=ctx.blockPos(s),x=pos%w,y=pos/w;
+  const int offsets[]={-1,-w,-w-1,-2,-2*w};
+  const bool valid[]={x>0,y>0,x>0 && y>0,x>=2,y>=2};
+  int targets=0; int64_t losses[3]{};
+  for(int t=0;t<5;++t) if(valid[t] && q[pos+offsets[t]])
+  {
+    int j=-1;
+    for(int k=ctx.minSubPos();k<s;++k) if(ctx.blockPos(k)==pos+offsets[t]) { j=k; break; }
+    if(j<0) { continue; }
+    ++targets; const auto past=expert(j); const int jp=ctx.blockPos(j);
+    const int l=jp%w?q[jp-1]:0,u=jp/w?q[jp-w]:0;
+    for(int e=0;e<3;++e)
+    {
+      const int v=remap(std::abs(int(q[pos+offsets[t]])),past[e]);
+      losses[e]+=m==9 ? int64_t(syntaxCost(v,rice,range))<<SCALE_BITS :
+        ctx.tsRateTable((l!=0)+(u!=0)).cost(v,rice,range);
+    }
+  }
+  int winner=0;
+  for(int e=0;e<3;++e) { require(losses[e]==actual.validationLoss[e]); if(losses[e]<losses[winner]) { winner=e; } }
+  require(actual.validation==targets && actual.expert==winner && actual.action==actions[winner]);
+}
 int main()
 {
   using namespace TsFixedPrediction;
@@ -61,7 +98,7 @@ int main()
     for(auto &a:q)a=rng()%3?int(rng()%(trial%2?21:4096))-10:0;
     if(trial%9==0)std::fill(q.begin(),q.end(),0);
     q[0]=-3;
-    if(r8(mode()) && trial%31==0)
+    if((r8(mode()) || r9(mode())) && trial%31==0)
       for(int i=0;i<w*h;++i)q[i]=i%3==0?-32768:i%3==1?32767:1;
     OutputBitstream bits; BinEncoder_Std bin; CABACWriter writer(bin,nullptr);
     writer.initBitstream(&bits); bin.reset(cu.qp,I_SLICE);
@@ -77,6 +114,11 @@ int main()
         auto poisoned=q;
         for(int k=s;k<w*h;++k)poisoned[enc.blockPos(k)]=int(rng()%63)-31;
         require(ratePredictor(enc,s,q.data())==ratePredictor(enc,s,poisoned.data())); ++poisons;
+        require(rateAction(enc,s,q.data())==rateAction(enc,s,poisoned.data()));
+        if(bdpcm==BdpcmMode::NONE && (r9PublicMode(mode())==9 || r9PublicMode(mode())==10))
+          expertReference(enc,s,q,rice,15);
+        if(bdpcm==BdpcmMode::NONE && r9Quant(mode()))
+          require(rateAction(enc,s,q.data())==canonicalAction(enc.r8PredictionTS(12,s,q.data()).predictor));
         if (r8PublicMode(mode())==22 && g==0)
           require(enc.r8PredictionTS(21,s,q.data()).predictor==enc.r8PredictionTS(22,s,q.data()).predictor);
         if (r8PublicMode(mode())==23 && bdpcm==BdpcmMode::NONE)
@@ -87,7 +129,7 @@ int main()
       equalCtx(untouched,writer.getCtx());
       Ctx clone(writer.getCtx()); auto replay=enc; int bins=enc.remRegBins;
       FractionalSink sink{static_cast<CtxStore<BinProbModel_Std>&>(clone)};
-      const auto path=replayRateCG(replay,q.data(),[&](int s){return ratePredictor(enc,s,q.data());},bins,rice,sink);
+      const auto path=replayRateCG(replay,q.data(),[&](int s){return rateAction(enc,s,q.data());},bins,rice,sink);
       BitEstimator_Std estimator; estimator.getCtx()=writer.getCtx(); estimator.resetBits();
       CABACWriter estimate(estimator,nullptr); auto native=enc; unsigned rb[8]{};
       estimate.residual_coding_subblockTS(native,q.data(),rb,rice,false);

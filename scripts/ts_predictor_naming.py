@@ -32,9 +32,15 @@ R8_MODE_NUMBERS = {
     'r8_smoothed_all_support': 20, 'r8_dual_path': 21, 'r8_causal_path': 22,
     'r8_r3_dual_quant': 23, 'r8_raw_dual_quant': 24,
 }
+R9_MODE_NUMBERS = dict(zip((
+    'r9_p10','r9_p12','r9_axis_sparse','r9_half_penalty','r9_feature_penalty',
+    'r9_unit_risk','r9_protect_one','r9_joint_mapping','r9_expert_integer',
+    'r9_expert_fractional','r9_quant_down','r9_quant_down_up','r9_axis_feature'), range(1,14)))
 
 
 def directory_name(mode: str) -> str:
+    if mode in R9_MODE_NUMBERS:
+        return f'r9_{R9_MODE_NUMBERS[mode]}_{mode.removeprefix("r9_")}'
     if mode in R8_MODE_NUMBERS:
         return f'r8_{R8_MODE_NUMBERS[mode]}_{mode.removeprefix("r8_")}'
     if mode in R7_MODE_NUMBERS:

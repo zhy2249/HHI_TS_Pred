@@ -76,7 +76,7 @@ def main():
             add(case,'off',args.off,None)
             add(case,'anchor_off',args.anchor_off,None)
     # All previously registered algorithms remain bit-exact on an active case.
-    old=[m for m in batch._TS_PREDICTOR_MODES if m not in (*controls,*R8_MODE_NUMBERS)]
+    old=[m for m in batch._TS_PREDICTOR_MODES if m not in (*controls,*R8_MODE_NUMBERS) and not m.startswith('r9_')]
     for m in old:
         add(cases[0],m,args.encoder,m);add(cases[0],'legacy_'+m,args.legacy,m)
     with ThreadPoolExecutor(max_workers=args.jobs) as pool: rows=list(pool.map(batch._run_one,jobs))

@@ -156,6 +156,26 @@
 #ifndef JVET_BJUT_TS_R8_MODE
 #define JVET_BJUT_TS_R8_MODE                               0
 #endif
+// R9 (R9-20260927-v1): public experiment number, NOT the internal policy ID.
+// 0=off (Current when all other modes are 0); 1=P10, 2=P12: complete P1 candidates;
+// 3=01: same-axis sparse recovery with cost check; 4=02F: 2S+B; 5=02A: nS+n2B;
+// 6=03: unit-magnitude identity-risk gate; 7=04: protect-one mapping k=1;
+// 8=05: joint (k,p); 9=06I / 10=06F: same-CG causal three-expert validation;
+// 11=07D: post-quantization 1->0 owner-RD; 12=07DU: independent 1->0 / 0->1;
+// 13=08: mode3 sparse + mode5 dense. All YUV; Current remains the anchor.
+// Runtime TS_FIXED_PREDICTOR / batch --fixed-predictors overrides the default.
+#ifndef JVET_BJUT_TS_R9_MODE
+#define JVET_BJUT_TS_R9_MODE                               0
+#endif
+#if JVET_BJUT_TS_R9_MODE < 0 || JVET_BJUT_TS_R9_MODE > 13
+#error Invalid TS R9 mode
+#endif
+#if JVET_BJUT_TS_R9_MODE && (JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R9 and previous TS experiment defaults are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R9_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R9 requires the fixed-predictor master
+#endif
 #if JVET_BJUT_TS_R8_MODE < 0 || JVET_BJUT_TS_R8_MODE > 24
 #error Unimplemented or invalid TS R8 mode
 #endif

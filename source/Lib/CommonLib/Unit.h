@@ -44,6 +44,10 @@
 #include "MotionInfo.h"
 #include "ChromaFormat.h"
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+namespace TsFixedPrediction { struct R9QuantTrial; }
+#endif
+
 // ---------------------------------------------------------------------------
 // tools
 // ---------------------------------------------------------------------------
@@ -596,6 +600,9 @@ struct TransformUnit : public UnitArea
   // Encoder-only scoped trial request; never copied as coded TU state.
   bool                      tsR8ExtendedSearch = false;
   unsigned                  tsR8ExtraCandidates = 0;
+  TsFixedPrediction::R9QuantTrial *tsR9Trial = nullptr; // scoped request, NOT copied
+  std::array<int,MAX_NUM_TBLOCKS> tsR9EditKind{}; // diagnostic lineage only
+  std::array<int,MAX_NUM_TBLOCKS> tsR9EditPos{};
 #endif
   uint8_t                   cbf[MAX_NUM_TBLOCKS];
   int                       lastPos[MAX_NUM_TBLOCKS];

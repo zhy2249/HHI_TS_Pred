@@ -45,6 +45,7 @@
 #include "dtrace_buffer.h"
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "TsRateReplay.h"
+#include "TsR9Quant.h"
 #endif
 #if JVET_BJUT_TS_R7_SHADOW
 #include "TsRateRdoqStats.h"
@@ -1231,6 +1232,24 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
   const TCoeff *srcCoeff = coeffs.buf;
   TCoeff       *dstCoeff = tu.getCoeffs(compID).buf;
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  auto *edit=tu.tsR9Trial;
+  if (edit && edit->component==int(compID) && edit->phase)
+  {
+    CHECK(!edit->captured || edit->q0.size()!=maxNumCoeff,"Missing R9 q0");
+    std::copy(edit->q0.begin(),edit->q0.end(),dstCoeff);
+    if(edit->phase<=2)
+    {
+      const int t=edit->phase-1;
+      CHECK(edit->pos[t]<0,"Missing R9 proposal");
+      dstCoeff[edit->pos[t]]=edit->value[t];
+    }
+    absSum=0; for(unsigned i=0;i<maxNumCoeff;++i) { absSum+=std::abs(dstCoeff[i]); }
+    edit->injected=true;
+    return;
+  }
+#endif
+
   double *costCoeff  = m_pdCostCoeff;
   double *costSig    = m_pdCostSig;
   double *costCoeff0 = m_pdCostCoeff0;
@@ -1328,10 +1347,11 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       int rightPixel, belowPixel, predPixel;
 
       cctx.neighTS(rightPixel, belowPixel, scanPos, dstCoeff);
+      const auto action=cctx.magnitudeActionTS(scanPos,dstCoeff);
       predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
-                                     cctx.magnitudePredictorTS(scanPos, dstCoeff));
+                                     action.predictor,action.protect);
 
-      bool allowUp = predPixel == 1;
+      bool allowUp = action.protect ? (upAbsLevel==unsigned(action.predictor) && action.predictor>action.protect+1) : predPixel == 1;
 #if JVET_BJUT_TS_FIXED_PREDICTOR
       if (tu.tsR8ExtendedSearch && roundAbsLevel > 0)
       {
@@ -1381,7 +1401,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
                                     errorScale, coeffLevels, coeffLevelError, &fracBitsSig, fracBitsPar, cctx, fracBits,
                                     fracBitsSign, fracBitsGr1, sign, rightPixel, belowPixel, goRiceParam, lastCoeff,
                                     extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
-                                    cctx.magnitudePredictorTS(scanPos, dstCoeff));
+                                    action.predictor,action.protect);
 
 #if JVET_BJUT_TS_R7_SHADOW
       if (probeRateModel)
@@ -1491,7 +1511,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
     if (trackRateModel)
     {
       TsFixedPrediction::FractionalSink sink{static_cast<CtxStore<BinProbModel_Std> &>(rateTrial)};
-      const auto predict = [&](int s) { return TsFixedPrediction::ratePredictor(cctx,s,dstCoeff); };
+      const auto predict = [&](int s) { return TsFixedPrediction::rateAction(cctx,s,dstCoeff); };
       TsFixedPrediction::replayRateCG(cctx,dstCoeff,predict,rateTrialBins,
         1 + (sps.m_spsRangeExtension.m_tsrcRicePresentFlag ? tu.cu->slice->m_tsrcIndex : 0),sink);
     }
@@ -1506,6 +1526,55 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
     TCoeff level  = dstCoeff[blkPos];
     absSum += abs(level);
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if(edit && edit->component==int(compID))
+  {
+    using namespace TsFixedPrediction;
+    CHECK(edit->phase || edit->captured,"Repeated R9 capture");
+    edit->captured=true; edit->q0.assign(dstCoeff,dstCoeff+maxNumCoeff);
+    int nz=0; for(unsigned i=0;i<maxNumCoeff;++i) { nz+=dstCoeff[i]!=0; }
+    Ctx proposalCtx(ctx); CoeffCodingContext proposal(tu,compID,false,BdpcmMode::NONE);
+    int bins=(maxNumCoeff*7)>>2;
+    const unsigned rice=1+(sps.m_spsRangeExtension.m_tsrcRicePresentFlag?tu.cu->slice->m_tsrcIndex:0);
+    for(int g=0;g<=proposal.lastSubSet();++g)
+    {
+      proposal.initSubblock(g);
+      for(int s=proposal.minSubPos();s<=proposal.maxSubPos();++s) { if(dstCoeff[proposal.blockPos(s)]) { proposal.setSigGroup(); } }
+      proposal.freezeTsRateContext(proposalCtx);
+      const auto &fb=proposalCtx.getFracBitsAcess();
+      for(int s=proposal.minSubPos();s<=proposal.maxSubPos();++s)
+      {
+        const int pos=proposal.blockPos(s),a=std::abs(int(dstCoeff[pos]));
+        const int type=a==1?0:a==0 && srcCoeff[pos]!=0?1:-1;
+        if(type<0) { continue; }
+        ++edit->eligible[type];
+        // Parent-CBF/TS-inference changes are outside the current owner scope.
+        if((type==0 && nz==1) || (type==1 && nz==0)) { ++edit->cbfRejected[type]; continue; }
+        const int b=type==0?0:1;
+        const double scaled=double(std::abs(int64_t(srcCoeff[pos])))*quantisationCoefficient;
+        const double step=double(int64_t(1)<<qBits),oldErr=scaled-a*step,newErr=scaled-b*step;
+        const double deltaD=(newErr*newErr-oldErr*oldErr)*errorScale;
+        const auto action=proposal.magnitudeActionTS(s,dstCoeff);
+        int l,u; proposal.neighTS(l,u,s,dstCoeff);
+        const auto &table=proposal.tsRateTable((l!=0)+(u!=0));
+        const auto &sig=fb.getFracBitsArray(proposal.sigCtxIdAbsTS(s,dstCoeff));
+        const auto &sign=fb.getFracBitsArray(proposal.signCtxIdAbsTS(s,dstCoeff,BdpcmMode::NONE));
+        const int signBit=type==0?dstCoeff[pos]<0:srcCoeff[pos]<0;
+        // Cheap fixed-path ranking only (CF10 + significance/sign). CG flags,
+        // inferred significance, budget propagation and reconstruction are
+        // deliberately left to the full unchanged owner evaluator below.
+        const int64_t deltaR=table.cost(remap(b,action),rice,maxLog2TrDynamicRange)-
+          table.cost(remap(a,action),rice,maxLog2TrDynamicRange)+
+          int64_t(sig.intBits[b!=0])-sig.intBits[a!=0]+(b-a)*int64_t(sign.intBits[signBit]);
+        const double score=deltaD+xGetICost(double(deltaR));
+        if(score<edit->cheap[type])
+        { edit->cheap[type]=score; edit->pos[type]=pos; edit->value[type]=b*(signBit?-1:1); }
+      }
+      FractionalSink sink{static_cast<CtxStore<BinProbModel_Std>&>(proposalCtx)};
+      replayRateCG(proposal,dstCoeff,[&](int s){return rateAction(proposal,s,dstCoeff);},bins,rice,sink);
+    }
+  }
+#endif
 }
 
 void QuantRDOQ::forwardBDPCM(TransformUnit &tu, const CompID &compID, const CCoeffBuf &coeffs, TCoeff &absSum,
@@ -1775,7 +1844,7 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
                                                 const BinFracBits &fracBitsSign, const BinFracBits &fracBitsGt1,
                                                 const uint8_t sign, int rightPixel, int belowPixel, uint16_t ricePar,
                                                 bool isLast, bool useLimitedPrefixLength,
-                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction) const
+                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction, int protect) const
 {
   double   currCostSig  = 0;
   uint32_t bestAbsLevel = 0;
@@ -1831,7 +1900,7 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
     int modAbsLevel           = absLevel;
     if (cctx.remRegBins >= 4)
     {
-      modAbsLevel = cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE, prediction);
+      modAbsLevel = cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE, prediction, protect);
     }
     int    numCtxBins = 0;
     double dCurrCost  = coeffLevelError[errorInd] +

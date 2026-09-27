@@ -61,4 +61,10 @@ inline int ratePredictor(CoeffCodingContext &cctx, int s, const TCoeff *q)
   if (p >= 0) { return p; }
   int l,u; cctx.neighTS(l,u,s,q); return std::max(std::abs(l),std::abs(u));
 }
+inline MagnitudeAction rateAction(CoeffCodingContext &cctx,int s,const TCoeff *q)
+{
+  auto a=cctx.magnitudeActionTS(s,q);
+  if(a.predictor<0) { int l,u; cctx.neighTS(l,u,s,q); a.predictor=std::max(std::abs(l),std::abs(u)); }
+  return a;
+}
 }

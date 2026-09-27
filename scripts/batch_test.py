@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable
-from ts_predictor_naming import experiment_directory
+from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -39,7 +39,7 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
                        "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
                        "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
-                       "r8_r3_dual_quant", "r8_raw_dual_quant")
+                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS)
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 
 _PRESET_CFGS = {
@@ -559,6 +559,8 @@ def _run_one(job: TestJob) -> dict:
             **({"r8_stats": os.environ.get("TS_R8_STATS", "1"),
                 "r8_trace": os.environ.get("TS_R8_TRACE", "0")}
                if job.fixed_predictor and job.fixed_predictor.startswith("r8_") else {}),
+            **({"r9_stats": os.environ.get("TS_R9_STATS", "1"), "r9_trace": os.environ.get("TS_R9_TRACE", "0")}
+               if job.fixed_predictor and job.fixed_predictor.startswith("r9_") else {}),
             "decode": job.decode_md5, "decoder_args": job.decoder_args,
             "decoder": identity(job.decoder) if job.decode_md5 else None,
             **({"fixed_predictor": job.fixed_predictor, "no_recon": job.no_recon}

@@ -1,0 +1,20 @@
+{
+  "experiment": "R9-7",
+  "engineering": "04",
+  "runtime": "r9_protect_one",
+  "revision": "R9-20260927-v1",
+  "status": "not_run",
+  "source_commit": null,
+  "encoder_sha256": null,
+  "decoder_sha256": null,
+  "configuration": null,
+  "frames": null,
+  "qp": [
+    22,
+    27,
+    32,
+    37
+  ],
+  "anchor": "current",
+  "bd_weight": "(6*BD_Y+BD_U+BD_V)/8"
+}

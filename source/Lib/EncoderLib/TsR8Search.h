@@ -4,6 +4,8 @@
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "CommonLib/CodingStructure.h"
 #include "CommonLib/Picture.h"
+#include "CommonLib/TsR9Quant.h"
+#include "CommonLib/UnitTools.h"
 #include <array>
 #include <cmath>
 #include <map>
@@ -90,6 +92,56 @@ public:
   }
 };
 
+// R9 zero/one proposals are independent edits of the SAME final q0. Restrict
+// to separate-component, fixed nonzero TU-CBF subtrees; joint paths unchanged.
+template<class Evaluate>
+void r9OwnerSearch(TransformUnit &tu,CompID comp,bool joint,MtsType tr,CABACWriter &estimator,int owner,const Evaluate &evaluate)
+{
+  if(tr!=MtsType::SKIP || joint || tu.jointCbCr || tu.noResidual || tu.cu->getBdpcmMode(comp)!=BdpcmMode::NONE)
+  { evaluate(); return; }
+  CHECK(tu.tsR9Trial,"Nested R9 search");
+  R8SearchEntry entry(tu,comp,comp); const Ctx initial(estimator.getCtx());
+  R9QuantTrial trial; trial.component=int(comp);
+  tu.tsR9Trial=&trial;
+  const double j0=evaluate();
+  const R9QuantStats::Key key={r9PublicMode(mode()),int(comp),int(tu.blocks[comp].width),int(tu.blocks[comp].height),tu.cu->qp,tu.cu->predMode==MODE_INTRA,owner};
+  const auto original=tu.getCoeffs(comp);
+  const bool usable=trial.captured && j0<MAX_DOUBLE/4 && TU::getCbf(tu,comp) &&
+    std::equal(trial.q0.begin(),trial.q0.end(),original.buf);
+  if(!usable)
+  {
+    tu.tsR9Trial=nullptr; r9QuantStats().add(key,trial,0,0,0,0,true); return;
+  }
+  int best=0,last=0,tested[2]{}; double bestJ=j0;
+  for(int t=0;t<(r9PublicMode(mode())==12?2:1);++t)
+  {
+    if(trial.pos[t]<0) { continue; }
+    entry.restore(tu); estimator.getCtx()=initial;
+    trial.phase=t+1; trial.injected=false;
+    double j=evaluate(); ++tested[t]; last=t+1;
+    CHECK(!trial.injected || std::isnan(j),"R9 full candidate was not evaluated");
+    if(!TU::getCbf(tu,comp)) { j=MAX_DOUBLE; ++trial.cbfRejected[t]; }
+    if(j<bestJ) { bestJ=j; best=t+1; }
+  }
+  if(last!=best)
+  {
+    entry.restore(tu); estimator.getCtx()=initial;
+    trial.phase=best?best:3; trial.injected=false;
+    const double repeated=evaluate();
+    CHECK(!trial.injected || repeated!=bestJ,"R9 owner state was not restored exactly");
+  }
+  CHECK(bestJ>j0,"R9 candidate set lost q0");
+  const auto result=tu.getCoeffs(comp);
+  for(int i=0;i<int(trial.q0.size());++i)
+  {
+    const int expected=best && i==trial.pos[best-1]?trial.value[best-1]:trial.q0[i];
+    CHECK(result.buf[i]!=expected,"R9 selected q is not the declared independent edit");
+  }
+  tu.tsR9EditKind[comp]=best; tu.tsR9EditPos[comp]=best?trial.pos[best-1]:-1;
+  tu.tsR9Trial=nullptr;
+  r9QuantStats().add(key,trial,tested[0],tested[1],best,j0-bestJ,false);
+}
+
 // evaluate() must reset its scalar outputs and owner auxiliary context each
 // invocation, then return the UNCHANGED owner's full relevant local RD cost.
 // The unchosen output is discarded; if q0 wins, deterministically rerun it to
@@ -98,6 +150,7 @@ template<class Evaluate>
 void r8OwnerSearch(TransformUnit &tu, CompID comp, bool joint, MtsType tr,
                    CABACWriter &estimator, int owner, const Evaluate &evaluate)
 {
+  if(r9Quant(mode())) { r9OwnerSearch(tu,comp,joint,tr,estimator,owner,evaluate); return; }
   if (!r8DualQuant(mode()) || tr != MtsType::SKIP || tu.cu->getBdpcmMode(comp) != BdpcmMode::NONE || tu.noResidual)
   { evaluate(); return; }
   CHECK(tu.tsR8ExtendedSearch,"Nested R8 paired search");
