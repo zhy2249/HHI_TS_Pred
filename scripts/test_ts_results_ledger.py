@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, csv_sources, csv_text, imputation_allowed,
+from ts_results_ledger import (BD, METRICS, R9_MODES, catalog, csv_sources, csv_text, imputation_allowed,
                                point_values, read_sheet, sequence_result)
 
 
@@ -20,6 +20,37 @@ def curve(scale=1):
 
 
 class ResultsLedgerTests(unittest.TestCase):
+    def test_r9_registration_preserves_mode_numbering(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs = [s for s in catalog(root) if s['round'] == 'r9']
+        self.assertEqual(len(specs), 13)
+        self.assertEqual(len(set(R9_MODES)), 13)
+        self.assertEqual([s['experiment'] for s in specs], [f'R9-{i}' for i in range(1, 14)])
+        self.assertEqual(specs[0]['mode'], 'r9_p10')
+        self.assertEqual(specs[10]['mode'], 'r9_quant_down')
+        self.assertEqual(specs[11]['mode'], 'r9_quant_down_up')
+        self.assertEqual(specs[12]['mode'], 'r9_axis_feature')
+        self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+
+    def test_r9_numbered_csv_pairing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)
+            for name in ('1.csv', '2.csv', '10.csv', '11.csv', '13.csv'):
+                (p / name).touch()
+            for i in (1, 11, 13):
+                self.assertEqual([x.name for x in csv_sources(dict(round='r9', experiment=f'R9-{i}'), p/f'R9_{i}_JVET-hhi.xlsm')],
+                                 [f'{i}.csv'])
+            self.assertEqual(csv_sources(dict(round='r9', experiment='R9-3'), p/'R9_3_JVET-hhi.xlsm'), [])
+
+    def test_r9_missing_points_are_not_imputed(self):
+        for i in range(1, 14):
+            self.assertFalse(imputation_allowed(f'R9-{i}', 'lb', 'PartyScene', 22))
+
     def test_shared_folder_pairing_does_not_mix_experiments(self):
         with tempfile.TemporaryDirectory() as folder:
             p = Path(folder)

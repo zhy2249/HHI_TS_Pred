@@ -1,18 +1,18 @@
 # TS predictor 实验结果台账
 
-最后更新：2026-09-27。
+最后更新：2026-09-28。
 
 本文件仅记录实验标识、测试范围、数值结果和数据状态，不记录算法分析或后续建议。
-已补录固定 predictor、条件/历史选择、R2～R8 共 57 组方法；R9 尚无正式编码结果。
+已补录固定 predictor、条件/历史选择、R2～R9 共 70 组方法；R9 的 13 组 LB CE 结果仅汇总、暂不分析。
 逐点与逐序列查询见 [详细数据索引](results/README.md)：每组按配置、序列、QP 记录码率、Y/U/V PSNR，
 并列 Current 参考点，提供逐序列分量 BD-rate 和 6:1:1 加权 BD-rate。
 
-- [全部逐 QP 数据 CSV](results/rd_points.csv)：1,876 条记录，含 1,860 实测、14 anchor 补点、2 缺失点。
-- [全部逐序列 BD-rate CSV](results/sequence_bdrate.csv)：469 条实验/配置/序列记录，466 条可计算曲线，另 2 条缺点、1 条参考点未通过。
+- [全部逐 QP 数据 CSV](results/rd_points.csv)：2,240 条记录，含 2,224 实测、14 anchor 补点、2 缺失点。
+- [全部逐序列 BD-rate CSV](results/sequence_bdrate.csv)：560 条实验/配置/序列记录，557 条可计算曲线，另 2 条缺点、1 条参考点未通过。
 - [类别汇总 CSV](results/group_summary.csv) 与 [源表、单元格和文件指纹核验](results/sources.json)。
-- 按轮次浏览：[固定 predictor](results/fixed.md)、[条件选择](results/conditional.md)、[R2](results/r2.md)、[R3](results/r3.md)、[R4](results/r4.md)、[R5](results/r5.md)、[R6](results/r6.md)、[R7](results/r7.md)、[R8](results/r8.md)。
+- 按轮次浏览：[固定 predictor](results/fixed.md)、[条件选择](results/conditional.md)、[R2](results/r2.md)、[R3](results/r3.md)、[R4](results/r4.md)、[R5](results/r5.md)、[R6](results/r6.md)、[R7](results/r7.md)、[R8](results/r8.md)、[R9](results/r9.md)。
 
-本次已只读核对全部 57 组本地工作簿，不再仅依赖历史报告转录。原始工作簿和 CSV 均未改写。
+累计已只读核对全部 70 组本地工作簿，不再仅依赖历史报告转录。原始工作簿和 CSV 均未改写。
 
 ## 记录口径
 
@@ -235,30 +235,59 @@ BasketballDrive QP37 的 **Current Reference** 状态为 `fail(md5 mismatch).`�
 [用户上传的全 24 组外部报告](../external_inputs/TS_Predictor_R8_All_Experiments_Analysis.md) 第 2 节。
 外部原稿保留原文，不随本台账自动提交。本轮未记录 R8 B/RA 结果。
 
-## 10. 尚无正式 BD-rate 的项目
+## 10. R9：LB CE（仅汇总）
+
+2026-09-28 登记。13 组各有 7 序列 × QP22/27/32/37，共 **364/364 实测点**；无补点、无缺失。
+各工作簿 Test 数值与按编号配对的 CSV 一致，所用 Reference 数值/状态与 Current 一致；91 条序列曲线均可计算。
+Y/U/V 为 CE 七序列分量 BD-rate 均值，C、E、CE 为分量 BD-rate 先计算后按 6:1:1 加权的结果，单位 %。
+CE 按七序列等权，不是 `(C+E)/2`。仅记录结果，不作排序、优劣解释或后续实验建议。
+
+| 实验 | 运行名 | Y | U | V | C | E | CE | 数据状态 |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| R9-1 | r9_p10 | -0.022155 | +0.200842 | -0.094674 | -0.044175 | +0.051095 | -0.003345 | 28 实测 |
+| R9-2 | r9_p12 | -0.056611 | +0.209804 | -0.173184 | -0.138089 | +0.095730 | -0.037881 | 28 实测 |
+| R9-3 | r9_axis_sparse | -0.117208 | +0.149646 | -0.042902 | -0.074883 | -0.074136 | -0.074563 | 28 实测 |
+| R9-4 | r9_half_penalty | +0.011538 | +0.185582 | -0.123559 | -0.079582 | +0.144390 | +0.016406 | 28 实测 |
+| R9-5 | r9_feature_penalty | -0.015378 | +0.327384 | +0.238193 | -0.059988 | +0.218032 | +0.059164 | 28 实测 |
+| R9-6 | r9_unit_risk | -0.060531 | +0.691663 | -0.263210 | -0.116055 | +0.173777 | +0.008159 | 28 实测 |
+| R9-7 | r9_protect_one | -0.070813 | +0.186791 | +0.047724 | -0.134564 | +0.123896 | -0.023795 | 28 实测 |
+| R9-8 | r9_joint_mapping | -0.002539 | +0.157334 | -0.005759 | -0.078560 | +0.144513 | +0.017043 | 28 实测 |
+| R9-9 | r9_expert_integer | -0.116591 | +0.189591 | -0.487719 | -0.123836 | -0.125874 | -0.124709 | 28 实测 |
+| R9-10 | r9_expert_fractional | -0.044138 | +0.376303 | -0.624960 | -0.139613 | +0.036384 | -0.064186 | 28 实测 |
+| R9-11 | r9_quant_down | -0.013776 | +0.041578 | +0.226006 | -0.075537 | +0.154652 | +0.023116 | 28 实测 |
+| R9-12 | r9_quant_down_up | -0.055668 | +0.723320 | -0.173892 | -0.028062 | +0.100246 | +0.026927 | 28 实测 |
+| R9-13 | r9_axis_feature | -0.074886 | +0.202289 | -0.182064 | -0.132319 | +0.051275 | -0.053636 | 28 实测 |
+
+来源：`experiments/ts_predictor_r9/R9_<编号>_JVET-hhi.xlsm` 及同目录 `<编号>.csv`。
+详见 [R9 逐序列 BD-rate 与逐 QP 码率/PSNR](results/r9.md)、[逐 QP CSV](results/rd_points.csv)、
+[逐序列 CSV](results/sequence_bdrate.csv) 和 [来源核验记录](results/sources.json)。
+与工作簿公式独立转写的最大分量 BD-rate 差为 5.15e-13 个百分点。
+本轮只有 LB CE，未记录 R9 B/BCE、RA 或 AI 结果；未通过表格数值认证远端宏、配置/帧范围或解码 hash。
+
+## 11. 尚无正式 BD-rate 的项目
 
 | 实验 | 正式 BD-rate | 记录状态 |
 |---|---|---|
-| R9-1～R9-13 | — | 已实现和工程验证，尚未登记正式 CTC 结果 |
 | TS-001 固定 q 反事实统计 | 不适用 | 条件 TSRC rate 统计，不是闭环 BD-rate |
 | R7 shadow scoring | 不适用 | 保持原 R3 编码决策的评分观察，不是独立新方法 BD-rate |
 | 工程 smoke / bit-exact / 活动验证 | 不适用 | 不计为正式 CTC 结果 |
 
-对应记录：[R9 验收](TS_Predictor_R9_Validation.md)、[初始统计结果](TS_Adaptive_Predictor_CE_Results.md)、[R7 shadow](TS_Predictor_Rate_Shadow_Results_20260924.md)。
+对应记录：[初始统计结果](TS_Adaptive_Predictor_CE_Results.md)、[R7 shadow](TS_Predictor_Rate_Shadow_Results_20260924.md)。
 
-## 11. 历史曲线复用记录（非独立编码实验）
+## 12. 历史曲线复用记录（非独立编码实验）
 
 | 标识 | RD 点组成 | LB B | LB C | LB E | LB CE | LB BCE |
 |---|---|---:|---:|---:|---:|---:|
 | directional_lowQP_policy | nominal QP22/27 取固定 directional，QP32/37 取 Current | -0.029567 | -0.118389 | -0.073903 | -0.099323 | -0.070258 |
 
-以上是复用已编码 RD 点得到的 BD-rate，不是新门控算法的实测结果，不计入前述 57 组方法。
+以上是复用已编码 RD 点得到的 BD-rate，不是新门控算法的实测结果，不计入前述 70 组方法。
 来源：[固定 predictor LB BCE / RA CD 报告](TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md)。
 
 ## 更新记录
 
 | 日期 | 结果登记 |
 |---|---|
+| 2026-09-28 | 登记R9-1～13的364个LB CE实测点、91条序列曲线及13组汇总，无补点。新增R9明细并更新统一CSV、源指纹与计数；旧57组数据不变。本轮仅汇总，不分析。 |
 | 2026-09-27（明细扩展） | 从全部57组源表生成逐QP/逐序列明细及CSV；R2-4补齐后CE由暂估-0.004392%更新为实测-0.005667%；补登记R6-2 LB B/BCE及R3-1 AI/RA；R8全24组改为本地数值核对。RA失败参考与缺点不计算对应序列BD-rate。 |
 | 2026-09-27 | 建立本文件；补录 57 组方法的 LB CE 结果、已有 LB B/BCE 与 RA CD 结果；单列 R8 外部转录、补点、六序列子集及待结果状态。R3-1 B/BCE 使用 2026-09-24 完整实测版。 |
 

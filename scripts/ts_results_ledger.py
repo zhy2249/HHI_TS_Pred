@@ -22,6 +22,10 @@ from ts_fixed_workbook_analysis import CLASSES
 KEY = re.compile(r'^(.+)\.Q(\d+)\.ecm\.(lb|ra|ai|lp)$')
 METRICS = ('rate_kbps', 'psnr_y_db', 'psnr_u_db', 'psnr_v_db')
 BD = ('bd_y_pct', 'bd_u_pct', 'bd_v_pct', 'bd_611_pct')
+R9_MODES = ('r9_p10', 'r9_p12', 'r9_axis_sparse', 'r9_half_penalty',
+            'r9_feature_penalty', 'r9_unit_risk', 'r9_protect_one', 'r9_joint_mapping',
+            'r9_expert_integer', 'r9_expert_fractional', 'r9_quant_down',
+            'r9_quant_down_up', 'r9_axis_feature')
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -59,6 +63,8 @@ def catalog(root):
         if len(choices) != 1:
             raise ValueError(f'R8-{i}: expected exactly one source workbook, got {choices}')
         add('r8', f'R8-{i}', f'R8_MODE={i}', choices[0].relative_to(root).as_posix())
+    for i, mode in enumerate(R9_MODES, 1):
+        add('r9', f'R9-{i}', mode, f'experiments/ts_predictor_r9/R9_{i}_JVET-hhi.xlsm')
     return specs
 
 
@@ -75,7 +81,7 @@ def imputation_allowed(experiment, config, seq, qp):
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
-    if spec['round'] == 'r8':
+    if spec['round'] in ('r8', 'r9'):
         candidate = path.parent / (spec['experiment'].split('-')[1] + '.csv')
         return [candidate] if candidate.exists() else []
     if re.fullmatch(r'R[2-7]-\d+', spec['experiment']):
