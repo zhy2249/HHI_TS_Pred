@@ -29,6 +29,7 @@
 | R7 / rate estimator | [实验编号](TS_Predictor_R7_Experiment_Design.md)、[评分研究与实现](TS_Predictor_Rate_Estimator_Study.md) | [shadow 结果](TS_Predictor_Rate_Shadow_Results_20260924.md)、[R7→R8 依据](TS_Predictor_R7_Evidence_for_R8.md) |
 | R8 | [总设计](TS_Predictor_R8_Experiment_Design.md)、[首八组](TS_Predictor_R8_First8_Design.md)、[初版实现](TS_Predictor_R8_Implementation.md)、[全部24组实现](TS_Predictor_R8_All24_Implementation.md) | [初版验证](TS_Predictor_R8_Validation.md)、[首七组结果](TS_Predictor_R8_First7_Results_20260926.md) |
 | R9 | [用户原始计划](../external_inputs/R9_Experiment_Plan.md)、[实施说明](TS_Predictor_R9_Implementation.md) | [验收记录](TS_Predictor_R9_Validation.md)、[结果台账](TS_Predictor_Results_Ledger.md)、[逐序列/逐QP明细（仅汇总）](results/r9.md) |
+| R10 | [用户原始计划](../external_inputs/R10_Experiment_Plan.md)、[实现与运行](TS_Predictor_R10_Implementation.md) | [验收记录](TS_Predictor_R10_Validation.md)；正式CTC待运行 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 

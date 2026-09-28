@@ -8,6 +8,28 @@
 
 namespace TsFixedPrediction
 {
+inline int r10PublicMode(int policy) { return policy >= 71 && policy <= 77 ? policy-70 : 0; }
+inline bool r10(int policy) { return r10PublicMode(policy)!=0; }
+inline const char *r10Name(int m)
+{
+  static const char *const names[]={nullptr,"r10_expert_axis_A","r10_expert_p1_A","r10_integer_then_fractional",
+    "r10_matched_state_weights","r10_delete_one_validation","r10_protected_mapping_expert","r10_axis_A_tiebreak"};
+  return m>=1 && m<=7 ? names[m] : nullptr;
+}
+inline int r10Policy(const char *name)
+{
+  for(int m=1;m<=7;++m) { if(!std::strcmp(name,r10Name(m))) { return m+70; } }
+  return 0;
+}
+inline bool r10CacheEnabled()
+{
+  static const bool enabled=[]() {
+    const char *v=std::getenv("TS_R10_CACHE");
+    CHECK(v && std::strcmp(v,"0") && std::strcmp(v,"1"),"TS_R10_CACHE must be 0 or 1");
+    return v ? !std::strcmp(v,"1") : bool(JVET_BJUT_TS_R10_CACHE);
+  }();
+  return enabled;
+}
 inline int r9PublicMode(int policy) { return policy >= 58 && policy <= 70 ? policy - 57 : 0; }
 inline bool r9(int policy) { return r9PublicMode(policy) != 0; }
 inline bool r9Quant(int policy) { return r9PublicMode(policy) == 11 || r9PublicMode(policy) == 12; }
@@ -90,7 +112,8 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R9_MODE ? r9Name(JVET_BJUT_TS_R9_MODE) :
+  return JVET_BJUT_TS_R10_MODE ? r10Name(JVET_BJUT_TS_R10_MODE) :
+         JVET_BJUT_TS_R9_MODE ? r9Name(JVET_BJUT_TS_R9_MODE) :
          JVET_BJUT_TS_R8_MODE ? r8Name(JVET_BJUT_TS_R8_MODE) :
          JVET_BJUT_TS_R7_MODE == 1 ? "rate_raw" :
          JVET_BJUT_TS_R7_MODE == 2 ? "rate_guard" :
@@ -145,7 +168,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -198,12 +221,15 @@ inline int mode()
                           !std::strcmp(name(), "r6_sparse_min") ? 31 :
                           !std::strcmp(name(), "rate_raw") ? 32 :
                           !std::strcmp(name(), "rate_guard") ? 33 :
-                          r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) : 1;
+                          r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) :
+                          r10Policy(name()) ? r10Policy(name()) : 1;
   return value;
 }
 inline void announce()
 {
   (void)name(); // Validate explicit requests even in master-OFF builds.
+  CHECK(r10CacheEnabled() && !r10(mode()) && r9PublicMode(mode())!=9,
+        "R10 exact cache requires R9-9 or R10-1..7; override TS_R10_CACHE=0 for other algorithms");
   const bool wantShadow = std::getenv("TS_RATE_SHADOW") && std::strcmp(std::getenv("TS_RATE_SHADOW"), "0");
   const bool wantSearch = std::getenv("TS_RATE_RDOQ_SHADOW") && std::strcmp(std::getenv("TS_RATE_RDOQ_SHADOW"), "0");
   CHECK((wantShadow || wantSearch) && !JVET_BJUT_TS_R7_SHADOW,
@@ -253,6 +279,10 @@ inline void announce()
   if (r9(mode()))
     std::printf("TS R9 revision=R9-20260927-v1; mode=%d; runtime=%s; engineering=%s; anchor=current; scope=YUV; CG-entry-frozen-CF10; n=nonzero-positions; owner-search=%s\n",
       r9PublicMode(mode()),name(),r9Code(r9PublicMode(mode())),r9Quant(mode())?"q0-independent-D-U; reject-TU-CBF-changes; no-joint":"native");
+  if (r10(mode()))
+    std::printf("TS R10 revision=R10-20260928-v1; mode=%d; runtime=%s; anchor=current; parent=R9-9; scope=YUV; local-causal-validation; CG-entry-frozen-CF10\n",r10PublicMode(mode()),name());
+  if (r10(mode()) || r9PublicMode(mode())==9)
+    std::printf("TS R10 exact-cache=%d; observation=TS_R10_STATS(default-off); no-speed-claim\n",int(r10CacheEnabled()));
 #endif
 }
 // Magnitudes are bounded by codec transform dynamic range. Use wider arithmetic
@@ -283,7 +313,7 @@ inline bool r4(int mode) { return mode >= 17 && mode <= 22; }
 inline bool r5(int mode) { return mode == 23 || mode == 24; }
 inline bool r6(int mode) { return mode >= 25 && mode <= 31; }
 inline bool rateMode(int mode) { return mode == 32 || mode == 33; }
-inline bool needsTsRateContext(int mode) { return r9(mode) || rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
+inline bool needsTsRateContext(int mode) { return r10(mode) || r9(mode) || rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
 inline bool componentEnabled(int mode, bool luma) { return luma || (mode != 14 && mode != 16); }
 inline bool equivalentPredictors(int a, int b) { return a == b || (a <= 1 && b <= 1); }
 inline bool adaptive(int mode) { return (mode >= 6 && mode <= 8) || mode == 11 || mode == 12 || r3Adaptive(mode); }

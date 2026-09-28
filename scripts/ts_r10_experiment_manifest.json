@@ -1,0 +1,18 @@
+{
+  "revision": "R10-20260928-v1",
+  "anchor": "current",
+  "primary_control": "r9_expert_integer",
+  "status": "implemented_validated_ctc_pending",
+  "weight": "component_BD_then_6_1_1",
+  "class_mean": "CE=(4*C_mean+3*E_mean)/7; seven_sequence_equal_weight",
+  "engineering": {"mode": 0, "runtime": "r9_expert_integer", "switch": "TS_R10_CACHE=0/1", "bdrate_group": false},
+  "experiments": [
+    {"mode":1,"runtime":"r10_expert_axis_A","stage":"I","directory":"r10_1_expert_axis_A"},
+    {"mode":2,"runtime":"r10_expert_p1_A","stage":"I","directory":"r10_2_expert_p1_A"},
+    {"mode":3,"runtime":"r10_integer_then_fractional","stage":"I","directory":"r10_3_integer_then_fractional"},
+    {"mode":4,"runtime":"r10_matched_state_weights","stage":"I","directory":"r10_4_matched_state_weights"},
+    {"mode":5,"runtime":"r10_delete_one_validation","stage":"II","directory":"r10_5_delete_one_validation"},
+    {"mode":6,"runtime":"r10_protected_mapping_expert","stage":"II","directory":"r10_6_protected_mapping_expert"},
+    {"mode":7,"runtime":"r10_axis_A_tiebreak","stage":"I","directory":"r10_7_axis_A_tiebreak"}
+  ]
+}

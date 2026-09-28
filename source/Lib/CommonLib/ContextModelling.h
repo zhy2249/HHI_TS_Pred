@@ -53,6 +53,7 @@
 #include "TsRateCost.h"
 #include "TsR8Prediction.h"
 #include "TsR9Prediction.h"
+#include "TsR10Prediction.h"
 #endif
 
 #include <bitset>
@@ -584,6 +585,8 @@ public:
   TsFixedPrediction::MagnitudeAction magnitudeActionTS(int scanPos, const TCoeff *coeff) const
   {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if (TsFixedPrediction::r10(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
+      return r10PredictionTS(TsFixedPrediction::r10PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action();
     if (TsFixedPrediction::r9(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
       return r9PredictionTS(TsFixedPrediction::r9PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action;
 #endif
@@ -593,11 +596,13 @@ public:
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   TsFixedPrediction::R9Decision r9PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   void r9SupportTS(int scanPos,const TCoeff *coeff,int (&a)[5],int (&positions)[5]) const;
+  TsFixedPrediction::R10Actions tsLocalExperts(int mode,int scanPos,const int (&h)[5]) const;
+  TsFixedPrediction::R10Decision r10PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   void freezeTsRateContext(const Ctx &ctx)
   {
     // Also permits native low-budget tests. This is the actual CG0 entry
     // budget; subsequent history comes exclusively from final-q replay.
-    if ((TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 || TsFixedPrediction::r9(TsFixedPrediction::mode())) && m_subSetId == 0)
+    if ((TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 || TsFixedPrediction::r9(TsFixedPrediction::mode()) || TsFixedPrediction::r10(TsFixedPrediction::mode())) && m_subSetId == 0)
       m_tsHistoryBins = remRegBins;
     const auto &bits = ctx.getFracBitsAcess();
     for (int k = 0; k < 3; ++k)
@@ -608,6 +613,9 @@ public:
       for (int j = 0; j < 4; ++j) { t.gt[j] = bits.getFracBitsArray(greaterXCtxIdAbsTS(j + 1)); }
     }
     m_tsRateSnapshot.ready = true;
+    // Copying a context copies its snapshot and cache together. Every new
+    // snapshot discards the cache; q edits are detected by full support keys.
+    m_tsExpertCache.clear();
   }
   const TsFixedPrediction::RateTable &tsRateTable(int directNonzero) const
   {
@@ -672,6 +680,11 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r10(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      return r10PredictionTS(TsFixedPrediction::r10PublicMode(mode),scanPos,coeff).action().predictor;
+    }
     if (TsFixedPrediction::r9(mode))
     {
       if (m_bdpcm != BdpcmMode::NONE) { return -1; }
@@ -718,6 +731,7 @@ public:
   void finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR9CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR10CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
   int tsPathWeight10() const { return m_tsPath10; }
@@ -803,7 +817,8 @@ private:
   Ctx m_tsVirtualCtx; // Default Ctx allocates no probability store; lazy for R2-F only.
   TsFixedPrediction::RateSnapshot m_tsRateSnapshot;
   int m_tsPath10 = 1, m_tsPath2 = 1; // C02: private TU-local, constant throughout a CG.
-  std::vector<int> m_tsScanIndex; // R9-only immutable inverse native scan.
+  std::vector<int> m_tsScanIndex; // R9/R10 immutable inverse native scan.
+  mutable std::vector<TsFixedPrediction::R10CacheEntry> m_tsExpertCache;
 #endif
   // constant
   const CompID             m_compID;

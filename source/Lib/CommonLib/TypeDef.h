@@ -167,6 +167,37 @@
 #ifndef JVET_BJUT_TS_R9_MODE
 #define JVET_BJUT_TS_R9_MODE                               0
 #endif
+// R10 (R10-20260928-v1), based on R9-9 local causal expert validation, all YUV.
+// 0=off; 1=A becomes full R9-3 axis expert; 2=A becomes full R9-2 P1 expert;
+// 3=integer validation, fractional only breaks minimum-integer ties;
+// 4=2:1 weights for matching (n<3, direct-nonzero) state;
+// 5=R9-9 winner must survive deletion of its largest positive validation gain;
+// 6=add D=full R9-7 (P1, protect-one k=1); 7=mode1 + mode3.
+// All previous algorithm defaults must be 0. Explicit runtime choice overrides.
+#ifndef JVET_BJUT_TS_R10_MODE
+#define JVET_BJUT_TS_R10_MODE                              0
+#endif
+// Engineering R10-0: exact per-position expert cache, NOT a BD-rate mode.
+// Enable with R9_MODE=9 (or R10_MODE=1..7); runtime TS_R10_CACHE=0/1 overrides.
+// Does not select an algorithm. Default OFF; statistics are separately controlled.
+#ifndef JVET_BJUT_TS_R10_CACHE
+#define JVET_BJUT_TS_R10_CACHE                             0
+#endif
+#if JVET_BJUT_TS_R10_MODE < 0 || JVET_BJUT_TS_R10_MODE > 7
+#error Invalid TS R10 mode
+#endif
+#if JVET_BJUT_TS_R10_CACHE != 0 && JVET_BJUT_TS_R10_CACHE != 1
+#error TS R10 cache must be 0 or 1
+#endif
+#if JVET_BJUT_TS_R10_MODE && (JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R10 and previous TS algorithm defaults are mutually exclusive
+#endif
+#if (JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R10_CACHE) && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R10 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R10_CACHE && !JVET_BJUT_TS_R10_MODE && JVET_BJUT_TS_R9_MODE != 9
+#error R10 exact cache default requires R9_MODE=9 or R10_MODE=1..7
+#endif
 #if JVET_BJUT_TS_R9_MODE < 0 || JVET_BJUT_TS_R9_MODE > 13
 #error Invalid TS R9 mode
 #endif

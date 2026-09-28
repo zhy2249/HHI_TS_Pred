@@ -56,6 +56,65 @@ static void expertReference(const CoeffCodingContext &ctx,int s,const std::vecto
   for(int e=0;e<3;++e) { require(losses[e]==actual.validationLoss[e]); if(losses[e]<losses[winner]) { winner=e; } }
   require(actual.validation==targets && actual.expert==winner && actual.action==actions[winner]);
 }
+// Independent R10 oracle: geometry from scan, old public expert APIs, hand
+// implemented selection. No r10Experts/r10Select/r9SupportTS calls here.
+static void r10Reference(const CoeffCodingContext &ctx,int s,const std::vector<TCoeff> &q,int rice,int range)
+{
+  using namespace TsFixedPrediction;
+  const int m=r10PublicMode(mode()),count=m==6?4:3,w=ctx.width();
+  const auto support=[&](int j) {
+    const int pos=ctx.blockPos(j),x=pos%w,y=pos/w;
+    return std::array<int,5>{{x?std::abs(q[pos-1]):0,y?std::abs(q[pos-w]):0,
+      x && y?std::abs(q[pos-w-1]):0,x>=2?std::abs(q[pos-2]):0,y>=2?std::abs(q[pos-2*w]):0}};
+  };
+  const auto expert=[&](int j) {
+    const int a=m==1 || m==7?3:m==2?2:12;
+    return R10Actions{{ctx.r9PredictionTS(a,j,q.data()).action,
+      canonicalAction(ctx.magnitudePredictorModeTS(10,j,q.data())),
+      canonicalAction(ctx.magnitudePredictorModeTS(13,j,q.data())),
+      m==6?ctx.r9PredictionTS(7,j,q.data()).action:MagnitudeAction{0,0}}};
+  };
+  const auto z=[&](int j) { const auto h=support(j); int n=0; for(int v:h) { n+=v!=0; }
+    return std::make_pair(n<3,(h[0]!=0)+(h[1]!=0)); };
+  const auto actions=expert(s); const auto actual=ctx.r10PredictionTS(m,s,q.data());
+  for(int e=0;e<count;++e) { require(actions[e]==actual.actions[e]); }
+  const int pos=ctx.blockPos(s),x=pos%w,y=pos/w;
+  const int offsets[]={-1,-w,-w-1,-2,-2*w};
+  const bool valid[]={x>0,y>0,x>0 && y>0,x>=2,y>=2};
+  int rows=0,effective=0; int64_t ci[4]{},cf[4]{},largest[4]{};
+  for(int t=0;t<5;++t) if(valid[t] && q[pos+offsets[t]])
+  {
+    int j=-1;
+    for(int k=ctx.minSubPos();k<s;++k) if(ctx.blockPos(k)==pos+offsets[t]) { j=k; break; }
+    if(j<0) { continue; }
+    ++rows; const auto past=expert(j); const auto h=support(j);
+    const int weight=m==4 && z(j)==z(s)?2:1,target=std::abs(q[pos+offsets[t]]);
+    int64_t row[4]{}; bool different=false;
+    for(int e=0;e<count;++e)
+    {
+      const int a=remap(target,past[e]);
+      different|=a!=remap(target,past[0]);
+      row[e]=int64_t(syntaxCost(a,rice,range))<<SCALE_BITS;
+      ci[e]+=weight*row[e]; cf[e]+=ctx.tsRateTable((h[0]!=0)+(h[1]!=0)).cost(a,rice,range);
+      largest[e]=std::max(largest[e],row[0]-row[e]);
+    }
+    effective+=different;
+  }
+  int winner=0,raw=0,ties=0; bool same=true,reject=false;
+  for(int e=1;e<count;++e) { if(ci[e]<ci[raw]) { raw=e; } same &= actions[e]==actions[0]; }
+  winner=raw;
+  for(int e=0;e<count;++e)
+  {
+    require(ci[e]==actual.ci[e]); ties+=ci[e]==ci[raw];
+    if((m==3 || m==7) && ci[e]==ci[raw] && cf[e]<cf[winner]) { winner=e; }
+  }
+  if(m==5 && winner && ci[0]-ci[winner]-largest[winner]<=0) { winner=0; reject=true; }
+  if(same || !rows) { winner=0; reject=false; }
+  require(rows==actual.validation && effective==actual.effective && ties==actual.ciTies);
+  require(winner==actual.expert && reject==actual.guardRejected && actions[winner]==actual.action());
+  require(ctx.r10PredictionTS(0,s,q.data()).action()==ctx.r9PredictionTS(9,s,q.data()).action);
+}
+
 int main()
 {
   using namespace TsFixedPrediction;
@@ -98,7 +157,7 @@ int main()
     for(auto &a:q)a=rng()%3?int(rng()%(trial%2?21:4096))-10:0;
     if(trial%9==0)std::fill(q.begin(),q.end(),0);
     q[0]=-3;
-    if((r8(mode()) || r9(mode())) && trial%31==0)
+    if((r8(mode()) || r9(mode()) || r10(mode())) && trial%31==0)
       for(int i=0;i<w*h;++i)q[i]=i%3==0?-32768:i%3==1?32767:1;
     OutputBitstream bits; BinEncoder_Std bin; CABACWriter writer(bin,nullptr);
     writer.initBitstream(&bits); bin.reset(cu.qp,I_SLICE);
@@ -117,6 +176,19 @@ int main()
         require(rateAction(enc,s,q.data())==rateAction(enc,s,poisoned.data()));
         if(bdpcm==BdpcmMode::NONE && (r9PublicMode(mode())==9 || r9PublicMode(mode())==10))
           expertReference(enc,s,q,rice,15);
+        if(bdpcm==BdpcmMode::NONE && r10(mode()))
+        {
+          r10Reference(enc,s,q,rice,15);
+          if(s>enc.minSubPos())
+          {
+            // Cached actions must not survive changed support in a q branch;
+            // evaluate an edited branch, a cleared prefix, then restore q.
+            auto edited=q; edited[enc.blockPos(s-1)]=1;
+            r10Reference(enc,s,edited,rice,15);
+            for(int k=0;k<s;++k) { edited[enc.blockPos(k)]=0; }
+            r10Reference(enc,s,edited,rice,15); r10Reference(enc,s,q,rice,15);
+          }
+        }
         if(bdpcm==BdpcmMode::NONE && r9Quant(mode()))
           require(rateAction(enc,s,q.data())==canonicalAction(enc.r8PredictionTS(12,s,q.data()).predictor));
         if (r8PublicMode(mode())==22 && g==0)
@@ -127,6 +199,16 @@ int main()
           require(ratePredictor(enc,s,q.data())==enc.r8PredictionTS(1,s,q.data()).predictor);
       }
       equalCtx(untouched,writer.getCtx());
+      if(r10(mode()) && bdpcm==BdpcmMode::NONE)
+      {
+        // A copied branch must discard old cache entries on a different CG
+        // probability snapshot, then agree again after restoring the snapshot.
+        auto branch=enc; Ctx changed(writer.getCtx()); changed.init((cu.qp+7)%64,P_SLICE);
+        branch.freezeTsRateContext(changed);
+        r10Reference(branch,enc.maxSubPos(),q,rice,15);
+        branch.freezeTsRateContext(untouched);
+        r10Reference(branch,enc.maxSubPos(),q,rice,15);
+      }
       Ctx clone(writer.getCtx()); auto replay=enc; int bins=enc.remRegBins;
       FractionalSink sink{static_cast<CtxStore<BinProbModel_Std>&>(clone)};
       const auto path=replayRateCG(replay,q.data(),[&](int s){return rateAction(enc,s,q.data());},bins,rice,sink);

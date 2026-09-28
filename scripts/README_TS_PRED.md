@@ -5,6 +5,12 @@
 
 统一进度、结果与后续计划见 [实验记录](../docs/experiments/TS_Predictor_Experiment_Log.md)。
 
+R10（2026-09-28）：[七组实现、宏与运行命令](../docs/experiments/TS_Predictor_R10_Implementation.md)。
+`JVET_BJUT_TS_R10_MODE=1..7`，旧算法模式设0；`JVET_BJUT_TS_R10_CACHE`是独立等价缓存。
+`bash scripts/run_ts_r10_lb_ce.sh --dry-run`默认第一批1/2/3/4/7，LB CE半帧、共享池、逐组写表、无重建。
+`TS_R10_STATS=1`仅最终Writer目标观察，提取用`ts_r10_activity.py`；计时须关闭观察。
+没有R10正式结果，不能将合成smoke当BD-rate。
+
 R3的Current偏好/稀疏支持独立实验已实现为R6：
 [设计与逻辑审查](../docs/experiments/TS_Predictor_R6_Experiment_Design.md)、[宏/运行命令](../docs/experiments/TS_Predictor_R6_Implementation.md)、
 [验证](../docs/experiments/TS_Predictor_R6_Validation.md)。`JVET_BJUT_TS_R6_MODE=1..7`；默认仍Current。
