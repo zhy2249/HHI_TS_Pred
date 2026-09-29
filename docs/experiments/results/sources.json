@@ -1,17 +1,17 @@
 {
-  "updated": "2026-09-28",
+  "updated": "2026-09-29",
   "method": "PCHIP per component, then (6Y+U+V)/8; equal sequence means",
-  "experiments": 70,
-  "sequence_records": 560,
-  "point_records": 2240,
+  "experiments": 76,
+  "sequence_records": 607,
+  "point_records": 2428,
   "point_status": {
-    "measured": 2224,
-    "anchor_imputed": 14,
+    "measured": 2406,
+    "anchor_imputed": 20,
     "missing": 2
   },
   "sequence_status": {
-    "complete": 544,
-    "imputed": 13,
+    "complete": 585,
+    "imputed": 19,
     "incomplete": 2,
     "invalid_anchor": 1
   },
@@ -63,6 +63,54 @@
     {
       "path": "experiments/ts_conditional_v1/q32_ewma/LB_BCE/JVET-hhi.xlsm",
       "sha256": "d16474b7d56a62dacb5fc34e525de60cad894e48700711ee43261e6d1eef560e"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/1.csv",
+      "sha256": "2c9bea7b7c3dcbbae22d2164c2663353a5972fbfa1c88a129b7878915833653e"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/2.csv",
+      "sha256": "e329bf6b1ed37c8ab43bf80a152ddbe90a0d9411ccddff9541dfa19a970bab0a"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/3.csv",
+      "sha256": "35c9ab1b96b4a0a8718f1a1f4cad44b009c99738514e534ab91c4635acec6ecb"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/4.csv",
+      "sha256": "368dc46c386911502c10dbcebc9b4cec7d8671582ac2409e1650ebb00c8552cb"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/5.csv",
+      "sha256": "c4bfafba9c7f542503c79066862b8a4f284a5e7a544984917ee2e66cbc53d8ac"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/6.csv",
+      "sha256": "70310f7025649f54b313151ea694010535f6513e51bab868c43d4360bdc4f8a7"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_1_JVET-hhi.xlsm",
+      "sha256": "de398e82b83be71adfa7ee03d26e16091762426c77336595f00f46fb5ce89f7e"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_2_JVET-hhi.xlsm",
+      "sha256": "745958a75663a58156b7dc72fc0bc6c4c10c551d376affb23de7a09368d3c786"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_3_JVET-hhi.xlsm",
+      "sha256": "25ffd5263d3666a514dc302b2ed335d772732f81bd37e072f7b57c18741e72fc"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_4_JVET-hhi.xlsm",
+      "sha256": "df4bb1b44945c7243ca93ac4dd500eba21597305838e65ee66705255882b8fc0"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_5_JVET-hhi.xlsm",
+      "sha256": "fdabbb3e1cebd088fbdac8403bd43e906ab9c1033de8b0532389a00f785c1fd4"
+    },
+    {
+      "path": "experiments/ts_predictor_r10/R10_6_JVET-hhi.xlsm",
+      "sha256": "285520de8759e8da40d5b28ef94aa64a8843a300fc1fe86b2d50f723db3ffe51"
     },
     {
       "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/JVET-hhi.xlsm",
@@ -574,7 +622,7 @@
     },
     {
       "path": "experiments/ts_predictor_r9/R9_9_JVET-hhi.xlsm",
-      "sha256": "d2c109445a062fcaa00ef1e65956c5fd36c4e9a686d8b0369c92776e33acc000"
+      "sha256": "99be84817584b08b58247ea69e6be4b45bb7b4c9946480c556bc33550f79d8b3"
     },
     {
       "path": "runs/ts_fixed_LB_CE_half/directional/JVET-hhi.xlsm",
@@ -943,6 +991,36 @@
       "experiment": "R9-13",
       "source": "experiments/ts_predictor_r9/13.csv",
       "matched_points": 28
+    },
+    {
+      "experiment": "R10-1",
+      "source": "experiments/ts_predictor_r10/1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R10-2",
+      "source": "experiments/ts_predictor_r10/2.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R10-3",
+      "source": "experiments/ts_predictor_r10/3.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R10-4",
+      "source": "experiments/ts_predictor_r10/4.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R10-5",
+      "source": "experiments/ts_predictor_r10/5.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R10-6",
+      "source": "experiments/ts_predictor_r10/6.csv",
+      "matched_points": 26
     }
   ]
 }

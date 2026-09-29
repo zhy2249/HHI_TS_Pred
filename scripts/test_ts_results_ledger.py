@@ -1,10 +1,11 @@
+import json
 import unittest
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, R9_MODES, catalog, csv_sources, csv_text, imputation_allowed,
+from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, catalog, csv_sources, csv_text, imputation_allowed,
                                point_values, read_sheet, sequence_result)
 
 
@@ -35,7 +36,24 @@ class ResultsLedgerTests(unittest.TestCase):
         self.assertEqual(specs[10]['mode'], 'r9_quant_down')
         self.assertEqual(specs[11]['mode'], 'r9_quant_down_up')
         self.assertEqual(specs[12]['mode'], 'r9_axis_feature')
+        self.assertTrue(all(s['expected_lb'] == ('BCE' if s['experiment'] == 'R9-9' else 'CE') for s in specs))
+
+    def test_r10_registration_includes_only_received_results(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs = [s for s in catalog(root) if s['round'] == 'r10']
+        self.assertEqual(len(set(R10_MODES)), 6)
+        self.assertEqual([s['experiment'] for s in specs], [f'R10-{i}' for i in range(1, 7)])
+        self.assertEqual([s['mode'] for s in specs], list(R10_MODES))
+        self.assertEqual(specs[5]['path'], 'experiments/ts_predictor_r10/R10_6_JVET-hhi.xlsm')
         self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+        manifest = Path(__file__).with_name('ts_r10_experiment_manifest.json')
+        modes = json.loads(manifest.read_text())['experiments']
+        self.assertEqual(list(R10_MODES), [m['runtime'] for m in modes if 1 <= m['mode'] <= 6])
 
     def test_r9_numbered_csv_pairing(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -50,6 +68,31 @@ class ResultsLedgerTests(unittest.TestCase):
     def test_r9_missing_points_are_not_imputed(self):
         for i in range(1, 14):
             self.assertFalse(imputation_allowed(f'R9-{i}', 'lb', 'PartyScene', 22))
+
+    def test_r10_numbered_csv_pairing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)
+            for name in ('1.csv', '2.csv', '6.csv', '7.csv', '10.csv'):
+                (p / name).touch()
+            for i in (1, 2, 6):
+                self.assertEqual(csv_sources(dict(round='r10', experiment=f'R10-{i}'), p/f'R10_{i}_JVET-hhi.xlsm'),
+                                 [p / f'{i}.csv'])
+            self.assertEqual(csv_sources(dict(round='r10', experiment='R10-3'), p/'R10_3_JVET-hhi.xlsm'), [])
+
+    def test_new_qp22_imputation_is_explicit_and_measured_wins(self):
+        allowed = {'R9-9': ('MarketPlace', 'Cactus', 'BasketballDrive', 'BQTerrace'),
+                   'R10-6': ('PartyScene', 'RaceHorsesC')}
+        anchor, actual = [100, 30, 31, 32], [99, 30.1, 31.1, 32.1]
+        for exp, seqs in allowed.items():
+            for seq in seqs:
+                self.assertEqual(point_values(exp, 'lb', seq, 22, None, anchor), (anchor, 'anchor_imputed'))
+                self.assertEqual(point_values(exp, 'lb', seq, 22, actual, anchor), (actual, 'measured'))
+                for config, qp in (('lb', 27), ('lb', 32), ('lb', 37), ('ra', 22), ('ai', 22)):
+                    self.assertFalse(imputation_allowed(exp, config, seq, qp))
+        for args in (('R9-8', 'lb', 'Cactus', 22), ('R9-9', 'lb', 'RitualDance', 22),
+                     ('R10-1', 'lb', 'PartyScene', 22), ('R10-6', 'lb', 'BQMall', 22),
+                     ('R10-7', 'lb', 'PartyScene', 22)):
+            self.assertFalse(imputation_allowed(*args))
 
     def test_shared_folder_pairing_does_not_mix_experiments(self):
         with tempfile.TemporaryDirectory() as folder:

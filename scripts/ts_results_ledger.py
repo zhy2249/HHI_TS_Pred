@@ -26,6 +26,9 @@ R9_MODES = ('r9_p10', 'r9_p12', 'r9_axis_sparse', 'r9_half_penalty',
             'r9_feature_penalty', 'r9_unit_risk', 'r9_protect_one', 'r9_joint_mapping',
             'r9_expert_integer', 'r9_expert_fractional', 'r9_quant_down',
             'r9_quant_down_up', 'r9_axis_feature')
+R10_MODES = ('r10_expert_axis_A', 'r10_expert_p1_A', 'r10_integer_then_fractional',
+             'r10_matched_state_weights', 'r10_delete_one_validation',
+             'r10_protected_mapping_expert')  # Uploaded results only; R10-7 pending.
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -64,7 +67,10 @@ def catalog(root):
             raise ValueError(f'R8-{i}: expected exactly one source workbook, got {choices}')
         add('r8', f'R8-{i}', f'R8_MODE={i}', choices[0].relative_to(root).as_posix())
     for i, mode in enumerate(R9_MODES, 1):
-        add('r9', f'R9-{i}', mode, f'experiments/ts_predictor_r9/R9_{i}_JVET-hhi.xlsm')
+        add('r9', f'R9-{i}', mode, f'experiments/ts_predictor_r9/R9_{i}_JVET-hhi.xlsm',
+            'BCE' if i == 9 else 'CE')
+    for i, mode in enumerate(R10_MODES, 1):
+        add('r10', f'R10-{i}', mode, f'experiments/ts_predictor_r10/R10_{i}_JVET-hhi.xlsm')
     return specs
 
 
@@ -75,13 +81,17 @@ def imputation_allowed(experiment, config, seq, qp):
         'A3': {'BQMall', 'PartyScene', 'FourPeople', 'Johnny', 'KristenAndSara'},
         'R2-4': {'PartyScene'}, 'R3-2': {'MarketPlace', 'BasketballDrive', 'BQTerrace'},
         'R8-23': {'PartyScene'}, 'R8-24': {'PartyScene'},
+        # 2026-09-29: explicit permission for the presently missing QP22 points.
+        # Do not extend to other sequences, rounds, configurations or QPs.
+        'R9-9': {'MarketPlace', 'Cactus', 'BasketballDrive', 'BQTerrace'},
+        'R10-6': {'PartyScene', 'RaceHorsesC'},
     }
     return config == 'lb' and qp == 22 and seq in allowed.get(experiment, ())
 
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
-    if spec['round'] in ('r8', 'r9'):
+    if spec['round'] in ('r8', 'r9', 'r10'):
         candidate = path.parent / (spec['experiment'].split('-')[1] + '.csv')
         return [candidate] if candidate.exists() else []
     if re.fullmatch(r'R[2-7]-\d+', spec['experiment']):

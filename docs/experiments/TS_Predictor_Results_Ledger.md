@@ -1,18 +1,18 @@
 # TS predictor 实验结果台账
 
-最后更新：2026-09-28。
+最后更新：2026-09-29。
 
 本文件仅记录实验标识、测试范围、数值结果和数据状态，不记录算法分析或后续建议。
-已补录固定 predictor、条件/历史选择、R2～R9 共 70 组方法；R9 的 13 组 LB CE 结果仅汇总、暂不分析。
+已补录固定 predictor、条件/历史选择、R2～R10 共 76 组方法；本次新增 R10-1～6 LB CE 和 R9-9 LB B，仅记录、不分析。
 逐点与逐序列查询见 [详细数据索引](results/README.md)：每组按配置、序列、QP 记录码率、Y/U/V PSNR，
 并列 Current 参考点，提供逐序列分量 BD-rate 和 6:1:1 加权 BD-rate。
 
-- [全部逐 QP 数据 CSV](results/rd_points.csv)：2,240 条记录，含 2,224 实测、14 anchor 补点、2 缺失点。
-- [全部逐序列 BD-rate CSV](results/sequence_bdrate.csv)：560 条实验/配置/序列记录，557 条可计算曲线，另 2 条缺点、1 条参考点未通过。
+- [全部逐 QP 数据 CSV](results/rd_points.csv)：2,428 条记录，含 2,406 实测、20 anchor 补点、2 缺失点。
+- [全部逐序列 BD-rate CSV](results/sequence_bdrate.csv)：607 条实验/配置/序列记录，604 条可计算曲线，另 2 条缺点、1 条参考点未通过。
 - [类别汇总 CSV](results/group_summary.csv) 与 [源表、单元格和文件指纹核验](results/sources.json)。
-- 按轮次浏览：[固定 predictor](results/fixed.md)、[条件选择](results/conditional.md)、[R2](results/r2.md)、[R3](results/r3.md)、[R4](results/r4.md)、[R5](results/r5.md)、[R6](results/r6.md)、[R7](results/r7.md)、[R8](results/r8.md)、[R9](results/r9.md)。
+- 按轮次浏览：[固定 predictor](results/fixed.md)、[条件选择](results/conditional.md)、[R2](results/r2.md)、[R3](results/r3.md)、[R4](results/r4.md)、[R5](results/r5.md)、[R6](results/r6.md)、[R7](results/r7.md)、[R8](results/r8.md)、[R9](results/r9.md)、[R10](results/r10.md)。
 
-累计已只读核对全部 70 组本地工作簿，不再仅依赖历史报告转录。原始工作簿和 CSV 均未改写。
+累计已只读核对全部 76 组本地工作簿，不再仅依赖历史报告转录。原始工作簿和 CSV 均未改写。
 
 ## 记录口径
 
@@ -235,7 +235,9 @@ BasketballDrive QP37 的 **Current Reference** 状态为 `fail(md5 mismatch).`�
 [用户上传的全 24 组外部报告](../external_inputs/TS_Predictor_R8_All_Experiments_Analysis.md) 第 2 节。
 外部原稿保留原文，不随本台账自动提交。本轮未记录 R8 B/RA 结果。
 
-## 10. R9：LB CE（仅汇总）
+## 10. R9（仅汇总）
+
+### LB CE
 
 2026-09-28 登记。13 组各有 7 序列 × QP22/27/32/37，共 **364/364 实测点**；无补点、无缺失。
 各工作簿 Test 数值与按编号配对的 CSV 一致，所用 Reference 数值/状态与 Current 一致；91 条序列曲线均可计算。
@@ -262,9 +264,67 @@ CE 按七序列等权，不是 `(C+E)/2`。仅记录结果，不作排序、优�
 详见 [R9 逐序列 BD-rate 与逐 QP 码率/PSNR](results/r9.md)、[逐 QP CSV](results/rd_points.csv)、
 [逐序列 CSV](results/sequence_bdrate.csv) 和 [来源核验记录](results/sources.json)。
 与工作簿公式独立转写的最大分量 BD-rate 差为 5.15e-13 个百分点。
-本轮只有 LB CE，未记录 R9 B/BCE、RA 或 AI 结果；未通过表格数值认证远端宏、配置/帧范围或解码 hash。
+以上为原 LB CE 记录；2026-09-29 新增的 R9-9 B/BCE 见下节。
+未记录 R9 RA 或 AI 结果；未通过表格数值认证远端宏、配置/帧范围或解码 hash。
 
-## 11. 尚无正式 BD-rate 的项目
+### R9-9 LB B / BCE（2026-09-29 暂估）
+
+Class B 收到 16/20 个实测点。按本次用户授权，MarketPlace、Cactus、BasketballDrive、BQTerrace 的 QP22
+暂用各自 Current Reference 的完整 RD 元组（码率及 Y/U/V PSNR）补点；RitualDance 四点完整实测。
+R9-9 原有 CE 的 28 个实测点及 BD-rate 不变。BCE 为十二序列等权，不是 `(B+C+E)/3`。
+
+| 实验 | 范围 | 序列数 | Y | U | V | BD611 | 数据状态 |
+|---|---|---:|---:|---:|---:|---:|---|
+| R9-9* | B | 5 | +0.011421 | +0.242424 | +0.158173 | +0.058640 | 16 实测 + 4 QP22 补点，暂估 |
+| R9-9* | BCE | 12 | -0.063253 | +0.211605 | -0.218597 | -0.048314 | 44 实测 + 4 QP22 补点，暂估 |
+
+| B 类序列 | Y | U | V | BD611 | 数据状态 |
+|---|---:|---:|---:|---:|---|
+| MarketPlace* | +0.115250 | +0.087365 | +0.846816 | +0.203210 | 3 实测 + QP22 补点 |
+| RitualDance | -0.074570 | +0.374810 | +0.303617 | +0.028876 | 4 实测 |
+| Cactus* | -0.058725 | -0.266081 | -0.141561 | -0.094999 | 3 实测 + QP22 补点 |
+| BasketballDrive* | +0.018242 | +0.527620 | -0.101704 | +0.066921 | 3 实测 + QP22 补点 |
+| BQTerrace* | +0.056906 | +0.488405 | -0.116302 | +0.089192 | 3 实测 + QP22 补点 |
+
+来源：`experiments/ts_predictor_r9/R9_9_JVET-hhi.xlsm`，新增 B 点状态均为 `pass`。
+同目录 `9.csv` 仍仅包含原有 CE 的 28 个点，已与表格核对；新增 B 的 16 个点来源为工作簿，
+不记作已与 CSV 交叉核对。逐 QP 码率、Y/U/V PSNR 及 Current 对照见 [R9-9 明细](results/r9.md#r9-9)。
+
+## 11. R10：LB CE（2026-09-29，仅记录）
+
+登记 R10-1～6；六组共 166/168 个实测点。R10-1～5 各 28 点完整，R10-6 有 26 点实测。
+R10-6 缺 PartyScene 和 RaceHorsesC 的 QP22，按用户授权仅在派生数据中用 Current 暂补，不改源表。
+42 条序列曲线均可计算，其中两条含补点；表中 R10-6 的 C、CE 和 CE 分量均值为暂估，E 为完整实测。
+Y/U/V 为 CE 七序列分量均值，C、E、CE 为 BD611，单位 %。
+
+| 实验 | 运行名 | Y | U | V | C | E | CE | 数据状态 |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| R10-1 | r10_expert_axis_A | -0.107967 | +0.192004 | -0.073893 | -0.123700 | +0.010440 | -0.066211 | 28 实测 |
+| R10-2 | r10_expert_p1_A | -0.124834 | +0.327753 | -0.272869 | -0.097561 | -0.072370 | -0.086765 | 28 实测 |
+| R10-3 | r10_integer_then_fractional | -0.099903 | -0.025963 | -0.623053 | -0.182780 | -0.120421 | -0.156054 | 28 实测 |
+| R10-4 | r10_matched_state_weights | -0.084273 | +0.315148 | -0.354544 | -0.042687 | -0.102052 | -0.068129 | 28 实测 |
+| R10-5 | r10_delete_one_validation | -0.031022 | +0.323728 | -0.343365 | -0.129058 | +0.112062 | -0.025721 | 28 实测 |
+| R10-6* | r10_protected_mapping_expert | -0.121413 | +0.379674 | -0.250920 | -0.073920 | -0.076359 | -0.074966 | 26 实测 + 2 QP22 补点，暂估 |
+
+来源：`experiments/ts_predictor_r10/R10_<编号>_JVET-hhi.xlsm` 及准确按编号配对的 `<编号>.csv`。
+166 个实测点在 Test 中均标记 `pass`，并与 CSV 一致；Reference 数值/状态与 Current 一致。
+逐序列分量 BD-rate、逐 QP 码率/PSNR、补点标记见 [R10 明细](results/r10.md)。
+未登记 R10-7 数值，不以此前“重跑正常”的反馈替代结果表；本轮无 R10 B/BCE、RA 或 AI 数据。
+
+### 本次六个 QP22 补点清单
+
+以下仅为 Current 引用，不是实验实测。实测补齐后优先替换，并保留本版暂估汇总的变更记录。
+
+| 实验 | 序列 | QP | 码率 kbps | Y PSNR dB | U PSNR dB | V PSNR dB |
+|---|---|---:|---:|---:|---:|---:|
+| R9-9 | MarketPlace | 22 | 9258.3792 | 40.5867 | 44.4432 | 45.0589 |
+| R9-9 | Cactus | 22 | 10163.0032 | 38.6754 | 40.1807 | 43.8575 |
+| R9-9 | BasketballDrive | 22 | 13118.7216 | 39.5612 | 44.2584 | 45.5693 |
+| R9-9 | BQTerrace | 22 | 28642.6160 | 38.2232 | 42.9341 | 45.3832 |
+| R10-6 | PartyScene | 22 | 6341.8096 | 38.4838 | 41.0541 | 41.7555 |
+| R10-6 | RaceHorsesC | 22 | 5398.0304 | 39.3018 | 40.3587 | 42.0068 |
+
+## 12. 尚无正式 BD-rate 的项目
 
 | 实验 | 正式 BD-rate | 记录状态 |
 |---|---|---|
@@ -274,19 +334,20 @@ CE 按七序列等权，不是 `(C+E)/2`。仅记录结果，不作排序、优�
 
 对应记录：[初始统计结果](TS_Adaptive_Predictor_CE_Results.md)、[R7 shadow](TS_Predictor_Rate_Shadow_Results_20260924.md)。
 
-## 12. 历史曲线复用记录（非独立编码实验）
+## 13. 历史曲线复用记录（非独立编码实验）
 
 | 标识 | RD 点组成 | LB B | LB C | LB E | LB CE | LB BCE |
 |---|---|---:|---:|---:|---:|---:|
 | directional_lowQP_policy | nominal QP22/27 取固定 directional，QP32/37 取 Current | -0.029567 | -0.118389 | -0.073903 | -0.099323 | -0.070258 |
 
-以上是复用已编码 RD 点得到的 BD-rate，不是新门控算法的实测结果，不计入前述 70 组方法。
+以上是复用已编码 RD 点得到的 BD-rate，不是新门控算法的实测结果，不计入前述 76 组方法。
 来源：[固定 predictor LB BCE / RA CD 报告](TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md)。
 
 ## 更新记录
 
 | 日期 | 结果登记 |
 |---|---|
+| 2026-09-29 | 新增R10-1～6 LB CE（166实测+2个QP22补点）和R9-9 LB B（16实测+4个QP22补点）。共新增188条QP记录、47条序列曲线；此前2,240条QP记录、560条序列记录及243条汇总记录均未改动。R10-6 CE暂估-0.074966%；R9-9 B/BCE暂估+0.058640%/-0.048314%。仅登记，不分析。 |
 | 2026-09-28 | 登记R9-1～13的364个LB CE实测点、91条序列曲线及13组汇总，无补点。新增R9明细并更新统一CSV、源指纹与计数；旧57组数据不变。本轮仅汇总，不分析。 |
 | 2026-09-27（明细扩展） | 从全部57组源表生成逐QP/逐序列明细及CSV；R2-4补齐后CE由暂估-0.004392%更新为实测-0.005667%；补登记R6-2 LB B/BCE及R3-1 AI/RA；R8全24组改为本地数值核对。RA失败参考与缺点不计算对应序列BD-rate。 |
 | 2026-09-27 | 建立本文件；补录 57 组方法的 LB CE 结果、已有 LB B/BCE 与 RA CD 结果；单列 R8 外部转录、补点、六序列子集及待结果状态。R3-1 B/BCE 使用 2026-09-24 完整实测版。 |
