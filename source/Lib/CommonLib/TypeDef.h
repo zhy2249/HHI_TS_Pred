@@ -183,6 +183,25 @@
 #ifndef JVET_BJUT_TS_R10_CACHE
 #define JVET_BJUT_TS_R10_CACHE                             0
 #endif
+// R11 (R11-20260929-v1): R10-3 is the mechanism control; Current remains BD anchor.
+// 0=off; 1=no structural evidence -> R3 (not native Current); 2=CF tie in query L/U class;
+// 3=V0 + radius-3 same-CG targets, max8; 4=3 + earlier-CG same-TU targets, max8;
+// 5=add D=native Current; 6=add D=identity (independent of 5);
+// 7=1+2; 8=1+4. YUV, fixed A/B/C(/D) tie order, no cross-TU state.
+// All earlier algorithm defaults and R10_CACHE must be 0. Explicit runtime mode overrides.
+// Optional final-Writer observation: TS_R11_STATS=1; CG hash trace: TS_R11_TRACE=1.
+#ifndef JVET_BJUT_TS_R11_MODE
+#define JVET_BJUT_TS_R11_MODE                              0
+#endif
+#if JVET_BJUT_TS_R11_MODE < 0 || JVET_BJUT_TS_R11_MODE > 8
+#error Invalid TS R11 mode
+#endif
+#if JVET_BJUT_TS_R11_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R11 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R11_MODE && (JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R11 and earlier TS defaults/cache are mutually exclusive
+#endif
 #if JVET_BJUT_TS_R10_MODE < 0 || JVET_BJUT_TS_R10_MODE > 7
 #error Invalid TS R10 mode
 #endif

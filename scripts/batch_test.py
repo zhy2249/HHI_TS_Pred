@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable
-from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS
+from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -39,7 +39,7 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
                        "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
                        "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
-                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS)
+                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS)
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 
 _PRESET_CFGS = {
@@ -557,6 +557,9 @@ def _run_one(job: TestJob) -> dict:
             "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
             "rate_shadow": os.environ.get("TS_RATE_SHADOW", "0"),
             "rate_rdoq_shadow": os.environ.get("TS_RATE_RDOQ_SHADOW", "0"),
+            **({"r11_stats": os.environ.get("TS_R11_STATS", "0"), "r11_trace": os.environ.get("TS_R11_TRACE", "0")}
+               if (job.fixed_predictor in R11_MODE_NUMBERS or
+                   os.environ.get("TS_R11_STATS", "0") != "0" or os.environ.get("TS_R11_TRACE", "0") != "0") else {}),
             **({"r8_stats": os.environ.get("TS_R8_STATS", "1"),
                 "r8_trace": os.environ.get("TS_R8_TRACE", "0")}
                if job.fixed_predictor and job.fixed_predictor.startswith("r8_") else {}),

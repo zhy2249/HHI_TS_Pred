@@ -1,0 +1,23 @@
+{
+  "revision": "R11-20260929-v1",
+  "anchor": "current",
+  "primary_control": "r10_integer_then_fractional",
+  "status": "implemented_engineering_validated_no_bdrate",
+  "weight": "component_BD_then_6_1_1",
+  "class_mean": "equal_sequence_weight",
+  "stages": {
+    "CE": {"classes": ["C", "E"], "qps": [22, 27, 32, 37], "points_per_mode": 28, "all_modes_points": 224},
+    "B_sentinel": {"ce_gate_pct": -0.14, "sequences": ["MarketPlace", "BQTerrace", "Cactus"], "qps": [27, 32, 37], "points_per_mode": 9, "automatic_launch": false, "formal_ctc_b_average": false},
+    "B_completion": {"additional_points_per_mode": 11, "automatic_launch": false}
+  },
+  "experiments": [
+    {"mode": 1, "runtime": "r11_no_evidence_r3", "directory": "r11_1_no_evidence_r3", "paired_reference": "R10-3"},
+    {"mode": 2, "runtime": "r11_query_context_tie", "directory": "r11_2_query_context_tie", "paired_reference": "R10-3"},
+    {"mode": 3, "runtime": "r11_same_cg_local8", "directory": "r11_3_same_cg_local8", "paired_reference": "R10-3"},
+    {"mode": 4, "runtime": "r11_same_tu_local8", "directory": "r11_4_same_tu_local8", "paired_reference": "R11-3/R10-3"},
+    {"mode": 5, "runtime": "r11_add_native_current", "directory": "r11_5_add_native_current", "paired_reference": "R10-3"},
+    {"mode": 6, "runtime": "r11_add_identity", "directory": "r11_6_add_identity", "paired_reference": "R10-3"},
+    {"mode": 7, "runtime": "r11_no_evidence_query", "directory": "r11_7_no_evidence_query", "paired_reference": "R11-1/R11-2/R10-3"},
+    {"mode": 8, "runtime": "r11_no_evidence_tu8", "directory": "r11_8_no_evidence_tu8", "paired_reference": "R11-1/R11-4/R10-3"}
+  ]
+}

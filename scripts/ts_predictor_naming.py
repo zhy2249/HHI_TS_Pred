@@ -40,9 +40,14 @@ R10_MODE_NUMBERS = dict(zip((
     'r10_expert_axis_A','r10_expert_p1_A','r10_integer_then_fractional',
     'r10_matched_state_weights','r10_delete_one_validation',
     'r10_protected_mapping_expert','r10_axis_A_tiebreak'), range(1,8)))
+R11_MODE_NUMBERS = dict(zip((
+    'r11_no_evidence_r3','r11_query_context_tie','r11_same_cg_local8','r11_same_tu_local8',
+    'r11_add_native_current','r11_add_identity','r11_no_evidence_query','r11_no_evidence_tu8'), range(1,9)))
 
 
 def directory_name(mode: str) -> str:
+    if mode in R11_MODE_NUMBERS:
+        return f'r11_{R11_MODE_NUMBERS[mode]}_{mode.removeprefix("r11_")}'
     if mode in R10_MODE_NUMBERS:
         return f'r10_{R10_MODE_NUMBERS[mode]}_{mode.removeprefix("r10_")}'
     if mode in R9_MODE_NUMBERS:

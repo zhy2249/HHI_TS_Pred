@@ -115,6 +115,9 @@ static void r10Reference(const CoeffCodingContext &ctx,int s,const std::vector<T
   require(ctx.r10PredictionTS(0,s,q.data()).action()==ctx.r9PredictionTS(9,s,q.data()).action);
 }
 
+// The native R11 oracle also checks support edits, CG clearing and snapshot rollback.
+#include "ts_r11_native_reference.h"
+
 int main()
 {
   using namespace TsFixedPrediction;
@@ -157,7 +160,7 @@ int main()
     for(auto &a:q)a=rng()%3?int(rng()%(trial%2?21:4096))-10:0;
     if(trial%9==0)std::fill(q.begin(),q.end(),0);
     q[0]=-3;
-    if((r8(mode()) || r9(mode()) || r10(mode())) && trial%31==0)
+    if((r8(mode()) || r9(mode()) || r10(mode()) || r11(mode())) && trial%31==0)
       for(int i=0;i<w*h;++i)q[i]=i%3==0?-32768:i%3==1?32767:1;
     OutputBitstream bits; BinEncoder_Std bin; CABACWriter writer(bin,nullptr);
     writer.initBitstream(&bits); bin.reset(cu.qp,I_SLICE);
@@ -174,6 +177,19 @@ int main()
         for(int k=s;k<w*h;++k)poisoned[enc.blockPos(k)]=int(rng()%63)-31;
         require(ratePredictor(enc,s,q.data())==ratePredictor(enc,s,poisoned.data())); ++poisons;
         require(rateAction(enc,s,q.data())==rateAction(enc,s,poisoned.data()));
+        if(bdpcm==BdpcmMode::NONE && r11(mode()))
+        {
+          r11Reference(enc,s,q,rice,15);
+          const auto a=enc.r11TargetsTS(2,s,q.data()),b=enc.r11TargetsTS(2,s,poisoned.data());
+          require(a.count==b.count && a.scan==b.scan);
+          if(s==enc.maxSubPos() && s>0)
+          {
+            auto edited=q; edited[enc.blockPos(s-1)]=1;
+            r11Reference(enc,s,edited,rice,15);
+            for(int k=0;k<s;++k) { edited[enc.blockPos(k)]=0; }
+            r11Reference(enc,s,edited,rice,15); r11Reference(enc,s,q,rice,15);
+          }
+        }
         if(bdpcm==BdpcmMode::NONE && (r9PublicMode(mode())==9 || r9PublicMode(mode())==10))
           expertReference(enc,s,q,rice,15);
         if(bdpcm==BdpcmMode::NONE && r10(mode()))
@@ -199,15 +215,17 @@ int main()
           require(ratePredictor(enc,s,q.data())==enc.r8PredictionTS(1,s,q.data()).predictor);
       }
       equalCtx(untouched,writer.getCtx());
-      if(r10(mode()) && bdpcm==BdpcmMode::NONE)
+      if((r10(mode()) || r11(mode())) && bdpcm==BdpcmMode::NONE)
       {
         // A copied branch must discard old cache entries on a different CG
         // probability snapshot, then agree again after restoring the snapshot.
         auto branch=enc; Ctx changed(writer.getCtx()); changed.init((cu.qp+7)%64,P_SLICE);
         branch.freezeTsRateContext(changed);
-        r10Reference(branch,enc.maxSubPos(),q,rice,15);
+        if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
+        else { r10Reference(branch,enc.maxSubPos(),q,rice,15); }
         branch.freezeTsRateContext(untouched);
-        r10Reference(branch,enc.maxSubPos(),q,rice,15);
+        if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
+        else { r10Reference(branch,enc.maxSubPos(),q,rice,15); }
       }
       Ctx clone(writer.getCtx()); auto replay=enc; int bins=enc.remRegBins;
       FractionalSink sink{static_cast<CtxStore<BinProbModel_Std>&>(clone)};
@@ -254,4 +272,5 @@ int main()
   }
   destroyROM();
   std::cout<<"PASS "<<name()<<": neutral lengths=262144 old-score cases=40000 native TU=160 CG="<<groups<<" causal="<<poisons<<'\n';
+  if(r11(mode())) { std::cout<<"R11 reference cross-targets="<<r11CrossTargets<<" no-evidence="<<r11NoEvidence<<" ABC-same-D-different="<<r11DistinctD<<'\n'; }
 }

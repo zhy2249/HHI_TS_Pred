@@ -5,6 +5,11 @@
 
 统一进度、结果与后续计划见 [实验记录](../docs/experiments/TS_Predictor_Experiment_Log.md)。
 
+R11（2026-09-29）：[八组实现、宏与分级B计划](../docs/experiments/TS_Predictor_R11_Implementation.md)。
+直接设置`TypeDef.h`的`JVET_BJUT_TS_R11_MODE=1..8`；其它算法模式及R10_CACHE设0，master设1。
+CE入口`bash scripts/run_ts_r11_lb_ce.sh`；共224点、半帧、无重建、共享池、逐组写表，不自动运行B。
+`TS_R11_STATS=1`为最终Writer八组shadow，默认关闭；用`ts_r11_activity.py`提取并保留实际量化轨迹标签。
+
 R10（2026-09-28）：[七组实现、宏与运行命令](../docs/experiments/TS_Predictor_R10_Implementation.md)。
 `JVET_BJUT_TS_R10_MODE=1..7`，旧算法模式设0；`JVET_BJUT_TS_R10_CACHE`是独立等价缓存。
 `bash scripts/run_ts_r10_lb_ce.sh --dry-run`默认第一批1/2/3/4/7，LB CE半帧、共享池、逐组写表、无重建。

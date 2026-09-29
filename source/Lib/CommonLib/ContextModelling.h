@@ -54,6 +54,7 @@
 #include "TsR8Prediction.h"
 #include "TsR9Prediction.h"
 #include "TsR10Prediction.h"
+#include "TsR11Prediction.h"
 #endif
 
 #include <bitset>
@@ -585,6 +586,8 @@ public:
   TsFixedPrediction::MagnitudeAction magnitudeActionTS(int scanPos, const TCoeff *coeff) const
   {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if (TsFixedPrediction::r11(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
+      return r11PredictionTS(TsFixedPrediction::r11PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action();
     if (TsFixedPrediction::r10(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
       return r10PredictionTS(TsFixedPrediction::r10PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action();
     if (TsFixedPrediction::r9(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
@@ -598,12 +601,15 @@ public:
   void r9SupportTS(int scanPos,const TCoeff *coeff,int (&a)[5],int (&positions)[5]) const;
   TsFixedPrediction::R10Actions tsLocalExperts(int mode,int scanPos,const int (&h)[5]) const;
   TsFixedPrediction::R10Decision r10PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
+  TsFixedPrediction::R11Targets r11TargetsTS(int scope,int scanPos,const TCoeff *coeff) const;
+  TsFixedPrediction::R11Decision r11PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   void freezeTsRateContext(const Ctx &ctx)
   {
     // Also permits native low-budget tests. This is the actual CG0 entry
     // budget; subsequent history comes exclusively from final-q replay.
     if ((TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 || TsFixedPrediction::r9(TsFixedPrediction::mode()) || TsFixedPrediction::r10(TsFixedPrediction::mode())) && m_subSetId == 0)
       m_tsHistoryBins = remRegBins;
+    if(m_subSetId==0) { m_tsR11HistoryBins=remRegBins; }
     const auto &bits = ctx.getFracBitsAcess();
     for (int k = 0; k < 3; ++k)
     {
@@ -680,6 +686,11 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r11(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      return r11PredictionTS(TsFixedPrediction::r11PublicMode(mode),scanPos,coeff).action().predictor;
+    }
     if (TsFixedPrediction::r10(mode))
     {
       if (m_bdpcm != BdpcmMode::NONE) { return -1; }
@@ -732,6 +743,7 @@ public:
   void finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR9CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR10CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR11CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
   int tsPathWeight10() const { return m_tsPath10; }
@@ -809,6 +821,7 @@ private:
   int64_t m_tsState = 0;
   int64_t m_tsRecentMargin = 0; // R3 certificate of exactly the immediately preceding final CG.
   int m_tsHistoryBins = 0;
+  int m_tsR11HistoryBins = 0; // Observation replay only; never shared with older state machines.
   int m_tsRice = 1;
   int m_tsPoc = 0;
   bool m_tsIntra = false;
