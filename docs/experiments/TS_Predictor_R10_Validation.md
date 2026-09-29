@@ -107,3 +107,28 @@ python3 scripts/ts_r10_activity.py runs/ts_r10_smoke_final --out runs/ts_r10_smo
 阶段I dry-run：140点；阶段II：56点；固定四序列、QP22/37、8帧预检：56点。
 LB使用HHI INI半帧，重建关闭。未开始正式编码、未新增anchor任务、未更新结果数值台账。
 七组BD-rate、真实内容目标loss/闭环对应关系、跨类别/配置泛化均待测。
+
+## 7. R10-7 服务器日志诊断（2026-09-29，未改算法）
+
+输入：`experiments/ts_predictor_r10/BasketballDrill_22.log`，100行、5,630字节。
+日志包含10次`Decoder Version`启动，均为宏默认`r10_axis_A_tiebreak / mode=7`，
+cache=0；没有Encoder标题、编码配置、POC、PSNR或编码汇总，耗时均0.000秒。
+它只能确认解码器的R10-7模式，不能确认服务器编码器实际启动或其宏配置。
+
+现有HHI `scripts/HHI测试cfg/LBeu/ConfigLB.ini`第13/14行配置一次编码、十次解码，
+第26/27行用`>`及`>>`将stdout写到同一日志，没有`2>&1`。
+服务器是否使用相同配置尚未取得证据；若一致，这10次属于解码运行设置，不能推断为算法重试或死循环。
+编码未成功启动/没有生成预期码流、解码工作目录错误、日志拿错或被覆盖均需排查。
+
+本地非破坏性复现：DecoderApp读不存在的码流时返回1，stdout同样只有模式、
+Decoder标题、内存和极短耗时；`Failed to open bitstream file ... for reading`在stderr。
+这是与上传日志相容的具体故障路径，不是对服务器根因的最终确认。
+额外空输入试验未复现该正常尾部，而是空NAL警告后异常退出（139），不能把两者混为一谈。
+
+源码核对：R10-7仍为R9-3完整A专家加CI/CF字典序验证；未发现与本日志对应的独有错误。
+本地重新运行R10-7原生测试通过：160 TU、1,491 CG、23,436个因果污染位置；
+已有LB22合成两帧码流重新解码返回0，两帧MD5均OK。均不能替代服务器BasketballDrill完整测试。
+
+下一步：取得服务器实际encoder/decoder命令、程序`-h`输出、目标bin的绝对路径/大小，
+以及stdout和stderr合并的单任务日志和退出码。用新的诊断日志名保留原文件，不立即重跑整组。
+`exact-cache=0`和统计默认关闭是合法设置，不会关闭R10-7算法。本次未修改codec或运行脚本。

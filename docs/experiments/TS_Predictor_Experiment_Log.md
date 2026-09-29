@@ -1,12 +1,17 @@
 # TS predictor 实验记录
 
-最后更新：2026-09-28。这是本项目 TS predictor 研究的统一实验台账；
+最后更新：2026-09-29。这是本项目 TS predictor 研究的统一实验台账；
 后续实验在本文件追加和更新，不另建互相冲突的总记录。
 
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
 ## R10 实施更新（2026-09-28）
+
+2026-09-29补记：收到R10-7 BasketballDrill QP22异常日志，内容实际为十次Decoder启动，
+无编码/帧输出；与HHI十次解码且未收集stderr的模板相容。缺失码流的本地复现产生类似stdout，
+真实错误在stderr。R10-7原生测试及已有LB两帧解码复核通过；尚需服务器命令与stderr确认根因。
+未修改算法、未重跑正式编码、未登记BD-rate；详见[R10验收诊断](TS_Predictor_R10_Validation.md)。
 
 先快进同步GitHub至`0b08de8`，取得R10计划、R9外部分析及两份匹配/汇总CSV。
 按原稿实现R10-1..7和R10-0独立等价缓存，旧R9编号保持不变。
