@@ -1,0 +1,17 @@
+{
+  "source_commit": "e1413fd0bf361cdea7d06fbc1b3a78c7036de5de",
+  "ledger_git_blob": "f326167ecb1cd7fba0486d39c4370ee9875e7d13",
+  "ledger_36_component_checks_max_abs_error_percent": 6.736278201913137e-14,
+  "B_ledger_mean_error_percent": 3.3514857555871913e-15,
+  "self_BD_error_percent": 0.0,
+  "R10_measured": 166,
+  "R10_existing_imputed": 2,
+  "R9_B_measured": 16,
+  "R9_B_existing_imputed": 4,
+  "selector_cases": 10000,
+  "preserved_unique_CI_winners": 4913,
+  "geometry_cases": 6528,
+  "no_evidence_checks": 2051,
+  "status": "passed",
+  "limits": "Numerical transcription checked against ledger aggregates; parser tested with a ledger-format fixture. Synthetic selector and geometry checks are not native codec, rate, speed or real CABAC-state validation. No R11 encoding was run."
+}
