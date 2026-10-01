@@ -45,3 +45,13 @@ R11尚未实施或运行；B三点结果不冒充完整四点CTC，R10-6两处�
 - [R10-3 Class B阶段性曲线](R10_3_B_Partial_Analysis.csv)
 
 R12尚未实现或运行。BQTerrace/BasketballDrive的三点值只用于QP27/32/37公共区间诊断，不冒充四点正式BD-rate。
+
+## R12位置加权补充与决策边界修订
+
+按用户要求更新R12计划及catalog：保留1～6编号并修正边界，新增7～12位置加权测试。规格标识为 `R12-POS-01`；旧稿保留于父提交 `cfa76d42f17ac96506dfdea4c7021f521d6603a7`。本次不修改旧分析结论、正式台账或codec源码。
+
+- [更新后的R12完整计划](R12_Experiment_Plan.md)与[12组配置](R12_Experiment_Catalog.csv)
+- [修订说明和数学验证边界](r12_position/README.md)
+- [数学参考脚本](r12_position/r12_rule_reference.py)与[本次实际测试结果](r12_position/validation.json)
+
+测试结果仅为纯损失选择器与加权代数，不是编解码/速度/BD-rate验证。CE先筛选，只有少数候选进入B；不得复用不同规格或二进制的同号结果。

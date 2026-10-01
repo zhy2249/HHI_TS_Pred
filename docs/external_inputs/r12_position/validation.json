@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "selector_and_random_algebra_cases": 50010,
+  "exhaustive_small_integer_neighborhoods": 7776,
+  "same_amplitudes_different_positions_example": [
+    [
+      2,
+      [
+        0,
+        0,
+        1,
+        2,
+        2
+      ]
+    ],
+    [
+      0,
+      [
+        0,
+        1,
+        0,
+        2,
+        2
+      ]
+    ]
+  ],
+  "scope": "pure loss selectors and weighted candidate algebra; NOT codec integration, native scan, CABAC sync, video BD-rate, or timing"
+}
