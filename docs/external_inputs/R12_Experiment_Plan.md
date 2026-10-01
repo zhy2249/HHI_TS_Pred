@@ -6,15 +6,15 @@
 
 R10-3先计算A=R8-12、B=R2-2、C=R3三个专家在局部历史集合V0上的整数验证损失：
 
-\`\`\`math
+```math
 L_I(e)=\sum_{j\in V_0} C_I(M(a_j,p_e(h_j))).
-\`\`\`
+```
 
 若存在多个CI最小专家，才用fractional损失：
 
-\`\`\`math
+```math
 L_F(e)=\sum_{j\in V_0} C_F(M(a_j,p_e(h_j));d(h_j)).
-\`\`\`
+```
 
 打破平局。R12保留这一exact-tie规则。
 
@@ -30,10 +30,10 @@ L_F(e)=\sum_{j\in V_0} C_F(M(a_j,p_e(h_j));d(h_j)).
 
 令：
 
-\`\`\`math
+```math
 Q=1\ll SCALE\_BITS,\qquad
 \Delta_e=L_I(e)-L_I^{\min}.
-\`\`\`
+```
 
 除明示项外，V0、A/B/C、映射、RDOQ、YUV范围、BDPCM/bypass、概率冻结和tie顺序全部保持R10-3。
 
@@ -54,9 +54,9 @@ Q=1\ll SCALE\_BITS,\qquad
 
 先按R10-3得到 `L_I^{min}`。构造：
 
-\`\`\`math
+```math
 T_1=\{e: L_I(e)-L_I^{\min}\le Q\}.
-\`\`\`
+```
 
 - 若 `|T_1|=1`：完全保持原唯一CI赢家；
 - 若 `|T_1|>1`：在T1内使用原R10-3的CF_j损失选最小者；
@@ -75,15 +75,15 @@ T_1=\{e: L_I(e)-L_I^{\min}\le Q\}.
 
 保留R10-3的CI最小集合T0。若专家C=R3不在T0，但：
 
-\`\`\`math
+```math
 L_I(C)-L_I^{\min}\le Q,
-\`\`\`
+```
 
 则只把C加入fractional竞争：
 
-\`\`\`math
+```math
 T=T_0\cup\{C\}.
-\`\`\`
+```
 
 其它CI近一量子的A/B不因本组规则额外进入。
 
@@ -95,17 +95,17 @@ T=T_0\cup\{C\}.
 
 定义第四个纯动作专家D：
 
-\`\`\`math
+```math
 p_D(h)=\max(L,U).
-\`\`\`
+```
 
 并用每个历史目标自己的h_j生成D动作及验证损失。
 
 D不全局参加专家池。只有：
 
-\`\`\`math
+```math
 L_I(D)-\min_{e\in\{A,B,C\}}L_I(e)\le Q.
-\`\`\`
+```
 
 时，才把D加入CF竞争；否则完全运行R10-3。
 
@@ -119,9 +119,9 @@ L_I(D)-\min_{e\in\{A,B,C\}}L_I(e)\le Q.
 
 对每个有效历史目标r，计算删除该目标后的：
 
-\`\`\`math
+```math
 L_I^{(-r)}(e)=L_I(e)-\ell^I_{e,r}.
-\`\`\`
+```
 
 如果所有leave-one集合中e*都仍是唯一最小，则保持R10-3。
 
@@ -192,17 +192,17 @@ L_I^{(-r)}(e)=L_I(e)-\ell^I_{e,r}.
 
 R12-1～5先完整LB CE：
 
-[
-5	imes28=140	ext{ 点}.
-]
+```math
+5\times 28=140\ \text{点}.
+```
 
 R12-6可作为第二批28点。
 
 默认进入B哨兵的门槛收紧为：
 
-[
-oxed{BD_{CE}le -0.15%}
-]
+```math
+\boxed{BD_{CE}\le -0.15\%}.
+```
 
 并要求直接对R10-3不明显退化。理由：R10-3已经有−0.15605%的CE，本轮目标只是小幅修B，没有必要接受大规模CE交换。
 
