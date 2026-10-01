@@ -1,0 +1,6 @@
+sequence,measured_qps,Y,U,V,BD611,status
+BQTerrace,27/32/37,0.0109,0.6640,-1.4790,-0.0937,three-point-diagnostic
+BasketballDrive,27/32/37,-0.0385,0.7226,-0.1192,0.0465,three-point-diagnostic
+Cactus,22/27/32/37,-0.1411,-0.6786,-0.1267,-0.2065,full-four-point
+MarketPlace,22/27/32/37,0.1047,-0.2782,0.6935,0.1304,full-four-point
+RitualDance,22/27/32/37,-0.0499,-0.2391,0.2552,-0.0354,full-four-point

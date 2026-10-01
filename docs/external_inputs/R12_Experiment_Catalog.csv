@@ -1,0 +1,7 @@
+R12_MODE,engineering,change,paired_reference,CE_points,default_B_gate,B_sentinel_points,full_B_after_sentinel,implemented
+1,ci_near1,CF chooses among experts within one CI cost quantum,R10-3,28,CE<=-0.15,9,11,no
+2,r3_near1,Only R3 may challenge when one CI quantum behind,R10-3/R12-1,28,CE<=-0.15,9,11,no
+3,current_near1,Native Current joins only when one CI quantum behind,R10-3,28,CE<=-0.15,9,11,no
+4,loo_unstable_cf,Unique CI winner challenged by CF only when leave-one unstable,R10-3,28,CE<=-0.15,9,11,no
+5,direct_first,Unique direct L/U CI evidence has priority else R10-3,R10-3,28,CE<=-0.15,9,11,no
+6,r3_near1_loo,Predefined R12-2 plus R12-4 combination,R10-3/R12-2/R12-4,28,CE<=-0.15,9,11,no

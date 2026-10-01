@@ -33,3 +33,15 @@
 - [复算脚本、参考实现和验证边界](r11_analysis/README.md)
 
 R11尚未实施或运行；B三点结果不冒充完整四点CTC，R10-6两处补点保留标记。后续新结果另行登记，不能把本轮设计表当作已完成实验。
+
+
+## R11结果分析与R12设计
+
+固定分析输入为 `e6ba16bce2d1c1a6eb45a8340b7f27a22ab4b53b`。本批只新增外部分析、派生CSV和下一轮规格，不修改编码器源码或正式结果台账。
+
+- [R11结果与R10-3 Class B阶段性分析](R11_Results_and_R10_3_B_Analysis.md)
+- [R12实验设计](R12_Experiment_Plan.md)、[配置清单](R12_Experiment_Catalog.csv)
+- [R11相对R10-3直接比较](R11_Direct_Comparisons.csv)
+- [R10-3 Class B阶段性曲线](R10_3_B_Partial_Analysis.csv)
+
+R12尚未实现或运行。BQTerrace/BasketballDrive的三点值只用于QP27/32/37公共区间诊断，不冒充四点正式BD-rate。
