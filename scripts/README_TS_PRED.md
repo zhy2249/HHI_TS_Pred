@@ -5,6 +5,13 @@
 
 统一进度、结果与后续计划见 [实验记录](../docs/experiments/TS_Predictor_Experiment_Log.md)。
 
+R12（2026-10-01，R12-POS-01）：[十二组实现及运行](../docs/experiments/TS_Predictor_R12_Implementation.md)。
+直接设置 `TypeDef.h` 的 `JVET_BJUT_TS_R12_MODE=1..12`，其它模式及R10_CACHE为0，master为1。
+`bash scripts/run_ts_r12_lb_ce.sh --dry-run --allow-missing-input` 默认1/2/4/7/8/9，共168个CE半帧点，
+仍为共享池、逐组写表、无重建，不自动启动B。`TS_R12_STATS=1` 默认只观察当前模式；
+`TS_R12_SHADOW_MODES=1,7,9` 最多三组，`ts_r12_activity.py` 提取。
+`python3 scripts/test_ts_r12_native.py --jobs 2` 仅运行合成TU语法与量化测试，不运行视频序列。
+
 R11（2026-09-29）：[八组实现、宏与分级B计划](../docs/experiments/TS_Predictor_R11_Implementation.md)。
 直接设置`TypeDef.h`的`JVET_BJUT_TS_R11_MODE=1..8`；其它算法模式及R10_CACHE设0，master设1。
 CE入口`bash scripts/run_ts_r11_lb_ce.sh`；共224点、半帧、无重建、共享池、逐组写表，不自动运行B。

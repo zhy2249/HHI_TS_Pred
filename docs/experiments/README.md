@@ -14,6 +14,8 @@
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)
 - [R11 八组实现、宏与分阶段运行](TS_Predictor_R11_Implementation.md)
+- [R12 十二组实现与首批六组运行](TS_Predictor_R12_Implementation.md)
+- [R12 局部语法与量化验收记录](TS_Predictor_R12_Validation.md)
 - [脚本使用说明](../../scripts/README_TS_PRED.md)
 - [外部分析和实验要求收件目录](../external_inputs/README.md)
 
@@ -34,6 +36,7 @@
 | R9 | [用户原始计划](../external_inputs/R9_Experiment_Plan.md)、[实施说明](TS_Predictor_R9_Implementation.md) | [验收记录](TS_Predictor_R9_Validation.md)、[结果台账](TS_Predictor_Results_Ledger.md)、[逐序列/逐QP明细（仅汇总）](results/r9.md) |
 | R10 | [用户原始计划](../external_inputs/R10_Experiment_Plan.md)、[实现与运行](TS_Predictor_R10_Implementation.md) | [验收记录](TS_Predictor_R10_Validation.md)、[1～6 CE及3的部分B明细](results/r10.md)；7未登记 |
 | R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；B/RA/AI未登记 |
+| R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)；尚无真实序列编码或 BD-rate 数据 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 
