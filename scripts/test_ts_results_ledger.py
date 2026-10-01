@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, catalog, csv_sources, csv_text, imputation_allowed,
+from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, catalog, csv_sources, csv_text, imputation_allowed,
                                point_values, read_sheet, sequence_result)
 
 
@@ -50,10 +50,45 @@ class ResultsLedgerTests(unittest.TestCase):
         self.assertEqual([s['experiment'] for s in specs], [f'R10-{i}' for i in range(1, 7)])
         self.assertEqual([s['mode'] for s in specs], list(R10_MODES))
         self.assertEqual(specs[5]['path'], 'experiments/ts_predictor_r10/R10_6_JVET-hhi.xlsm')
-        self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+        self.assertTrue(all(s['expected_lb'] == ('BCE' if s['experiment'] == 'R10-3' else 'CE') for s in specs))
+        self.assertEqual(specs[2]['extra_csv'], ('3_B.csv',))
         manifest = Path(__file__).with_name('ts_r10_experiment_manifest.json')
         modes = json.loads(manifest.read_text())['experiments']
         self.assertEqual(list(R10_MODES), [m['runtime'] for m in modes if 1 <= m['mode'] <= 6])
+
+    def test_r11_registration_preserves_manifest_and_numbering(self):
+        from ts_predictor_naming import R11_MODE_NUMBERS
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs = [s for s in catalog(root) if s['round'] == 'r11']
+        self.assertEqual([s['experiment'] for s in specs], [f'R11-{i}' for i in range(1, 9)])
+        self.assertEqual([R11_MODE_NUMBERS[s['mode']] for s in specs], list(range(1, 9)))
+        self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+        self.assertEqual([s['path'] for s in specs],
+                         [f'experiments/ts_predictor_r11/R11_{i}_JVET-hhi.xlsm' for i in range(1, 9)])
+        manifest = json.loads(Path(__file__).with_name('ts_r11_experiment_manifest.json').read_text())
+        self.assertEqual(list(R11_MODES), [m['runtime'] for m in manifest['experiments']])
+
+    def test_r11_and_partial_r10_b_do_not_extend_imputation(self):
+        for exp in [f'R11-{i}' for i in range(1, 9)] + ['R10-3']:
+            for seq in ('BasketballDrive', 'BQTerrace', 'PartyScene', 'RaceHorsesC'):
+                for qp in QPS:
+                    self.assertFalse(imputation_allowed(exp, 'lb', seq, qp))
+
+    def test_r11_csv_pairing_and_explicit_r10_b_supplement(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)
+            for name in ('1.csv', '3.csv', '3_B.csv', '3_backup.csv', '30.csv', '8.csv', '9.csv'):
+                (p / name).touch()
+            for i in (1, 3, 8):
+                spec = dict(round='r11', experiment=f'R11-{i}')
+                self.assertEqual([x.name for x in csv_sources(spec, p/f'R11_{i}_JVET-hhi.xlsm')], [f'{i}.csv'])
+            spec = dict(round='r10', experiment='R10-3', extra_csv=('3_B.csv',))
+            self.assertEqual([x.name for x in csv_sources(spec, p/'R10_3_JVET-hhi.xlsm')], ['3.csv', '3_B.csv'])
 
     def test_r9_numbered_csv_pairing(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -1,6 +1,6 @@
 # 实验结果明细
 
-更新时间：2026-09-29。仅数据登记，不含实验分析。
+更新时间：2026-10-01。仅数据登记，不含实验分析。
 
 [返回总结果台账](../TS_Predictor_Results_Ledger.md)
 
@@ -34,7 +34,8 @@ CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零�
 | [R7](r7.md) | 2 | 56 | 0 | 0 |
 | [R8](r8.md) | 24 | 670 | 2 | 0 |
 | [R9](r9.md) | 13 | 380 | 4 | 0 |
-| [R10](r10.md) | 6 | 166 | 2 | 0 |
+| [R10](r10.md) | 6 | 184 | 2 | 2 |
+| [R11](r11.md) | 8 | 224 | 0 | 0 |
 
 ## 维护与复现
 
@@ -42,7 +43,7 @@ CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零�
 
 ```bash
 python3 scripts/ts_results_ledger.py
-python3 scripts/ts_results_ledger.py --date 2026-09-29 --check
+python3 scripts/ts_results_ledger.py --date 2026-10-01 --check
 ```
 
 新增实验在脚本 catalog 中登记身份和源表路径；历史补点白名单不自动扩展。

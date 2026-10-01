@@ -29,6 +29,9 @@ R9_MODES = ('r9_p10', 'r9_p12', 'r9_axis_sparse', 'r9_half_penalty',
 R10_MODES = ('r10_expert_axis_A', 'r10_expert_p1_A', 'r10_integer_then_fractional',
              'r10_matched_state_weights', 'r10_delete_one_validation',
              'r10_protected_mapping_expert')  # Uploaded results only; R10-7 pending.
+R11_MODES = ('r11_no_evidence_r3', 'r11_query_context_tie', 'r11_same_cg_local8',
+             'r11_same_tu_local8', 'r11_add_native_current', 'r11_add_identity',
+             'r11_no_evidence_query', 'r11_no_evidence_tu8')
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -39,9 +42,9 @@ def catalog(root):
     """Explicit experiment identities; never infer a mode from arbitrary uploads."""
     specs = []
 
-    def add(group, experiment, mode, path, expected='CE'):
+    def add(group, experiment, mode, path, expected='CE', extra_csv=()):
         specs.append(dict(round=group, experiment=experiment, mode=mode,
-                          path=path, expected_lb=expected))
+                          path=path, expected_lb=expected, extra_csv=extra_csv))
 
     for name in ('nopred', 'gradient', 'directional'):
         add('fixed', 'Fixed-' + {'nopred': 'NoPred', 'gradient': 'Gradient', 'directional': 'Directional'}[name],
@@ -70,7 +73,10 @@ def catalog(root):
         add('r9', f'R9-{i}', mode, f'experiments/ts_predictor_r9/R9_{i}_JVET-hhi.xlsm',
             'BCE' if i == 9 else 'CE')
     for i, mode in enumerate(R10_MODES, 1):
-        add('r10', f'R10-{i}', mode, f'experiments/ts_predictor_r10/R10_{i}_JVET-hhi.xlsm')
+        add('r10', f'R10-{i}', mode, f'experiments/ts_predictor_r10/R10_{i}_JVET-hhi.xlsm',
+            'BCE' if i == 3 else 'CE', ('3_B.csv',) if i == 3 else ())
+    for i, mode in enumerate(R11_MODES, 1):
+        add('r11', f'R11-{i}', mode, f'experiments/ts_predictor_r11/R11_{i}_JVET-hhi.xlsm')
     return specs
 
 
@@ -91,9 +97,9 @@ def imputation_allowed(experiment, config, seq, qp):
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
-    if spec['round'] in ('r8', 'r9', 'r10'):
-        candidate = path.parent / (spec['experiment'].split('-')[1] + '.csv')
-        return [candidate] if candidate.exists() else []
+    if spec['round'] in ('r8', 'r9', 'r10', 'r11'):
+        names = [spec['experiment'].split('-')[1] + '.csv', *spec.get('extra_csv', ())]
+        return [path.parent / name for name in names if (path.parent / name).exists()]
     if re.fullmatch(r'R[2-7]-\d+', spec['experiment']):
         prefix = spec['experiment'].replace('-', '_')
         return sorted(p for p in path.parent.glob('*.csv')
