@@ -4,7 +4,9 @@
 公开编号1～8与目录名一致；版本R11-20260929-v1。Current为BD-rate anchor，R10-3为机制对照。
 2026-10-01已登记八组LB CE，共224/224实测点，无补点；仅汇总，未作效果分析。
 本次上传源表位于本目录的`R11_<编号>_JVET-hhi.xlsm`及`<编号>.csv`，而非下级收件目录。
-逐序列BD-rate和逐QP码率/PSNR见[结果明细](../../docs/experiments/results/r11.md)。B/RA/AI未登记。
+2026-10-02新增R11-2部分B：16/20点，仅RitualDance四点完整；其它四条均缺QP22，不补anchor。
+新增B只在R11_2工作簿中，2.csv仍仅含CE；其它R11未登记B，RA/AI未登记。
+逐序列BD-rate和逐QP码率/PSNR见[结果明细](../../docs/experiments/results/r11.md)。
 
 先八组LB CE（224点，半帧），再根据CE≤−0.14%门槛人工决定B哨兵。
 每组分别设LB_CE、LB_B_sentinel、LB_B；三点哨兵不是完整四点Class B。

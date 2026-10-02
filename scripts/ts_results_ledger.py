@@ -32,6 +32,10 @@ R10_MODES = ('r10_expert_axis_A', 'r10_expert_p1_A', 'r10_integer_then_fractiona
 R11_MODES = ('r11_no_evidence_r3', 'r11_query_context_tie', 'r11_same_cg_local8',
              'r11_same_tu_local8', 'r11_add_native_current', 'r11_add_identity',
              'r11_no_evidence_query', 'r11_no_evidence_tu8')
+R12_MODES = ('r12_ci_near1', 'r12_r3_near1', 'r12_current_near1', 'r12_loo_unstable_cf',
+             'r12_direct_first', 'r12_r3_near1_loo', 'r12_c_distance_raw',
+             'r12_c_distance_fulltrim', 'r12_validation_distance', 'r12_validation_distance_tie',
+             'r12_c_distance_softtrim', 'r12_c_and_validation_distance')  # R12-POS-01 public numbering.
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -76,7 +80,10 @@ def catalog(root):
         add('r10', f'R10-{i}', mode, f'experiments/ts_predictor_r10/R10_{i}_JVET-hhi.xlsm',
             'BCE' if i == 3 else 'CE', ('3_B.csv',) if i == 3 else ())
     for i, mode in enumerate(R11_MODES, 1):
-        add('r11', f'R11-{i}', mode, f'experiments/ts_predictor_r11/R11_{i}_JVET-hhi.xlsm')
+        add('r11', f'R11-{i}', mode, f'experiments/ts_predictor_r11/R11_{i}_JVET-hhi.xlsm',
+            'BCE' if i == 2 else 'CE')
+    for i, mode in enumerate(R12_MODES, 1):
+        add('r12', f'R12-{i}', mode, f'experiments/ts_predictor_r12/R12_{i}_JVET-hhi.xlsm')
     return specs
 
 
@@ -97,7 +104,7 @@ def imputation_allowed(experiment, config, seq, qp):
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
-    if spec['round'] in ('r8', 'r9', 'r10', 'r11'):
+    if spec['round'] in ('r8', 'r9', 'r10', 'r11', 'r12'):
         names = [spec['experiment'].split('-')[1] + '.csv', *spec.get('extra_csv', ())]
         return [path.parent / name for name in names if (path.parent / name).exists()]
     if re.fullmatch(r'R[2-7]-\d+', spec['experiment']):

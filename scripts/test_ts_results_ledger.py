@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, catalog, csv_sources, csv_text, imputation_allowed,
+from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, catalog, csv_sources, csv_text, imputation_allowed,
                                point_values, read_sheet, sequence_result)
 
 
@@ -67,17 +67,38 @@ class ResultsLedgerTests(unittest.TestCase):
             specs = [s for s in catalog(root) if s['round'] == 'r11']
         self.assertEqual([s['experiment'] for s in specs], [f'R11-{i}' for i in range(1, 9)])
         self.assertEqual([R11_MODE_NUMBERS[s['mode']] for s in specs], list(range(1, 9)))
-        self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+        self.assertTrue(all(s['expected_lb'] == ('BCE' if s['experiment'] == 'R11-2' else 'CE') for s in specs))
         self.assertEqual([s['path'] for s in specs],
                          [f'experiments/ts_predictor_r11/R11_{i}_JVET-hhi.xlsm' for i in range(1, 9)])
         manifest = json.loads(Path(__file__).with_name('ts_r11_experiment_manifest.json').read_text())
         self.assertEqual(list(R11_MODES), [m['runtime'] for m in manifest['experiments']])
 
     def test_r11_and_partial_r10_b_do_not_extend_imputation(self):
-        for exp in [f'R11-{i}' for i in range(1, 9)] + ['R10-3']:
-            for seq in ('BasketballDrive', 'BQTerrace', 'PartyScene', 'RaceHorsesC'):
+        for exp in [f'R11-{i}' for i in range(1, 9)] + [f'R12-{i}' for i in range(1, 13)] + ['R10-3']:
+            for seq in ('BasketballDrive', 'BQTerrace', 'MarketPlace', 'Cactus', 'PartyScene', 'RaceHorsesC'):
                 for qp in QPS:
                     self.assertFalse(imputation_allowed(exp, 'lb', seq, qp))
+
+    def test_r12_registration_uses_pos01_public_order(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder); r8=root/'experiments/ts_predictor_r8'; r8.mkdir(parents=True)
+            for i in range(1,25): (r8/f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs=[s for s in catalog(root) if s['round']=='r12']
+        self.assertEqual([s['experiment'] for s in specs],[f'R12-{i}' for i in range(1,13)])
+        self.assertEqual([s['mode'] for s in specs],list(R12_MODES))
+        self.assertEqual([s['path'] for s in specs],
+                         [f'experiments/ts_predictor_r12/R12_{i}_JVET-hhi.xlsm' for i in range(1,13)])
+        self.assertTrue(all(s['expected_lb']=='CE' for s in specs))
+        self.assertEqual(R12_MODES[2],'r12_current_near1')
+        self.assertEqual(R12_MODES[10:12],('r12_c_distance_softtrim','r12_c_and_validation_distance'))
+
+    def test_r12_csv_pairing_never_mix_1_and_10(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p=Path(folder)
+            for name in ('1.csv','10.csv','11.csv','12.csv','1_backup.csv','2_B.csv'): (p/name).touch()
+            for i in (1,10,11,12):
+                self.assertEqual(csv_sources(dict(round='r12',experiment=f'R12-{i}'),p/f'R12_{i}_JVET-hhi.xlsm'),[p/f'{i}.csv'])
+            self.assertEqual(csv_sources(dict(round='r12',experiment='R12-2'),p/'R12_2_JVET-hhi.xlsm'),[])
 
     def test_r11_csv_pairing_and_explicit_r10_b_supplement(self):
         with tempfile.TemporaryDirectory() as folder:

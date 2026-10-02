@@ -1,6 +1,6 @@
 # FIXED 逐序列结果明细
 
-更新时间：2026-10-01。基线：Current。
+更新时间：2026-10-02。基线：Current。
 
 [明细索引与计算口径](README.md) · [总结果台账](../TS_Predictor_Results_Ledger.md)
 

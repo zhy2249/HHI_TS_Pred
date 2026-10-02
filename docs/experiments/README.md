@@ -9,7 +9,8 @@
 - [逐序列 / 逐 QP 明细与可筛选 CSV](results/README.md)
 - [R9 逐序列 / 逐 QP 结果（仅汇总）](results/r9.md)
 - [R10-1～6 CE 及 R10-3 部分 B 明细（仅记录）](results/r10.md)
-- [R11 八组 CE 逐序列 / 逐 QP 结果（仅汇总）](results/r11.md)
+- [R11 八组 CE 及 R11-2 部分 B 明细（仅汇总）](results/r11.md)
+- [R12 十二组 CE 逐序列 / 逐 QP 结果（仅汇总）](results/r12.md)
 - [统一实验记录（过程、分析与决策）](TS_Predictor_Experiment_Log.md)
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)
@@ -35,8 +36,8 @@
 | R8 | [总设计](TS_Predictor_R8_Experiment_Design.md)、[首八组](TS_Predictor_R8_First8_Design.md)、[初版实现](TS_Predictor_R8_Implementation.md)、[全部24组实现](TS_Predictor_R8_All24_Implementation.md) | [初版验证](TS_Predictor_R8_Validation.md)、[首七组结果](TS_Predictor_R8_First7_Results_20260926.md) |
 | R9 | [用户原始计划](../external_inputs/R9_Experiment_Plan.md)、[实施说明](TS_Predictor_R9_Implementation.md) | [验收记录](TS_Predictor_R9_Validation.md)、[结果台账](TS_Predictor_Results_Ledger.md)、[逐序列/逐QP明细（仅汇总）](results/r9.md) |
 | R10 | [用户原始计划](../external_inputs/R10_Experiment_Plan.md)、[实现与运行](TS_Predictor_R10_Implementation.md) | [验收记录](TS_Predictor_R10_Validation.md)、[1～6 CE及3的部分B明细](results/r10.md)；7未登记 |
-| R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；B/RA/AI未登记 |
-| R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)；尚无真实序列编码或 BD-rate 数据 |
+| R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE及2的部分B明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；RA/AI未登记 |
+| R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组LB CE明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；B/RA/AI未登记 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 
