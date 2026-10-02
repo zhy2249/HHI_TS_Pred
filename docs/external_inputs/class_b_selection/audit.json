@@ -1,0 +1,20 @@
+{
+  "reference_commit": "a4a92cbaa4f1f35d20f9ef8661bbf6613d381e1f",
+  "source_results_commit": "a0f21db22e0ef2ed778a9e1a17aa4daa966fed45",
+  "measured_B_common_QPs": [27, 32, 37],
+  "B_diagnostic_methods": 8,
+  "B_diagnostic_point_count": 120,
+  "independent_replicates": false,
+  "complete_four_point_B_methods": 4,
+  "max_full_B_error_pp": 4.9439619065339e-15,
+  "no_imputation_for_correlations": true,
+  "CE_input": "complete QP22/27/32/37 four-point BD611",
+  "B_response": "measured-only QP27/32/37 PCHIP diagnostic; NOT full CTC B",
+  "notes": [
+    "Related versions and shared outcomes; exploratory correlations not calibrated probability",
+    "R11-2 four C sequence values transcribed rounded to 6 decimals",
+    "Pair selection is exploratory, no multiplicity-adjusted claims",
+    "CSV storage uses -0.04 to mean -0.04 percent, not -4 percent",
+    "No codec runs or runtime benchmarking"
+  ]
+}
