@@ -1,0 +1,18 @@
+{
+  "r12_measured_points": 336,
+  "r12_imputed_points": 0,
+  "aggregate_checks": 72,
+  "max_abs_error_to_six_decimal_ledger_pp": 4.98405473128849e-07,
+  "all_within_rounding_tolerance": true,
+  "reading_method": "fixed-SHA connector numerical transcription, checked against 72 published aggregate fields; previous inputs reused for historic comparisons",
+  "reference_commit": "a0f21db22e0ef2ed778a9e1a17aa4daa966fed45",
+  "rd_points_blob": "ced8125ea9ed174645f20f34eae24971ac16fc31",
+  "not_verified": [
+    "server_binary_identity",
+    "actual_frame_count",
+    "decoder_hash",
+    "R12_production_source (documented path not present in retrieved directory)",
+    "actual_per_coefficient_activity",
+    "controlled_timing"
+  ]
+}

@@ -55,3 +55,13 @@ R12尚未实现或运行。BQTerrace/BasketballDrive的三点值只用于QP27/32
 - [数学参考脚本](r12_position/r12_rule_reference.py)与[本次实际测试结果](r12_position/validation.json)
 
 测试结果仅为纯损失选择器与加权代数，不是编解码/速度/BD-rate验证。CE先筛选，只有少数候选进入B；不得复用不同规格或二进制的同号结果。
+
+## R12结果分析（数据快照a0f21db）
+
+R12的336个CE实测点已登记，本节为独立外部分析；此前“未实现/未运行”的文字保留其当时状态，不作为最新结果判断。
+
+- [R12完整结果分析](R12_Results_Analysis.md)、[CE汇总](R12_Results_Summary.csv)、[直接匹配比较](R12_Matched_Comparisons.csv)
+- [同批R10-3及R11-2的B更新](R12_B_Update.csv)
+- [文件范围和审计边界](r12_results/README.md)
+
+R12-11对R10-3仅有较小、内容敏感的CE改善，但相对同权重raw/full-trim有更分散的匹配改善。R12尚无B结果。R10-3仍缺BQTerrace QP22，完整BCE尚不能认证。本次只同步分析/派生CSV，不修改codec、正式台账或实验规格；完整复算包与Excel通过会话附件提供。
