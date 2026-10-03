@@ -17,6 +17,7 @@
 - [R11 八组实现、宏与分阶段运行](TS_Predictor_R11_Implementation.md)
 - [R12 十二组实现与首批六组运行](TS_Predictor_R12_Implementation.md)
 - [R12 局部语法与量化验收记录](TS_Predictor_R12_Validation.md)
+- [R12 等价复杂度优化与回归验证](TS_Predictor_R12_Exact_Optimization.md)
 - [脚本使用说明](../../scripts/README_TS_PRED.md)
 - [外部分析和实验要求收件目录](../external_inputs/README.md)
 

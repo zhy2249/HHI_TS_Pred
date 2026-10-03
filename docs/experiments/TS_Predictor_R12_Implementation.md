@@ -1,5 +1,8 @@
 # R12 近似平局与空间加权实验实现
 
+2026-10-03补充：[等价复杂度优化](TS_Predictor_R12_Exact_Optimization.md)已实现并通过局部字节回归，
+R12-POS-01算法定义及模式编号不变。默认工程宏 `JVET_BJUT_TS_R12_EXACT_OPT=1`，0保留原计算路径。
+
 日期：2026-10-01；规格 `R12-POS-01`。从当前实验分支快进同步到 `94a3540` 后，依据
 [同步的 R12 方案](../external_inputs/R12_Experiment_Plan.md)实现全部 12 组。
 正式 BD-rate anchor 仍为 **Current**，机制对照为 **R10-3**。这不是新收益报告。
