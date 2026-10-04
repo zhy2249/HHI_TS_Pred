@@ -5,6 +5,12 @@
 
 统一进度、结果与后续计划见 [实验记录](../docs/experiments/TS_Predictor_Experiment_Log.md)。
 
+**2026-10-04 更新：所有实验在线统计默认关闭。** R2～R6、R8～R12 需显式 `TS_Rn_STATS=1` 才采集；
+R6/R8/R9/R10 正式 wrapper 与 R8 preflight 不再默认开启，R11/R12 保持默认关闭。
+专门的 `run_ts_rate_shadow.sh` 和观察正确性测试仍显式采集所需数据，不用于正式计时。
+统计关闭的日志没有 activity 表；新源码须重新编译，变更统计设置勿复用旧结果目录的成功标记。
+开关位置、R7 shadow 例外和续跑指纹说明见[统计默认值规范](../docs/experiments/TS_Predictor_Statistics_Defaults.md)。
+
 R12（2026-10-01，R12-POS-01）：[十二组实现及运行](../docs/experiments/TS_Predictor_R12_Implementation.md)。
 直接设置 `TypeDef.h` 的 `JVET_BJUT_TS_R12_MODE=1..12`，其它模式及R10_CACHE为0，master为1。
 `bash scripts/run_ts_r12_lb_ce.sh --dry-run --allow-missing-input` 默认1/2/4/7/8/9，共168个CE半帧点，

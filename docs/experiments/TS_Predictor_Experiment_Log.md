@@ -6,6 +6,29 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## 各实验统计统一默认关闭（2026-10-04，无新 BD-rate）
+
+按用户要求，R2～R6、R8/R9在线统计改为未设置时关闭，显式0关闭、1开启；
+R10～R12及R7 shadow本就默认关闭，保持不变。这里沿用环境变量接口，不新增算法宏。
+包含R2-4的额外真实context观察、R8 owner-search和R9 quant-search统计，未关闭实际搜索或必要算法历史。
+TypeDef.h增加集中说明，R3/R6启动行改为stats-default=off。
+
+R6/R8/R9/R10正式wrapper及R8 preflight同时改为默认0、接受外部显式1；
+专用shadow脚本仍作为显式观察任务，conditional smoke观察阶段补显式R2～R6_STATS=1，
+其无观察对照仍设0。没有运行任何帧级smoke或正式编解码。
+batch续跑指纹补齐全部观察环境，保守区分未设置/0/1；旧指纹一次性失效，未改已有结果或marker。
+
+编译EncoderApp/DecoderApp和局部原生测试通过，全量166项单元测试通过；生产统计表达式逐项验证默认/0/1，
+包括R2 Writer及R8/R9搜索旁路；wrapper拦截测试与续跑模拟通过。
+Current、R3-1/2、R6-1～7共十模式，修改前后×默认/显式关/显式开，
+各160合成TU的完整CABAC字节和240 TS-RDOQ用例q/absSum一致；新默认无统计，R3/R6显式1仍有统计，
+修改前后的显式开启诊断逐字一致。产物在runs/ts_stats_default_off/native_checks/。
+代码审查确认R2/R3自适应状态、R8-22路径权重、RDOQ必要回放与CG清零未受影响。
+没有新增或重算BD-rate，不宣称完成完整序列验收。
+
+新默认与使用说明见[统计默认值规范](TS_Predictor_Statistics_Defaults.md)；
+下列旧记录中的“默认开启”仅表示当时版本。
+
 ## R3 / R6 等价复杂度优化（2026-10-04，无新 BD-rate）
 
 用户确认101.4%是R3-1，所给旧启动行不能判断统计是否开启。
