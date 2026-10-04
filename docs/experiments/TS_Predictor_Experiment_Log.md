@@ -1,10 +1,34 @@
 # TS predictor 实验记录
 
-最后更新：2026-10-03。这是本项目 TS predictor 研究的统一实验台账；
+最后更新：2026-10-04。这是本项目 TS predictor 研究的统一实验台账；
 后续实验在本文件追加和更新，不另建互相冲突的总记录。
 
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
+
+## R3 / R6 等价复杂度优化（2026-10-04，无新 BD-rate）
+
+用户确认101.4%是R3-1，所给旧启动行不能判断统计是否开启。
+当前TS_R3_STATS/TS_R6_STATS默认开启、仅显式0关闭；TS_COND_TRACE必须unset。
+新增实际观察状态启动行，R6 wrapper保留默认统计开启但不再覆盖外部显式0。
+公平计时同时关闭原版/优化版统计，不能把关闭统计算作算法优化。
+
+新增TypeDef.h的JVET_BJUT_TS_R36_EXACT_OPT=1；0保留原路径。
+覆盖R3-1/2、R6-1～7，重点R3-1/R6-2；R3-3/4不受影响，算法默认仍全0。
+共享不同幅值的C(a)/C(a+1)、精确前缀求score、sum按重复次数而guard仍按单位置；
+移除动作路径多余诊断、直接使用scan坐标、无观察的stateless CG提前返回；
+Writer仅在单次固定q的CG调用内复用regular remap，不跨CG/TU/RDOQ trial缓存。
+候选、平局、G/H、稀疏规则、R6-2 fallback、RDOQ搜索/清零和CABAC状态均不改。
+
+Release构建及master-OFF语法检查通过；151项测试通过，新增656,613次predictor及152,963次guard比较。
+十模式宏0/1×观察关/开，160合成TU/1,491CG的完整CABAC字节相同；
+240合成TS-RDOQ用例完整q/absSum一致，包含HOR/VER BDPCM和清零/恢复。
+统计、两端trace、概率状态、fractional bits、budget断言通过，没有运行完整视频编解码。
+
+七轮交替局部TS-RDOQ耗时比（优化/原实现）中位：Current=0.9993、R3-1=0.7733、R6-2=0.7465。
+只是合成夹具证据，不是整编码加速，尚不能确认达到100.8%。
+详细范围、宏、验证、服务器公平计时要求见[R3/R6等价优化](TS_Predictor_R3_R6_Exact_Optimization.md)。
+结果在runs/ts_r36_exact/timed/validation.json；没有新增/重算BD-rate数值。
 
 ## R12 等价复杂度优化（2026-10-03，无新 BD-rate）
 
