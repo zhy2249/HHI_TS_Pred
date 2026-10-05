@@ -8,6 +8,21 @@
 
 namespace TsFixedPrediction
 {
+inline int r12PublicMode(int policy) { return policy>=86 && policy<=97 ? policy-85 : 0; }
+inline bool r12(int policy) { return r12PublicMode(policy)!=0; }
+inline const char *r12Name(int m)
+{
+  static const char *const names[]={nullptr,"r12_ci_near1","r12_r3_near1","r12_current_near1",
+    "r12_loo_unstable_cf","r12_direct_first","r12_r3_near1_loo","r12_c_distance_raw",
+    "r12_c_distance_fulltrim","r12_validation_distance","r12_validation_distance_tie",
+    "r12_c_distance_softtrim","r12_c_and_validation_distance"};
+  return m>=1 && m<=12 ? names[m] : nullptr;
+}
+inline int r12Policy(const char *name)
+{
+  for(int m=1;m<=12;++m) { if(!std::strcmp(name,r12Name(m))) { return m+85; } }
+  return 0;
+}
 inline int r11PublicMode(int policy) { return policy>=78 && policy<=85 ? policy-77 : 0; }
 inline bool r11(int policy) { return r11PublicMode(policy)!=0; }
 inline const char *r11Name(int m)
@@ -132,7 +147,8 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R11_MODE ? r11Name(JVET_BJUT_TS_R11_MODE) :
+  return JVET_BJUT_TS_R12_MODE ? r12Name(JVET_BJUT_TS_R12_MODE) :
+         JVET_BJUT_TS_R11_MODE ? r11Name(JVET_BJUT_TS_R11_MODE) :
          JVET_BJUT_TS_R10_MODE ? r10Name(JVET_BJUT_TS_R10_MODE) :
          JVET_BJUT_TS_R9_MODE ? r9Name(JVET_BJUT_TS_R9_MODE) :
          JVET_BJUT_TS_R8_MODE ? r8Name(JVET_BJUT_TS_R8_MODE) :
@@ -189,7 +205,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v) && !r12Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -243,12 +259,57 @@ inline int mode()
                           !std::strcmp(name(), "rate_raw") ? 32 :
                           !std::strcmp(name(), "rate_guard") ? 33 :
                           r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) :
-                          r10Policy(name()) ? r10Policy(name()) : r11Policy(name()) ? r11Policy(name()) : 1;
+                          r10Policy(name()) ? r10Policy(name()) : r11Policy(name()) ? r11Policy(name()) :
+                          r12Policy(name()) ? r12Policy(name()) : 1;
   return value;
+}
+struct R12Observation
+{
+  bool stats=false,trace=false;
+  int modes[3]{},count=0,detailLimit=0;
+};
+inline const R12Observation &r12Observation()
+{
+  static const R12Observation options=[]() {
+    R12Observation o;
+    const auto flag=[](const char *key) {
+      const char *v=std::getenv(key); CHECK(v && std::strcmp(v,"0") && std::strcmp(v,"1"),"R12 flag must be 0 or 1");
+      return v && !std::strcmp(v,"1");
+    };
+    o.stats=flag("TS_R12_STATS"); o.trace=flag("TS_R12_TRACE");
+    const char *list=std::getenv("TS_R12_SHADOW_MODES");
+    if(list && *list)
+    {
+      CHECK(!o.stats,"TS_R12_SHADOW_MODES requires TS_R12_STATS=1");
+      const char *p=list;
+      while(*p)
+      {
+        CHECK(*p<'0' || *p>'9',"Invalid R12 shadow mode list");
+        char *end=nullptr; const long m=std::strtol(p,&end,10);
+        CHECK(m<1 || m>12 || o.count>=3,"R12 shadow requires 1..12, at most three modes");
+        for(int i=0;i<o.count;++i) { CHECK(o.modes[i]==m,"Duplicate R12 shadow mode"); }
+        o.modes[o.count++]=int(m);
+        CHECK(*end && (*end!=',' || !end[1]),"Invalid R12 shadow separator"); p=*end?end+1:end;
+      }
+    }
+    else if(o.stats) { o.modes[o.count++]=r12PublicMode(mode()); }
+    const char *limit=std::getenv("TS_R12_DETAIL_LIMIT");
+    if(limit && *limit)
+    {
+      char *end=nullptr; const long n=std::strtol(limit,&end,10);
+      CHECK(*limit<'0' || *limit>'9' || *end || n<0 || n>1024,"R12 detail limit must be 0..1024");
+      o.detailLimit=int(n); CHECK(o.detailLimit && !o.stats,"R12 detail requires statistics");
+    }
+    CHECK((o.stats || o.trace) && mode()!=73 && !r12(mode()),"R12 observation supports R10-3 or R12 trajectories only");
+    return o;
+  }();
+  return options;
 }
 inline void announce()
 {
   (void)name(); // Validate explicit requests even in master-OFF builds.
+  const auto &r12Obs=r12Observation();
+  (void)r12Obs; // Also validate options in master-OFF builds, without unused warnings.
   CHECK(r10CacheEnabled() && !r10(mode()) && r9PublicMode(mode())!=9,
         "R10 exact cache requires R9-9 or R10-1..7; override TS_R10_CACHE=0 for other algorithms");
   const bool wantShadow = std::getenv("TS_RATE_SHADOW") && std::strcmp(std::getenv("TS_RATE_SHADOW"), "0");
@@ -274,6 +335,12 @@ inline void announce()
                 mode() - 22, mode() == 23 ? "max-H-then-G" : "Current-only-causal-veto");
   if (mode() >= 25 && mode() <= 31)
     std::printf("TS R6 revision=R6-20260923-v1; mode=%d; anchor=current; parent=r3_risk_guard; scope=YUV; TU-local; stateless; cost=syntax-proxy; n=nonzero-positions; tie=Current-identity-smallest; stats=stderr\n", mode() - 24);
+  if (mode()==13 || mode()==14 || (mode()>=25 && mode()<=31))
+  {
+    const char *stats=std::getenv(mode()<=14?"TS_R3_STATS":"TS_R6_STATS");
+    std::printf("TS R3/R6 exact-opt=%d; algorithm=unchanged; CG-local-Writer-remap; stats=%d; trace=%d; stats-default=off\n",
+      JVET_BJUT_TS_R36_EXACT_OPT,int(stats && std::strcmp(stats,"0")),int(std::getenv("TS_COND_TRACE")!=nullptr));
+  }
   if (mode() == 32 || mode() == 33)
   {
     std::printf("TS R7 experiment=R7-%d; parent=%s; runtime=%s; algorithm=RATE-20260924-v1\n",
@@ -306,6 +373,10 @@ inline void announce()
     std::printf("TS R10 exact-cache=%d; observation=TS_R10_STATS(default-off); no-speed-claim\n",int(r10CacheEnabled()));
   if (r11(mode()))
     std::printf("TS R11 revision=R11-20260929-v1; mode=%d; runtime=%s; anchor=current; parent=R10-3; scope=YUV; radius=3; max-validation=8; no-cache; CG-entry-frozen-CF10\n",r11PublicMode(mode()),name());
+  if (r12(mode()))
+    std::printf("TS R12 revision=R12-POS-01; mode=%d; runtime=%s; anchor=current; parent=R10-3; scope=YUV; V0<=5; weights=22111; no-cache; CG-entry-frozen-CF10; exact-opt=%d\n",r12PublicMode(mode()),name(),JVET_BJUT_TS_R12_EXACT_OPT);
+  if(r12Obs.stats || r12Obs.trace)
+    std::printf("TS R12 observation=final-Writer; revision=R12-POS-01; trajectory=%s; shadows=%d; detail-limit=%d; trace=%d; no-decision-feedback\n",name(),r12Obs.count,r12Obs.detailLimit,int(r12Obs.trace));
   if (r11StatsEnabled() && r11ObservedPolicy(mode()))
     std::printf("TS R11 observation=final-Writer; trajectory=%s; shadow-modes=1..8; no-decision-feedback\n",name());
 #endif
@@ -338,7 +409,7 @@ inline bool r4(int mode) { return mode >= 17 && mode <= 22; }
 inline bool r5(int mode) { return mode == 23 || mode == 24; }
 inline bool r6(int mode) { return mode >= 25 && mode <= 31; }
 inline bool rateMode(int mode) { return mode == 32 || mode == 33; }
-inline bool needsTsRateContext(int mode) { return r11(mode) || r10(mode) || r9(mode) || rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
+inline bool needsTsRateContext(int mode) { return r12(mode) || r11(mode) || r10(mode) || r9(mode) || rateMode(mode) || (r8(mode) && r8PublicMode(mode) != 23); }
 inline bool componentEnabled(int mode, bool luma) { return luma || (mode != 14 && mode != 16); }
 inline bool equivalentPredictors(int a, int b) { return a == b || (a <= 1 && b <= 1); }
 inline bool adaptive(int mode) { return (mode >= 6 && mode <= 8) || mode == 11 || mode == 12 || r3Adaptive(mode); }

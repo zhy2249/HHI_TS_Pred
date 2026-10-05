@@ -52,6 +52,8 @@
 #include "TsR9Stats.h"
 #include "TsR10Stats.h"
 #include "TsR11Stats.h"
+#include "TsR12Stats.h"
+#include "TsR12Exact.h"
 #include "TsRateReplay.h"
 #endif
 
@@ -144,7 +146,7 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
   m_tsPoc = tu.cu->slice->m_poc;
   m_tsIntra = tu.cu->predMode == MODE_INTRA;
   if ((TsFixedPrediction::r9(TsFixedPrediction::mode()) || TsFixedPrediction::r10(TsFixedPrediction::mode()) ||
-       TsFixedPrediction::r11(TsFixedPrediction::mode()) ||
+       TsFixedPrediction::r11(TsFixedPrediction::mode()) || TsFixedPrediction::r12(TsFixedPrediction::mode()) ||
        (TsFixedPrediction::r11StatsEnabled() && TsFixedPrediction::r11ObservedPolicy(TsFixedPrediction::mode()))) && tu.mtsIdx[component] == MtsType::SKIP)
   {
     m_tsScanIndex.resize(m_maxNumCoeff);
@@ -354,10 +356,96 @@ TsFixedPrediction::R11Decision CoeffCodingContext::r11PredictionTS(int mode,int 
   return d;
 }
 
+TsFixedPrediction::MagnitudeAction CoeffCodingContext::r12ActionTS(int mode,int scanPos,const TCoeff *coeff) const
+{
+#if !JVET_BJUT_TS_R12_EXACT_OPT
+  return r12PredictionTS(mode,scanPos,coeff).action();
+#else
+  using namespace TsFixedPrediction;
+  CHECK(mode<0 || mode>12,"Invalid R12 action mode");
+  const auto ci=[&](int v){return int64_t(syntaxCost(v,m_tsRice,m_maxLog2TrDynamicRange))<<SCALE_BITS;};
+  const auto experts=[&](const int (&h)[5]) {
+    const auto &table=tsRateTable((h[0]!=0)+(h[1]!=0));
+    const auto cf=[&](int v){return table.cost(v,m_tsRice,m_maxLog2TrDynamicRange);};
+    return r12FastExperts(mode,h,1<<m_maxLog2TrDynamicRange,cf,ci);
+  };
+  int h[5],positions[5]; r9SupportTS(scanPos,coeff,h,positions);
+  const auto actions=experts(h); const int count=mode==3?4:3;
+  bool identical=true;
+  for(int e=1;e<count;++e) { identical &= actions[e]==actions[0]; }
+  // Only the action is observable here. Diagnostic history is computed in
+  // r12PredictionTS separately. Mode3 must include D, not only original ABC.
+  if(identical) { return actions[0]; }
+  R12Loss losses{};
+  int slots[5]{},classes[5]{},mapped[5][4]{},rows=0; bool informative[5]{};
+  for(int t=0;t<5;++t)
+  {
+    const int j=positions[t];
+    if(j<0 || j>=scanPos || (j>>m_log2CGSize)!=(scanPos>>m_log2CGSize) || !h[t]) { continue; }
+    int older[5],pos[5]; r9SupportTS(j,coeff,older,pos);
+    const auto past=experts(older);
+    slots[rows]=t; classes[rows]=(older[0]!=0)+(older[1]!=0);
+    for(int e=0;e<count;++e)
+    {
+      mapped[rows][e]=remap(h[t],past[e]);
+      int previous=0;
+      while(previous<e && mapped[rows][previous]!=mapped[rows][e]) { ++previous; }
+      losses[rows][e]=previous<e ? losses[rows][previous] : ci(mapped[rows][e]);
+      if(e<3) { informative[rows] |= mapped[rows][e]!=mapped[rows][0]; }
+    }
+    ++rows;
+  }
+  const auto cfSum=[&](int e) {
+    int64_t sum=0;
+    for(int j=0;j<rows;++j)
+    {
+      const auto loss=tsRateTable(classes[j]).cost(mapped[j][e],m_tsRice,m_maxLog2TrDynamicRange);
+      sum+=loss*((mode==9 || mode==10 || mode==12)?R12_WEIGHTS[slots[j]]:1);
+    }
+    return sum;
+  };
+  return actions[r12FastSelect(mode,rows,losses,slots,informative,cfSum)];
+#endif
+}
+
+TsFixedPrediction::R12Decision CoeffCodingContext::r12PredictionTS(int mode,int scanPos,const TCoeff *coeff) const
+{
+  using namespace TsFixedPrediction;
+  CHECK(mode<0 || mode>12,"Invalid R12 local mode");
+  const auto ci=[&](int v){return int64_t(syntaxCost(v,m_tsRice,m_maxLog2TrDynamicRange))<<SCALE_BITS;};
+  const auto experts=[&](const int (&h)[5],R12Inner *inner=nullptr) {
+    const auto cf=[&](int v){return tsRateTable((h[0]!=0)+(h[1]!=0)).cost(v,m_tsRice,m_maxLog2TrDynamicRange);};
+    return r12Experts(mode,h,1<<m_maxLog2TrDynamicRange,cf,ci,inner);
+  };
+  int h[5],positions[5]; r9SupportTS(scanPos,coeff,h,positions);
+  R12Decision d; d.count=mode==3?4:3; d.actions=experts(h,&d.inner);
+  std::copy_n(h,5,d.support.begin());
+  d.direct=(h[0]!=0)+(h[1]!=0);
+  for(int v:h) { d.n+=v!=0; d.n1+=v==1; }
+  for(int t=0;t<5;++t)
+  {
+    const int j=positions[t];
+    if(j<0 || j>=scanPos || (j>>m_log2CGSize)!=(scanPos>>m_log2CGSize) || !h[t]) { continue; }
+    int older[5],pos[5]; r9SupportTS(j,coeff,older,pos);
+    const auto past=experts(older); // h_j, never the target a_j nor query classification.
+    const auto &table=tsRateTable((older[0]!=0)+(older[1]!=0));
+    const int row=d.validation++; d.slots[row]=t; d.scan[row]=j;
+    for(int e=0;e<d.count;++e)
+    {
+      const int mapped=remap(h[t],past[e]);
+      d.ciRows[row][e]=ci(mapped); d.cfRows[row][e]=table.cost(mapped,m_tsRice,m_maxLog2TrDynamicRange);
+      // LOO only concerns the original ABC experts. D cannot manufacture evidence.
+      if(e<3) { d.informative[row] |= mapped!=remap(h[t],past[0]); }
+    }
+  }
+  r12Select(mode,d);
+  return d;
+}
+
 void CoeffCodingContext::finishTsR9CG(const TCoeff *coeff,bool trace,bool verifyBudget,bool report)
 {
   using namespace TsFixedPrediction;
-  static const bool enabled=!std::getenv("TS_R9_STATS") || std::strcmp(std::getenv("TS_R9_STATS"),"0");
+  static const bool enabled=std::getenv("TS_R9_STATS") && std::strcmp(std::getenv("TS_R9_STATS"),"0");
   static const bool tracing=std::getenv("TS_R9_TRACE") && std::strcmp(std::getenv("TS_R9_TRACE"),"0");
   const bool collect=report && enabled,debug=trace && tracing;
   if(!collect && !debug) { return; }
@@ -569,10 +657,105 @@ void CoeffCodingContext::finishTsR11CG(const TCoeff *coeff,bool trace,bool verif
   if(debug) { std::fprintf(stderr,"TS_R11_TRACE mode=%d c=%d w=%u h=%u qp=%d cg=%d bins=%d hash=%llu\n",r11PublicMode(mode()),int(m_compID),m_width,m_height,m_tsQp,m_subSetId,m_tsR11HistoryBins,(unsigned long long)hash); }
 }
 
+void CoeffCodingContext::finishTsR12CG(const TCoeff *coeff,bool trace,bool verifyBudget,bool report)
+{
+  using namespace TsFixedPrediction;
+  const auto &options=r12Observation();
+  const bool collect=report && options.stats,debug=trace && options.trace;
+  if(!collect && !debug) { return; }
+  struct NullSink { void encodeBin(unsigned,unsigned) {} void encodeBinEP(unsigned) {}
+    void encodeRemAbsEP(unsigned,unsigned,unsigned,unsigned) {} } sink;
+  auto copy=*this;
+  const auto path=replayRateCG(copy,coeff,[&](int s){return rateAction(copy,s,coeff);},m_tsR12HistoryBins,m_tsRice,sink);
+  if(verifyBudget) { CHECK(m_tsR12HistoryBins!=remRegBins,"R12 observation replay budget mismatch"); }
+  R12Stats::Key key{{mode(),0,int(m_compID),int(m_width),int(m_height),m_tsQp,int(m_tsIntra),int(m_bdpcm),-1,-1}};
+  if(collect) for(int k=0;k<options.count;++k)
+  {
+    key[1]=options.modes[k]; std::array<int64_t,R12Stats::COUNT> v{};
+    v[R12Stats::TU]=m_subSetId==0; v[R12Stats::CG]=1; r12Stats().add(key,v);
+  }
+  uint64_t hash=1469598103934665603ULL;
+  for(int s=m_minSubPos;s<=m_maxSubPos;++s)
+  {
+    const int a=std::abs(int(coeff[blockPos(s)])),cutoff=s<=path.pass2?10:s<=path.pass1?2:0;
+    const bool regular=m_bdpcm==BdpcmMode::NONE && cutoff;
+    hash=(hash^uint64_t(int64_t(coeff[blockPos(s)])))*1099511628211ULL;
+    if(debug && regular)
+    {
+      const auto d=r12PredictionTS(r12(mode())?r12PublicMode(mode()):0,s,coeff);
+      hash=(hash^uint64_t(d.action().predictor))*1099511628211ULL;
+      hash=(hash^uint64_t(d.expert+4*d.effective))*1099511628211ULL;
+      for(int j=0;j<d.validation;++j) { hash=(hash^uint64_t(d.scan[j]+32*d.slots[j]))*1099511628211ULL; }
+    }
+    if(!collect) { continue; }
+    const auto base=regular?r10PredictionTS(3,s,coeff).action():MagnitudeAction{0,0};
+    for(int k=0;k<options.count;++k)
+    {
+      const int m=options.modes[k]; key[1]=m; key[8]=cutoff; key[9]=-1;
+      std::array<int64_t,R12Stats::COUNT> v{};
+      v[R12Stats::COEFF]=1; v[R12Stats::NZ]=a!=0;
+      if(regular)
+      {
+        const auto d=r12PredictionTS(m,s,coeff); key[9]=d.n;
+        v[R12Stats::REGULAR]=1; v[R12Stats::EMPTY]=!d.validation; v[R12Stats::EFFECTIVE]=d.effective;
+        v[R12Stats::CI_TIE]=d.ciTies>1; v[R12Stats::CI_UNIQUE]=d.ciTies==1;
+        v[R12Stats::GAP_Q]=d.ciTies==1 && d.ciGap<=R12_Q;
+        v[R12Stats::GAP_GT_Q]=d.ciTies==1 && d.ciGap>R12_Q;
+        v[R12Stats::NEAR]=d.nearMask!=0; v[R12Stats::LEGAL_LOO]=d.legalDeletes;
+        v[R12Stats::DIRECT_UNIQUE]=d.directWinner>=0; v[R12Stats::EXPERT_A+d.expert]=1;
+        v[R12Stats::ACTION_BASE]=d.action()!=base; v[R12Stats::MAP_BASE]=remap(a,d.action())!=remap(a,base);
+        v[R12Stats::CI_GAP]=d.ciGap; v[R12Stats::VALIDATION]=d.validation;
+        for(int j=0;j<d.validation;++j) { ++v[R12Stats::VL+d.slots[j]]; }
+        if(r12WeightedC(m))
+        {
+          const auto &i=d.inner; v[R12Stats::INNER]=1;
+          v[R12Stats::RAW_CHANGED]=i.raw!=i.oldRaw; v[R12Stats::C_CHANGED]=i.predictor(m)!=i.oldC;
+          v[R12Stats::G_OLD]=i.oldGain; v[R12Stats::G_WEIGHTED]=i.gain;
+          v[R12Stats::FULL_PENALTY]=i.full; v[R12Stats::SOFT_PENALTY]=i.soft;
+          v[R12Stats::RAW_ACCEPT]=i.gain>0; v[R12Stats::FULL_ACCEPT]=i.gain>i.full;
+          v[R12Stats::SOFT_ACCEPT]=i.gain>i.soft;
+          for(int j=0;j<5;++j) { v[R12Stats::DELTA_L+j]=i.delta[j]; }
+          if(i.maxSlot>=0) { v[R12Stats::MAX_L+i.maxSlot]=1; }
+        }
+        const auto &table=tsRateTable(d.direct);
+        int64_t ci[4]{},cf[4]{},actualPath[4]{};
+        for(int e=0;e<d.count;++e)
+        {
+          const int mapped=remap(a,d.actions[e]);
+          ci[e]=int64_t(syntaxCost(mapped,m_tsRice,m_maxLog2TrDynamicRange))<<SCALE_BITS;
+          cf[e]=table.cost(mapped,m_tsRice,m_maxLog2TrDynamicRange);
+          actualPath[e]=table.cost(mapped,m_tsRice,m_maxLog2TrDynamicRange,cutoff);
+          v[R12Stats::TARGET_CI_A+e]=ci[e]; v[R12Stats::TARGET_CF_A+e]=cf[e]; v[R12Stats::TARGET_PATH_A+e]=actualPath[e];
+        }
+        v[R12Stats::TARGET_CI_SELECTED]=ci[d.expert]; v[R12Stats::TARGET_CF_SELECTED]=cf[d.expert];
+        v[R12Stats::TARGET_PATH_SELECTED]=actualPath[d.expert];
+        const int mappedBase=remap(a,base);
+        v[R12Stats::TARGET_CI_BASE]=int64_t(syntaxCost(mappedBase,m_tsRice,m_maxLog2TrDynamicRange))<<SCALE_BITS;
+        v[R12Stats::TARGET_CF_BASE]=table.cost(mappedBase,m_tsRice,m_maxLog2TrDynamicRange);
+        v[R12Stats::TARGET_PATH_BASE]=table.cost(mappedBase,m_tsRice,m_maxLog2TrDynamicRange,cutoff);
+        v[R12Stats::REGRET_CI_SELECTED]=ci[d.expert]-*std::min_element(ci,ci+d.count);
+        v[R12Stats::REGRET_CF_SELECTED]=cf[d.expert]-*std::min_element(cf,cf+d.count);
+        v[R12Stats::REGRET_PATH_SELECTED]=actualPath[d.expert]-*std::min_element(actualPath,actualPath+d.count);
+        if(options.detailLimit) { r12Stats().detail(m,s,a,cutoff,d); }
+      }
+      r12Stats().add(key,v);
+    }
+  }
+  if(debug) { std::fprintf(stderr,"TS_R12_TRACE trajectory=%d c=%d w=%u h=%u qp=%d cg=%d bins=%d hash=%llu\n",mode(),int(m_compID),m_width,m_height,m_tsQp,m_subSetId,m_tsR12HistoryBins,(unsigned long long)hash); }
+}
+
 void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
   const int policy = mode();
+#if JVET_BJUT_TS_R36_EXACT_OPT
+  // R3-local/R6 have no predictor history to commit after an RDOQ CG. Their
+  // original finish paths also return without work when neither observation
+  // flag is requested. Do not apply this to TU-history/adaptive algorithms.
+  if(!trace && !report && (r3Local(policy) || r6(policy))) { return; }
+#endif
+  if(r12(policy) || policy==73) { finishTsR12CG(coeff,trace,verifyBudget,report); }
+  if(r12(policy)) { return; } // No persistent predictor state or old-round statistics.
   if(r11(policy) || (r11StatsEnabled() && r11ObservedPolicy(policy))) { finishTsR11CG(coeff,trace,verifyBudget,report); }
   if(r11(policy)) { return; }
   if (r10(policy)) { finishTsR10CG(coeff, trace, verifyBudget, report); return; }
@@ -581,8 +764,8 @@ void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bo
   if (r6(policy)) { finishTsR6CG(coeff, trace, verifyBudget, report); return; }
   if (r5(policy)) { finishTsR5CG(coeff, trace, verifyBudget, report); return; }
   if (r4(policy)) { finishTsR4CG(coeff, trace, verifyBudget, report); return; }
-  static const bool statsEnabled = !std::getenv("TS_R2_STATS") || std::strcmp(std::getenv("TS_R2_STATS"), "0");
-  static const bool r3StatsEnabled = !std::getenv("TS_R3_STATS") || std::strcmp(std::getenv("TS_R3_STATS"), "0");
+  static const bool statsEnabled = std::getenv("TS_R2_STATS") && std::strcmp(std::getenv("TS_R2_STATS"), "0");
+  static const bool r3StatsEnabled = std::getenv("TS_R3_STATS") && std::strcmp(std::getenv("TS_R3_STATS"), "0");
   const bool collectR2 = report && statsEnabled && policy >= 9 && policy <= 12;
   const bool collectR3 = report && r3StatsEnabled && r3(policy);
   const bool collect = collectR2 || collectR3;
@@ -790,7 +973,7 @@ void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bo
 void CoeffCodingContext::finishTsR4CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
-  static const bool statsEnabled = !std::getenv("TS_R4_STATS") || std::strcmp(std::getenv("TS_R4_STATS"), "0");
+  static const bool statsEnabled = std::getenv("TS_R4_STATS") && std::strcmp(std::getenv("TS_R4_STATS"), "0");
   static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
   const bool collect = report && statsEnabled, debug = trace && traceEnabled;
   if (!collect && !debug) { return; }
@@ -893,7 +1076,7 @@ void CoeffCodingContext::finishTsR4CG(const TCoeff *coeff, bool trace, bool veri
 void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
-  static const bool enabled = !std::getenv("TS_R8_STATS") || std::strcmp(std::getenv("TS_R8_STATS"), "0");
+  static const bool enabled = std::getenv("TS_R8_STATS") && std::strcmp(std::getenv("TS_R8_STATS"), "0");
   static const bool tracing = std::getenv("TS_R8_TRACE") && std::strcmp(std::getenv("TS_R8_TRACE"), "0");
   const bool collect = report && enabled, debug = trace && tracing;
   const int publicMode = r8PublicMode(mode());
@@ -1010,7 +1193,7 @@ void CoeffCodingContext::finishTsR8CG(const TCoeff *coeff, bool trace, bool veri
 void CoeffCodingContext::finishTsR6CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
-  static const bool statsEnabled = !std::getenv("TS_R6_STATS") || std::strcmp(std::getenv("TS_R6_STATS"), "0");
+  static const bool statsEnabled = std::getenv("TS_R6_STATS") && std::strcmp(std::getenv("TS_R6_STATS"), "0");
   static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
   const bool collect = report && statsEnabled, debug = trace && traceEnabled;
   if (!collect && !debug) { return; }
@@ -1108,7 +1291,7 @@ void CoeffCodingContext::finishTsR6CG(const TCoeff *coeff, bool trace, bool veri
 void CoeffCodingContext::finishTsR5CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
-  static const bool statsEnabled = !std::getenv("TS_R5_STATS") || std::strcmp(std::getenv("TS_R5_STATS"), "0");
+  static const bool statsEnabled = std::getenv("TS_R5_STATS") && std::strcmp(std::getenv("TS_R5_STATS"), "0");
   static const bool traceEnabled = std::getenv("TS_COND_TRACE") != nullptr;
   const bool collect = report && statsEnabled, debug = trace && traceEnabled;
   if (!collect && !debug) { return; }

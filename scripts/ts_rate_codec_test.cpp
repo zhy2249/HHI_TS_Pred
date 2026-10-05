@@ -2,6 +2,8 @@
 #include "CommonLib/Rom.h"
 #include "EncoderLib/CABACWriter.h"
 #include "DecoderLib/CABACReader.h"
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <random>
 #include <stdexcept>
@@ -117,11 +119,29 @@ static void r10Reference(const CoeffCodingContext &ctx,int s,const std::vector<T
 
 // The native R11 oracle also checks support edits, CG clearing and snapshot rollback.
 #include "ts_r11_native_reference.h"
+#include "ts_r12_native_reference.h"
 
 int main()
 {
   using namespace TsFixedPrediction;
-  require(mode()==13 || r8(mode()) || needsTsRateContext(mode())); initROM();
+  const bool r36Test = mode()==1 || r3Local(mode()) || r6(mode());
+  require(r36Test || r8(mode()) || needsTsRateContext(mode()));
+  // Optional exact-comparison artifact. Explicit little-endian words avoid
+  // host endianness, structure padding and digest-collision assumptions.
+  std::ofstream exactPayload;
+  const auto payloadWord=[&](uint64_t value) {
+    for(int byte=0;byte<8;++byte) { exactPayload.put(char((value>>(8*byte))&255)); }
+  };
+  const char *payloadPath=std::getenv("TS_R36_EXACT_PAYLOAD");
+  if(!payloadPath || !*payloadPath) { payloadPath=std::getenv("TS_R12_EXACT_PAYLOAD"); }
+  if(const char *path=payloadPath)
+    if(*path)
+    {
+      exactPayload.open(path,std::ios::binary|std::ios::trunc);
+      require(exactPayload.is_open());
+      exactPayload<<"TSR12CABACv1\n"; payloadWord(160);
+    }
+  initROM();
   std::mt19937 rng(20260924);
   RateTable neutral;
   for(auto *b:{&neutral.gt1,&neutral.parity,&neutral.gt[0],&neutral.gt[1],&neutral.gt[2],&neutral.gt[3]})
@@ -142,7 +162,7 @@ int main()
   XuPool pool; CodingStructure cs(pool); SPS sps; Slice slice;
   cs.sps=&sps; slice.m_sps=&sps; sps.m_dualITree=false;
   sps.m_bitDepths[ChannelType::LUMA]=sps.m_bitDepths[ChannelType::CHROMA]=10;
-  uint64_t groups=0,poisons=0;
+  uint64_t groups=0,poisons=0,digest=1469598103934665603ULL;
   for(int trial=0;trial<160;++trial)
   {
     const int w=1<<(1+trial%5),h=1<<(1+(trial/5)%5);
@@ -155,12 +175,15 @@ int main()
     const int rice=1+trial%8; sps.m_spsRangeExtension.m_tsrcRicePresentFlag=true; slice.m_tsrcIndex=rice-1;
     CoeffCodingContext enc(tu,comp,false,bdpcm),dec(tu,comp,false,bdpcm);
     require(enc.tsPathWeight10()==1 && enc.tsPathWeight2()==1);
-    enc.remRegBins=dec.remRegBins=trial%3?(w*h*7)>>2:trial%12;
+    // R3/R6 diagnostic replay begins at the native TU-entry budget. Unlike
+    // R12's frozen-table fixture it has no low-budget override API. Regular
+    // bins still run out naturally; keep the older R12 fixture unchanged.
+    enc.remRegBins=dec.remRegBins=(r36Test || trial%3)?(w*h*7)>>2:trial%12;
     std::vector<TCoeff> q(w*h),decoded(w*h);
     for(auto &a:q)a=rng()%3?int(rng()%(trial%2?21:4096))-10:0;
     if(trial%9==0)std::fill(q.begin(),q.end(),0);
     q[0]=-3;
-    if((r8(mode()) || r9(mode()) || r10(mode()) || r11(mode())) && trial%31==0)
+    if((r8(mode()) || r9(mode()) || r10(mode()) || r11(mode()) || r12(mode())) && trial%31==0)
       for(int i=0;i<w*h;++i)q[i]=i%3==0?-32768:i%3==1?32767:1;
     OutputBitstream bits; BinEncoder_Std bin; CABACWriter writer(bin,nullptr);
     writer.initBitstream(&bits); bin.reset(cu.qp,I_SLICE);
@@ -177,6 +200,19 @@ int main()
         for(int k=s;k<w*h;++k)poisoned[enc.blockPos(k)]=int(rng()%63)-31;
         require(ratePredictor(enc,s,q.data())==ratePredictor(enc,s,poisoned.data())); ++poisons;
         require(rateAction(enc,s,q.data())==rateAction(enc,s,poisoned.data()));
+        if(bdpcm==BdpcmMode::NONE && r12(mode()))
+        {
+          r12Reference(enc,s,q,rice,15);
+          const auto a=enc.r12PredictionTS(r12PublicMode(mode()),s,q.data());
+          const auto b=enc.r12PredictionTS(r12PublicMode(mode()),s,poisoned.data());
+          require(a.validation==b.validation && a.scan==b.scan && a.ciRows==b.ciRows && a.cfRows==b.cfRows);
+          if(s==enc.maxSubPos() && s>0)
+          {
+            auto edited=q; edited[enc.blockPos(s-1)]=1; r12Reference(enc,s,edited,rice,15);
+            for(int k=0;k<s;++k) { edited[enc.blockPos(k)]=0; }
+            r12Reference(enc,s,edited,rice,15); r12Reference(enc,s,q,rice,15);
+          }
+        }
         if(bdpcm==BdpcmMode::NONE && r11(mode()))
         {
           r11Reference(enc,s,q,rice,15);
@@ -215,16 +251,18 @@ int main()
           require(ratePredictor(enc,s,q.data())==enc.r8PredictionTS(1,s,q.data()).predictor);
       }
       equalCtx(untouched,writer.getCtx());
-      if((r10(mode()) || r11(mode())) && bdpcm==BdpcmMode::NONE)
+      if((r10(mode()) || r11(mode()) || r12(mode())) && bdpcm==BdpcmMode::NONE)
       {
         // A copied branch must discard old cache entries on a different CG
         // probability snapshot, then agree again after restoring the snapshot.
         auto branch=enc; Ctx changed(writer.getCtx()); changed.init((cu.qp+7)%64,P_SLICE);
         branch.freezeTsRateContext(changed);
-        if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
+        if(r12(mode())) { r12Reference(branch,enc.maxSubPos(),q,rice,15); }
+        else if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
         else { r10Reference(branch,enc.maxSubPos(),q,rice,15); }
         branch.freezeTsRateContext(untouched);
-        if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
+        if(r12(mode())) { r12Reference(branch,enc.maxSubPos(),q,rice,15); }
+        else if(r11(mode())) { r11Reference(branch,enc.maxSubPos(),q,rice,15); }
         else { r10Reference(branch,enc.maxSubPos(),q,rice,15); }
       }
       Ctx clone(writer.getCtx()); auto replay=enc; int bins=enc.remRegBins;
@@ -237,6 +275,8 @@ int main()
       equalCtx(clone,estimator.getCtx()); equalCtx(untouched,writer.getCtx());
       writer.residual_coding_subblockTS(enc,q.data(),rb,rice,false);
       require(enc.remRegBins==bins); equalCtx(clone,writer.getCtx()); budgets.push_back(bins); ++groups;
+      if(r12(mode()) || mode()==73) { enc.finishTsPredictorCG(q.data(),true,true,true); }
+      if(r3Local(mode()) || r6(mode())) { enc.finishTsPredictorCG(q.data(),true,true,true); }
       if (r8PublicMode(mode()) == 22)
       {
         int n10=0,n2=0;
@@ -255,6 +295,15 @@ int main()
       }
     }
     bin.encodeBinTrm(1);bin.finish();bits.writeByteAlignment();
+    if(exactPayload.is_open())
+    {
+      for(uint64_t value:{uint64_t(trial),uint64_t(w),uint64_t(h),uint64_t(comp),uint64_t(cu.qp),
+                         uint64_t(bdpcm),uint64_t(rice),uint64_t(bits.getFifo().size())})
+        payloadWord(value);
+      for(auto byte:bits.getFifo()) { exactPayload.put(char(byte)); }
+      require(exactPayload.good());
+    }
+    for(auto byte:bits.getFifo()) { digest=(digest^byte)*1099511628211ULL; }
     InputBitstream input;input.getFifo()=bits.getFifo();BinDecoder_Std decoder;CABACReader reader(decoder,nullptr);
     reader.initBitstream(&input);decoder.reset(cu.qp,I_SLICE);
     for(int g=0;g<=dec.lastSubSet();++g)
@@ -262,6 +311,8 @@ int main()
       dec.initSubblock(g);reader.residual_coding_subblockTS(dec,decoded.data(),rice);
       require(dec.remRegBins==budgets[g]);
       for(int s=dec.minSubPos();s<=dec.maxSubPos();++s)require(q[dec.blockPos(s)]==decoded[dec.blockPos(s)]);
+      if(r12(mode()) || mode()==73) { dec.finishTsPredictorCG(decoded.data(),true,true,false); }
+      if(r3Local(mode()) || r6(mode())) { dec.finishTsPredictorCG(decoded.data(),true,true,false); }
       if (r8PublicMode(mode()) == 22)
       {
         dec.finishTsPredictorCG(decoded.data(),true,true);
@@ -270,7 +321,10 @@ int main()
     }
     require(decoder.decodeBinTrm()==1); decoder.finish(); require(q==decoded);
   }
+  if(exactPayload.is_open()) { exactPayload.close(); require(!exactPayload.fail()); }
   destroyROM();
   std::cout<<"PASS "<<name()<<": neutral lengths=262144 old-score cases=40000 native TU=160 CG="<<groups<<" causal="<<poisons<<'\n';
+  std::cout<<"TS_NATIVE_DIGEST "<<digest<<'\n';
+  if(r12(mode())) { std::cout<<"R12 reference="<<r12References<<" action-changed="<<r12Changed<<" ABC-same-D-different="<<r12DistinctD<<'\n'; }
   if(r11(mode())) { std::cout<<"R11 reference cross-targets="<<r11CrossTargets<<" no-evidence="<<r11NoEvidence<<" ABC-same-D-different="<<r11DistinctD<<'\n'; }
 }

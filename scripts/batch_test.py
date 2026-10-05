@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable
-from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS
+from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -39,8 +39,17 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
                        "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
                        "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
-                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS)
+                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS)
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
+# Store raw observer settings rather than guessing the executable's compiled
+# defaults. In particular TS_COND_TRACE is enabled by presence (even "0"),
+# unlike the separately parsed R8..R12 trace flags. Missing and explicit values
+# therefore remain distinct; this only affects resume identity, not job env.
+_TS_OBSERVATION_ENV_KEYS = (
+    "TS_COND_TRACE",
+    *(f"TS_R{round_}_STATS" for round_ in (*range(2, 7), *range(8, 13))),
+    *(f"TS_R{round_}_TRACE" for round_ in range(8, 13)),
+)
 
 _PRESET_CFGS = {
     "AI": "cfg/encoder_intra_nx2.cfg",
@@ -349,6 +358,8 @@ def _detect_experiment_line(exe: Path, cwd: Path, mode: str | None = None) -> st
         probe_env.pop("TS_FIXED_PREDICTOR", None)  # Probe compiled default, not ambient shell override.
         probe_env.pop("TS_RATE_SHADOW", None)  # Observers constrain actual jobs, not capability probes.
         probe_env.pop("TS_RATE_RDOQ_SHADOW", None)
+        for key in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT"):
+            probe_env.pop(key, None)  # Actual jobs inherit observers; capability/default probes do not.
         probe_env["TS_R10_CACHE"] = "0"  # Capability probes must not reject a Current default for an actual R10 job.
         if mode is not None:
             probe_env["TS_FIXED_PREDICTOR"] = mode
@@ -557,13 +568,20 @@ def _run_one(job: TestJob) -> dict:
             "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
             "rate_shadow": os.environ.get("TS_RATE_SHADOW", "0"),
             "rate_rdoq_shadow": os.environ.get("TS_RATE_RDOQ_SHADOW", "0"),
+            "observation_env": {key: os.environ.get(key) for key in _TS_OBSERVATION_ENV_KEYS},
+            **({"r12_revision": "R12-POS-01", "r12_stats": os.environ.get("TS_R12_STATS", "0"),
+                "r12_trace": os.environ.get("TS_R12_TRACE", "0"),
+                "r12_shadow_modes": os.environ.get("TS_R12_SHADOW_MODES", ""),
+                "r12_detail_limit": os.environ.get("TS_R12_DETAIL_LIMIT", "0")}
+               if (job.fixed_predictor in R12_MODE_NUMBERS or any(os.environ.get(k, "0") not in ("", "0")
+                   for k in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT"))) else {}),
             **({"r11_stats": os.environ.get("TS_R11_STATS", "0"), "r11_trace": os.environ.get("TS_R11_TRACE", "0")}
                if (job.fixed_predictor in R11_MODE_NUMBERS or
                    os.environ.get("TS_R11_STATS", "0") != "0" or os.environ.get("TS_R11_TRACE", "0") != "0") else {}),
-            **({"r8_stats": os.environ.get("TS_R8_STATS", "1"),
+            **({"r8_stats": os.environ.get("TS_R8_STATS", "0"),
                 "r8_trace": os.environ.get("TS_R8_TRACE", "0")}
                if job.fixed_predictor and job.fixed_predictor.startswith("r8_") else {}),
-            **({"r9_stats": os.environ.get("TS_R9_STATS", "1"), "r9_trace": os.environ.get("TS_R9_TRACE", "0")}
+            **({"r9_stats": os.environ.get("TS_R9_STATS", "0"), "r9_trace": os.environ.get("TS_R9_TRACE", "0")}
                if job.fixed_predictor and job.fixed_predictor.startswith("r9_") else {}),
             **({"r10_stats": os.environ.get("TS_R10_STATS", "0"), "r10_trace": os.environ.get("TS_R10_TRACE", "0"),
                 "r10_cache": os.environ.get("TS_R10_CACHE", "compiled-default")}

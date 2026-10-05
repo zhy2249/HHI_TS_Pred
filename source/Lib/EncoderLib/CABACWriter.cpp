@@ -4064,7 +4064,7 @@ void CABACWriter::residual_codingTS(const TransformUnit &tu, CompID compID)
     // Observation only: quantify the virtual-prior mismatch at the FINAL writer.
     // These actual-context costs are never passed to RDOQ, decoder, or selector.
     if (isEncoding() && TsFixedPrediction::mode() == 12 && cctx.bdpcm() == BdpcmMode::NONE &&
-        (!std::getenv("TS_R2_STATS") || std::strcmp(std::getenv("TS_R2_STATS"), "0")))
+        (std::getenv("TS_R2_STATS") && std::strcmp(std::getenv("TS_R2_STATS"), "0")))
     {
       using namespace TsFixedPrediction;
       std::array<uint64_t, R2Stats::COUNT> counts{};
@@ -4108,11 +4108,38 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
       (TsFixedPrediction::r11StatsEnabled() && TsFixedPrediction::r11ObservedPolicy(TsFixedPrediction::mode())))
     { cctx.freezeTsRateContext(getCtx()); }
 #endif
+#if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_R36_EXACT_OPT
+  // R3-local/R6 depend only on this immutable final-q neighbourhood and the
+  // fixed TU Rice/range. Reuse their regular-path remapping across the three
+  // syntax passes, never across a subblock invocation or an RDOQ trial.
+  const int exactPolicy = TsFixedPrediction::mode();
+  const bool exactLocalRemap = TsFixedPrediction::r3Local(exactPolicy) || TsFixedPrediction::r6(exactPolicy);
+  static_assert(MLS_CG_SIZE <= 5, "Local TS remapping mask is too small");
+  int exactMapped[1 << MLS_CG_SIZE]; // Written before the corresponding mask bit.
+  uint32_t exactMappedMask = 0;     // No array initialization for other modes.
+  if (exactLocalRemap)
+    CHECK(cctx.maxSubPos() - cctx.minSubPos() + 1 > (1 << MLS_CG_SIZE), "TS CG exceeds local remapping cache");
+#endif
   const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
 #if JVET_BJUT_TS_PRED_ANALYSIS
     if (m_tsAnalysisMode != 1)
     {
       return TsPred::remap(level, TsPred::predict(m_tsAnalysisMode, std::abs(left), std::abs(above)), disabled);
+    }
+#endif
+#if JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_R36_EXACT_OPT
+    if (exactLocalRemap)
+    {
+      // Neither zero nor BDPCM/pure-bypass levels use a magnitude predictor.
+      // In particular, bypass must not reuse a regular-path cached level.
+      if (!level || disabled) { return int(level); }
+      const int index = scanPos - cctx.minSubPos();
+      const uint32_t bit = uint32_t(1) << index;
+      if (exactMappedMask & bit) { return exactMapped[index]; }
+      const auto action = cctx.magnitudeActionTS(scanPos, coeff);
+      exactMapped[index] = cctx.deriveModCoeff(left, above, level, false, action.predictor, action.protect);
+      exactMappedMask |= bit;
+      return exactMapped[index];
     }
 #endif
     const auto action=cctx.magnitudeActionTS(scanPos,coeff);

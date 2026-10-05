@@ -50,11 +50,13 @@
 #include "TsR4Prediction.h"
 #include "TsR5Prediction.h"
 #include "TsR6Prediction.h"
+#include "TsR36Exact.h"
 #include "TsRateCost.h"
 #include "TsR8Prediction.h"
 #include "TsR9Prediction.h"
 #include "TsR10Prediction.h"
 #include "TsR11Prediction.h"
+#include "TsR12Prediction.h"
 #endif
 
 #include <bitset>
@@ -586,6 +588,13 @@ public:
   TsFixedPrediction::MagnitudeAction magnitudeActionTS(int scanPos, const TCoeff *coeff) const
   {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+#if JVET_BJUT_TS_R36_EXACT_OPT
+    const int localMode=TsFixedPrediction::mode();
+    if(TsFixedPrediction::r3Local(localMode) || TsFixedPrediction::r6(localMode))
+      return {magnitudePredictorModeTS(localMode,scanPos,coeff),0};
+#endif
+    if (TsFixedPrediction::r12(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
+      return r12ActionTS(TsFixedPrediction::r12PublicMode(TsFixedPrediction::mode()),scanPos,coeff);
     if (TsFixedPrediction::r11(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
       return r11PredictionTS(TsFixedPrediction::r11PublicMode(TsFixedPrediction::mode()),scanPos,coeff).action();
     if (TsFixedPrediction::r10(TsFixedPrediction::mode()) && m_bdpcm == BdpcmMode::NONE)
@@ -603,13 +612,15 @@ public:
   TsFixedPrediction::R10Decision r10PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   TsFixedPrediction::R11Targets r11TargetsTS(int scope,int scanPos,const TCoeff *coeff) const;
   TsFixedPrediction::R11Decision r11PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
+  TsFixedPrediction::R12Decision r12PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
+  TsFixedPrediction::MagnitudeAction r12ActionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   void freezeTsRateContext(const Ctx &ctx)
   {
     // Also permits native low-budget tests. This is the actual CG0 entry
     // budget; subsequent history comes exclusively from final-q replay.
     if ((TsFixedPrediction::r8PublicMode(TsFixedPrediction::mode()) == 22 || TsFixedPrediction::r9(TsFixedPrediction::mode()) || TsFixedPrediction::r10(TsFixedPrediction::mode())) && m_subSetId == 0)
       m_tsHistoryBins = remRegBins;
-    if(m_subSetId==0) { m_tsR11HistoryBins=remRegBins; }
+    if(m_subSetId==0) { m_tsR11HistoryBins=remRegBins; m_tsR12HistoryBins=remRegBins; }
     const auto &bits = ctx.getFracBitsAcess();
     for (int k = 0; k < 3; ++k)
     {
@@ -686,6 +697,23 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+#if JVET_BJUT_TS_R36_EXACT_OPT
+    if(TsFixedPrediction::r3Local(mode) || TsFixedPrediction::r6(mode))
+    {
+      // Native scan already stores exactly these coordinates; no per-query
+      // integer division is needed to reconstruct them from raster position.
+      const auto &point=m_scan[scanPos];
+      const int pos=point.idx,x=point.x,y=point.y;
+      const auto a=[&](int dx,int dy) { return std::abs(int(coeff[pos+dx+dy*int(m_width)])); };
+      const int h[5]={x?a(-1,0):0,y?a(0,-1):0,x && y?a(-1,-1):0,x>=2?a(-2,0):0,y>=2?a(0,-2):0};
+      return TsFixedPrediction::r36Predict(mode,h,m_tsRice,m_maxLog2TrDynamicRange);
+    }
+#endif
+    if (TsFixedPrediction::r12(mode))
+    {
+      if (m_bdpcm != BdpcmMode::NONE) { return -1; }
+      return r12ActionTS(TsFixedPrediction::r12PublicMode(mode),scanPos,coeff).predictor;
+    }
     if (TsFixedPrediction::r11(mode))
     {
       if (m_bdpcm != BdpcmMode::NONE) { return -1; }
@@ -744,6 +772,7 @@ public:
   void finishTsR9CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR10CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR11CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR12CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
   int tsPathWeight10() const { return m_tsPath10; }
@@ -822,6 +851,7 @@ private:
   int64_t m_tsRecentMargin = 0; // R3 certificate of exactly the immediately preceding final CG.
   int m_tsHistoryBins = 0;
   int m_tsR11HistoryBins = 0; // Observation replay only; never shared with older state machines.
+  int m_tsR12HistoryBins = 0; // Separate final-Writer observation/trace budget.
   int m_tsRice = 1;
   int m_tsPoc = 0;
   bool m_tsIntra = false;

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import batch_test as batch
-from ts_predictor_naming import R8_MODE_NUMBERS, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS
+from ts_predictor_naming import R8_MODE_NUMBERS, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS
 
 
 class FixedDefaultsTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class FixedDefaultsTests(unittest.TestCase):
         cls.r5 = ('r5_margin_first','r5_current_veto')
         cls.r6 = ('r6_dense_nopred','r6_reject_nopred','r6_trim_cost','r6_trim_saving','r6_sparse_max','r6_sparse_mean','r6_sparse_min')
         cls.rate = ('rate_raw','rate_guard')
-        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate, *R8_MODE_NUMBERS, *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS)
+        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate, *R8_MODE_NUMBERS, *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS)
         for mode in (*cls.modes, 'off'):
             exe = Path(cls.tmp.name)/mode
             defines = ['-DJVET_BJUT_TS_FIXED_PREDICTOR='+('0' if mode=='off' else '1')]
@@ -44,6 +44,7 @@ class FixedDefaultsTests(unittest.TestCase):
             defines.append('-DJVET_BJUT_TS_R10_MODE='+str(R10_MODE_NUMBERS.get(mode,0)))
             defines.append('-DJVET_BJUT_TS_R10_CACHE=0')
             defines.append('-DJVET_BJUT_TS_R11_MODE='+str(R11_MODE_NUMBERS.get(mode,0)))
+            defines.append('-DJVET_BJUT_TS_R12_MODE='+str(R12_MODE_NUMBERS.get(mode,0)))
             subprocess.run(cls.base_cmd+defines+['-o',str(exe)],check=True,capture_output=True)
             cls.binaries[mode] = exe
 
@@ -109,6 +110,62 @@ class FixedDefaultsTests(unittest.TestCase):
             self.assertIn(f'TS R11 revision=R11-20260929-v1; mode={R11_MODE_NUMBERS[mode]};',r.stdout)
             env={**os.environ,'TS_FIXED_PREDICTOR':mode,'TS_R10_CACHE':'1'}
             r=subprocess.run([str(self.binaries['current'])],env=env,capture_output=True)
+            self.assertNotEqual(r.returncode,0)
+
+    def test_r12_conflicts(self):
+        cases=[['-DJVET_BJUT_TS_R12_MODE=-1'],['-DJVET_BJUT_TS_R12_MODE=13'],
+               ['-DJVET_BJUT_TS_R12_MODE=1','-DJVET_BJUT_TS_FIXED_PREDICTOR=0']]
+        for old in ('CONDITIONAL_MODE','FIXED_NOPRED','FIXED_GRADIENT','FIXED_DIRECTIONAL','R10_CACHE',
+                    *[f'R{i}_MODE' for i in range(2,12)],'RATE_MODE'):
+            cases.append(['-DJVET_BJUT_TS_R12_MODE=1',f'-DJVET_BJUT_TS_{old}=1'])
+        for flags in cases:
+            r=subprocess.run(self.base_cmd+flags+['-fsyntax-only'],capture_output=True)
+            self.assertNotEqual(r.returncode,0,flags)
+        for mode in R12_MODE_NUMBERS:
+            r=self.run_probe(mode)
+            self.assertIn(f'TS R12 revision=R12-POS-01; mode={R12_MODE_NUMBERS[mode]};',r.stdout)
+            env={**os.environ,'TS_FIXED_PREDICTOR':mode,'TS_R10_CACHE':'1'}
+            r=subprocess.run([str(self.binaries['current'])],env=env,capture_output=True)
+            self.assertNotEqual(r.returncode,0)
+
+    def test_r12_exact_is_engineering_only(self):
+        env={k:v for k,v in os.environ.items() if not k.startswith('TS_')}
+        for value in (0,1):
+            exe=Path(self.tmp.name)/f'r12_exact_{value}'
+            subprocess.run(self.base_cmd+[f'-DJVET_BJUT_TS_R12_EXACT_OPT={value}',
+                           '-DJVET_BJUT_TS_R12_MODE=11','-o',str(exe)],check=True,capture_output=True)
+            r=subprocess.run([str(exe)],env=env,capture_output=True,text=True,check=True)
+            self.assertIn('ACTUAL_MODE=r12_c_distance_softtrim',r.stdout)
+            self.assertIn(f'exact-opt={value}',r.stdout)
+            r=subprocess.run([str(exe)],env={**env,'TS_FIXED_PREDICTOR':'current'},
+                             capture_output=True,text=True,check=True)
+            self.assertIn('ACTUAL_MODE=current',r.stdout)
+        for value in (-1,2):
+            r=subprocess.run(self.base_cmd+[f'-DJVET_BJUT_TS_R12_EXACT_OPT={value}','-fsyntax-only'],
+                             capture_output=True)
+            self.assertNotEqual(r.returncode,0)
+
+    def test_r36_exact_and_actual_observer_banner(self):
+        env={k:v for k,v in os.environ.items() if not k.startswith('TS_')}
+        for exact in (0,1):
+            for macro,value,name,stats in (('R3',1,'r3_risk_guard','TS_R3_STATS'),
+                                          ('R6',2,'r6_reject_nopred','TS_R6_STATS')):
+                exe=Path(self.tmp.name)/f'r36_{macro}_{exact}'
+                subprocess.run(self.base_cmd+[f'-DJVET_BJUT_TS_{macro}_MODE={value}',
+                    f'-DJVET_BJUT_TS_R36_EXACT_OPT={exact}','-o',str(exe)],check=True,capture_output=True)
+                for value,observed in ((None,False),('0',False),('1',True)):
+                    settings={} if value is None else {stats:value}
+                    r=subprocess.run([str(exe)],env={**env,**settings},text=True,capture_output=True,check=True)
+                    self.assertIn('ACTUAL_MODE='+name,r.stdout)
+                    self.assertIn(f'TS R3/R6 exact-opt={exact};',r.stdout)
+                    self.assertIn(f'stats={int(observed)}; trace=0;',r.stdout)
+                    self.assertIn('stats-default=off',r.stdout)
+                r=subprocess.run([str(exe)],env={**env,'TS_FIXED_PREDICTOR':'current'},
+                                 text=True,capture_output=True,check=True)
+                self.assertIn('ACTUAL_MODE=current',r.stdout)
+        for value in (-1,2):
+            r=subprocess.run(self.base_cmd+[f'-DJVET_BJUT_TS_R36_EXACT_OPT={value}','-fsyntax-only'],
+                             capture_output=True)
             self.assertNotEqual(r.returncode,0)
 
     def test_r9_conflicts(self):

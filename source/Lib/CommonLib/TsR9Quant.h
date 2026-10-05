@@ -21,7 +21,7 @@ struct R9QuantStats
   using Key=std::array<int,7>;
   struct Row { uint64_t trials=0,captured=0,d=0,u=0,rejectD=0,rejectU=0,testD=0,testU=0,winD=0,winU=0,invalid=0,finalD=0,finalU=0; double gain=0; };
   std::map<Key,Row> rows; std::mutex mutex;
-  static bool enabled() { static const bool v=!std::getenv("TS_R9_STATS") || std::strcmp(std::getenv("TS_R9_STATS"),"0"); return v; }
+  static bool enabled() { static const bool v=std::getenv("TS_R9_STATS") && std::strcmp(std::getenv("TS_R9_STATS"),"0"); return v; }
   void add(Key k,const R9QuantTrial &t,int testedD,int testedU,int winner,double gain,bool invalid)
   {
     if(!enabled()) { return; } std::lock_guard<std::mutex> lock(mutex); auto &r=rows[k];

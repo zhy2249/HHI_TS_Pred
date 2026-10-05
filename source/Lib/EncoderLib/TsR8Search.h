@@ -23,7 +23,7 @@ struct R8SearchStats
   std::mutex mutex;
   void add(const TransformUnit &tu, CompID comp, int owner, unsigned extra, bool changed, double j0, double j1)
   {
-    static const bool enabled = !std::getenv("TS_R8_STATS") || std::strcmp(std::getenv("TS_R8_STATS"),"0");
+    static const bool enabled = std::getenv("TS_R8_STATS") && std::strcmp(std::getenv("TS_R8_STATS"),"0");
     if (!enabled) { return; }
     std::lock_guard<std::mutex> lock(mutex);
     auto &r = rows[{r8PublicMode(mode()),int(comp),int(tu.blocks[comp].width),int(tu.blocks[comp].height),

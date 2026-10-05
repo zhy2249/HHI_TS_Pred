@@ -59,7 +59,11 @@
 // 总开关=1且所有实验模式=0 -> Current=max(|L|,|U|)，唯一正式 anchor。
 // TS_FIXED_PREDICTOR 环境变量 / batch --fixed-predictors 可以覆盖编译默认模式。
 // 改宏后须重新编译 Encoder/Decoder，并核对每个任务的 EXPERIMENT 启动行。
-// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R8 实验，并非启用 NoPred。
+// 在线统计默认全部关闭（2026-10-04）：TS_R2/3/4/5/6/8/9/10/11/12_STATS 是环境变量，
+// 未设置或=0关闭，显式=1开启；不是算法 *_MODE 宏，不改变 predictor/码流。
+// R7 shadow 另需下面的编译开关及显式环境请求；TRACE/SHADOW 默认关闭。
+// TS_COND_TRACE 旧接口按“是否存在”判断，关闭必须unset，设0仍会开启。
+// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R12 实验，并非启用 NoPred。
 #ifndef JVET_BJUT_TS_FIXED_PREDICTOR
 #define JVET_BJUT_TS_FIXED_PREDICTOR                       1
 #endif
@@ -124,6 +128,15 @@
 // 7=R6-7/sparse_min：与5相同，L/U分支改为min(L,U)。
 #ifndef JVET_BJUT_TS_R6_MODE
 #define JVET_BJUT_TS_R6_MODE                               0
+#endif
+// R3-1/2 与 R6-1..7 的等价工程优化，不是新模式，不影响 R3-3/4：
+// 1=共享幅值代价/精确前缀评分、动作专用路径及单次 Writer CG remap复用；
+// 0=保留原实现作码流对照。候选、tie、guard、R6-2拒绝后NoPred完全不变。
+#ifndef JVET_BJUT_TS_R36_EXACT_OPT
+#define JVET_BJUT_TS_R36_EXACT_OPT                         1
+#endif
+#if JVET_BJUT_TS_R36_EXACT_OPT != 0 && JVET_BJUT_TS_R36_EXACT_OPT != 1
+#error TS R3/R6 exact optimization must be 0 or 1
 #endif
 // R7（TS-014，原名Rate estimator实验）：使用CG入口冻结的CABAC fractional-bit评分。
 // 0=不选择R7；1=R7-1/rate_raw：原R2-2仅更换评分，仍无强guard；
@@ -192,6 +205,35 @@
 // Optional final-Writer observation: TS_R11_STATS=1; CG hash trace: TS_R11_TRACE=1.
 #ifndef JVET_BJUT_TS_R11_MODE
 #define JVET_BJUT_TS_R11_MODE                              0
+#endif
+// R12-POS-01, mechanism control R10-3; formal BD anchor remains Current.
+// 0=off (not R10-3); 1=CI near Q; 2=only R3 near Q; 3=native Current gap [0,Q];
+// 4=meaningful delete-one challengers; 5=unique direct L/U CI winner first;
+// 6=union of 2 and 4; 7=distance-weighted raw C; 8=weighted C/full deletion;
+// 9=distance-weighted outer CI+CF; 10=only exact-CI-tie weighted CF;
+// 11=weighted C/half-direct deletion; 12=7+9. W=(2,2,1,1,1), YUV, V0<=5.
+// All earlier defaults/cache must be 0. Explicit TS_FIXED_PREDICTOR overrides.
+// TS_R12_STATS=1 observes final Writer only; optional TS_R12_SHADOW_MODES (<=3).
+#ifndef JVET_BJUT_TS_R12_MODE
+#define JVET_BJUT_TS_R12_MODE                              0
+#endif
+// R12 等价复杂度优化，不是新实验模式：1=动作专用评分/相同动作短路/延迟外层CF；
+// 0=原 R12 完整计算路径，供逐字节回归。两者须得到完全相同码流。
+// 不改变 R12_MODE；全部旧实验及 Current 不受影响；统计仍使用完整诊断路径。
+#ifndef JVET_BJUT_TS_R12_EXACT_OPT
+#define JVET_BJUT_TS_R12_EXACT_OPT                         1
+#endif
+#if JVET_BJUT_TS_R12_EXACT_OPT != 0 && JVET_BJUT_TS_R12_EXACT_OPT != 1
+#error TS R12 exact optimization must be 0 or 1
+#endif
+#if JVET_BJUT_TS_R12_MODE < 0 || JVET_BJUT_TS_R12_MODE > 12
+#error Invalid TS R12 mode
+#endif
+#if JVET_BJUT_TS_R12_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R12 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R12_MODE && (JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R12 and earlier TS defaults/cache are mutually exclusive
 #endif
 #if JVET_BJUT_TS_R11_MODE < 0 || JVET_BJUT_TS_R11_MODE > 8
 #error Invalid TS R11 mode

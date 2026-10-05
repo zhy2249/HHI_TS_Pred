@@ -3,6 +3,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 unset TS_COND_TRACE
+# This script explicitly requests shadow scoring, unlike normal coding wrappers.
 export TS_RATE_SHADOW=1
 # Optional expensive encoder-search probe; still does not change decisions.
 export TS_RATE_RDOQ_SHADOW="${TS_RATE_RDOQ_SHADOW:-0}"

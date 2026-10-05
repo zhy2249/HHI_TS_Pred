@@ -3,7 +3,8 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 unset TS_COND_TRACE TS_R8_TRACE TS_RATE_SHADOW TS_RATE_RDOQ_SHADOW
-export TS_R8_STATS=1
+# Request activity tables explicitly with TS_R8_STATS=1; default is timing-safe.
+export TS_R8_STATS="${TS_R8_STATS:-0}"
 exec python3 -u scripts/batch_test.py \
   --preset LBeu --sequences PartyScene,BQMall,KristenAndSara,Johnny --qps 22,37 --frames 17 \
   --fixed-predictors current,r3_risk_guard,rate_raw,rate_guard,r8_raw_sparse_max,r8_guard_sparse_max,r8_reject_nopred,r8_mixed_raw,r8_complete_raw,r8_complete_sparse_max,r8_minimax,r8_smoothed_dense \

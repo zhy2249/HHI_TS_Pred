@@ -1,0 +1,141 @@
+{
+  "revision": "R12-POS-01",
+  "implementation_base": "94a3540",
+  "anchor": "current",
+  "primary_control": "r10_integer_then_fractional",
+  "status": "implemented_local_syntax_and_quant_validated_no_sequence_coding_no_bdrate",
+  "weight": "component_BD_then_6_1_1",
+  "class_mean": "equal_sequence_weight",
+  "default_modes": [
+    1,
+    2,
+    4,
+    7,
+    8,
+    9
+  ],
+  "stages": {
+    "CE": {
+      "classes": [
+        "C",
+        "E"
+      ],
+      "qps": [
+        22,
+        27,
+        32,
+        37
+      ],
+      "points_per_mode": 28,
+      "default_modes_points": 168,
+      "all_modes_points": 336
+    },
+    "B_sentinel": {
+      "ce_gate_pct": -0.15,
+      "also_require": "no material regression vs R10-3",
+      "sequences": [
+        "MarketPlace",
+        "BasketballDrive",
+        "Cactus"
+      ],
+      "qps": [
+        27,
+        32,
+        37
+      ],
+      "points_per_mode": 9,
+      "automatic_launch": false,
+      "formal_ctc_b_average": false
+    },
+    "B_completion": {
+      "additional_points_per_mode": 11,
+      "automatic_launch": false
+    }
+  },
+  "experiments": [
+    {
+      "mode": 1,
+      "runtime": "r12_ci_near1",
+      "directory": "r12_1_ci_near1",
+      "priority": "first",
+      "paired_reference": "R10-3"
+    },
+    {
+      "mode": 2,
+      "runtime": "r12_r3_near1",
+      "directory": "r12_2_r3_near1",
+      "priority": "first",
+      "paired_reference": "R10-3/R12-1"
+    },
+    {
+      "mode": 3,
+      "runtime": "r12_current_near1",
+      "directory": "r12_3_current_near1",
+      "priority": "later",
+      "paired_reference": "R10-3"
+    },
+    {
+      "mode": 4,
+      "runtime": "r12_loo_unstable_cf",
+      "directory": "r12_4_loo_unstable_cf",
+      "priority": "first",
+      "paired_reference": "R10-3"
+    },
+    {
+      "mode": 5,
+      "runtime": "r12_direct_first",
+      "directory": "r12_5_direct_first",
+      "priority": "later",
+      "paired_reference": "R10-3/R12-9"
+    },
+    {
+      "mode": 6,
+      "runtime": "r12_r3_near1_loo",
+      "directory": "r12_6_r3_near1_loo",
+      "priority": "later",
+      "paired_reference": "R10-3/R12-2/R12-4"
+    },
+    {
+      "mode": 7,
+      "runtime": "r12_c_distance_raw",
+      "directory": "r12_7_c_distance_raw",
+      "priority": "first",
+      "paired_reference": "R10-3/R12-8"
+    },
+    {
+      "mode": 8,
+      "runtime": "r12_c_distance_fulltrim",
+      "directory": "r12_8_c_distance_fulltrim",
+      "priority": "first",
+      "paired_reference": "R10-3/R12-7"
+    },
+    {
+      "mode": 9,
+      "runtime": "r12_validation_distance",
+      "directory": "r12_9_validation_distance",
+      "priority": "first",
+      "paired_reference": "R10-3/R12-5/R12-10"
+    },
+    {
+      "mode": 10,
+      "runtime": "r12_validation_distance_tie",
+      "directory": "r12_10_validation_distance_tie",
+      "priority": "later",
+      "paired_reference": "R10-3/R12-9"
+    },
+    {
+      "mode": 11,
+      "runtime": "r12_c_distance_softtrim",
+      "directory": "r12_11_c_distance_softtrim",
+      "priority": "later",
+      "paired_reference": "R12-7/R12-8"
+    },
+    {
+      "mode": 12,
+      "runtime": "r12_c_and_validation_distance",
+      "directory": "r12_12_c_and_validation_distance",
+      "priority": "later",
+      "paired_reference": "R10-3/R12-7/R12-9"
+    }
+  ]
+}

@@ -18,6 +18,18 @@ from ts_predictor_naming import R6_MODE_NUMBERS
 MODES = ('current', 'directional', 'q32', 'conf2', 'prev', 'ewma', 'q32_ewma')
 
 
+def observation_environment(environment, enabled):
+    """Explicit R2..R6 smoke observation; never rely on production defaults."""
+    env = dict(environment)
+    for revision in range(2, 7):
+        env[f'TS_R{revision}_STATS'] = '1' if enabled else '0'
+    if enabled:
+        env['TS_COND_TRACE'] = '1'
+    else:
+        env.pop('TS_COND_TRACE', None)  # Presence alone enables this trace.
+    return env
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--encoder', type=Path, default=Path('build/ts-conditional/bin/EncoderApp'))
@@ -67,7 +79,9 @@ def main():
                     payload.append(max(0, min(255, base+rng.randrange(-5, 6))))
     if not src.exists() or src.read_bytes() != payload:
         src.write_bytes(payload)
-    os.environ['TS_COND_TRACE'] = '1'
+    # This is the observation phase of an explicitly requested smoke, not a
+    # production run. The later no-observation phase explicitly forces zero.
+    os.environ.update(observation_environment(os.environ, True))
     # Force slice QP for boundary identity checks; still run normal RD mode decisions.
     common = ['--IntraQPOffset=0', '--BDPCM=0']
     lossless = ['--CostMode=lossless', '--Log2MaxTbSize=5', '--DepQuant=0', '--RDOQ=0',
@@ -214,13 +228,7 @@ def main():
             command = json.loads(job.bitstream.with_suffix('.done.json').read_text())['command']
             bitstream = Path(d)/(mode+'.bin')
             command[command.index('-b')+1] = str(bitstream)
-            env = batch._job_env(job)
-            env.pop('TS_COND_TRACE', None)
-            env['TS_R2_STATS'] = '0'
-            env['TS_R3_STATS'] = '0'
-            env['TS_R4_STATS'] = '0'
-            env['TS_R5_STATS'] = '0'
-            env['TS_R6_STATS'] = '0'
+            env = observation_environment(batch._job_env(job), False)
             result = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True)
             assert result.returncode == 0, (mode, result.stderr[-2000:])
             assert 'TS_COND ' not in result.stderr

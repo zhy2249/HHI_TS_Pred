@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 unset TS_COND_TRACE TS_R8_TRACE TS_RATE_SHADOW TS_RATE_RDOQ_SHADOW
-export TS_R8_STATS=1
+export TS_R8_STATS="${TS_R8_STATS:-0}"
 exec python3 -u scripts/batch_test.py \
   --preset LBeu --class C,E --qps 22,27,32,37 \
   --fixed-predictors r8_raw_sparse_max,r8_guard_sparse_max,r8_reject_nopred,r8_mixed_raw,r8_complete_raw,r8_complete_sparse_max,r8_minimax,r8_smoothed_dense \

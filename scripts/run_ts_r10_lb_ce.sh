@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 unset TS_COND_TRACE TS_R8_TRACE TS_R9_TRACE TS_R10_TRACE TS_RATE_SHADOW TS_RATE_RDOQ_SHADOW
 # Leave TS_R10_CACHE unset unless explicitly supplied: honor the TypeDef.h cache default.
-export TS_R10_STATS="${TS_R10_STATS:-1}"
+export TS_R10_STATS="${TS_R10_STATS:-0}"
 exec python3 -u scripts/batch_test.py \
   --preset LBeu --class C,E --qps 22,27,32,37 \
   --fixed-predictors r10_expert_axis_A,r10_expert_p1_A,r10_integer_then_fractional,r10_matched_state_weights,r10_axis_A_tiebreak \

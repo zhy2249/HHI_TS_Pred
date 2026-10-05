@@ -264,6 +264,16 @@ target_include_directories(TsRateCodecTest PRIVATE source/Lib)
 target_link_libraries(TsRateCodecTest EncoderLib DecoderLib)
 set_target_properties(TsRateCodecTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
+add_executable(TsR12QuantTest EXCLUDE_FROM_ALL scripts/ts_r12_quant_test.cpp)
+target_link_libraries(TsR12QuantTest CommonLib)
+target_include_directories(TsR12QuantTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
+set_target_properties(TsR12QuantTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+add_executable(TsR36QuantTest EXCLUDE_FROM_ALL scripts/ts_r36_quant_test.cpp)
+target_link_libraries(TsR36QuantTest CommonLib)
+target_include_directories(TsR36QuantTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
+set_target_properties(TsR36QuantTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
 add_executable(TsR8QuantTest EXCLUDE_FROM_ALL scripts/ts_r8_quant_test.cpp)
 target_include_directories(TsR8QuantTest PRIVATE source/Lib)
 target_link_libraries(TsR8QuantTest CommonLib)

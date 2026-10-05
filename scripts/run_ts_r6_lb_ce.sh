@@ -4,7 +4,8 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 unset TS_COND_TRACE
-export TS_R6_STATS=1
+# Statistics are opt-in; preserve an explicit TS_R6_STATS=1 request.
+export TS_R6_STATS="${TS_R6_STATS:-0}"
 exec python3 -u scripts/batch_test.py \
   --preset LBeu --class C,E --qps 22,27,32,37 \
   --fixed-predictors r6_reject_nopred,r6_trim_saving,r6_sparse_max \
