@@ -1,62 +1,66 @@
 # R3 / R6：已有等价优化之后的剩余复杂度空间
 
-## 1. 结论与读取边界
+## 1. 结论、源码更新与边界
 
-读取固定快照 `4421232d2858d47ff3c0f56f55ac86d8315646ac`，分支 `experiment/ts-predictor-study`。本次只新增分析，不改codec、实验编号、候选集合、代价、guard、fallback、量化搜索或正式结果。
+本次开始读取 `4421232d2858d47ff3c0f56f55ac86d8315646ac`。分析期间仓库补推实际优化源码，最终重新核查了 `0d1e8b06b130ef7ffa9a376fec3122e9eaaf31a8` 的 `TsR36Exact.h`、公共dispatch及QuantRDOQ。
 
-**仍有优化空间，但不应重复把去重、前缀评分和Writer缓存当成新方案。** 最新文档已记录本地完成这些优化。后续优先级应为：预测值不被使用时避免计算；0/1/2幅值域的精确直接解；R6-3/4的整数代价专用化简；CI平台与Rice整数位长复用。
+**仍有明确的等价优化空间，并已从新增源码确认不是只重复提出已实施的去重、前缀评分和Writer缓存。** 本版取代同次分析初稿中“只能看到实施文档、TsR36Exact.h尚未推送”的证据边界。初稿的缺文件描述只对应最初快照，不再代表最终状态。
 
-证据边界：Git同步了实施报告，`TsR36Exact.h` 在本次提交返回404；报告也说明优化源码、测试脚本保留本地工作树。因此可独立核对的是已提交原R3/R6和QuantRDOQ，新内核细节只能按文档判断。以下待检查项不等于断言本地内核一定没有覆盖；先对照本地实现，已有项不重复开发。
+本次只修改本分析文档，未修改codec、实验编号、候选集、代价、guard、fallback、量化搜索或正式结果。期间其它源码/脚本更新来自新增的上游提交，不是本次分析工具写入。
 
-范围为R3-1、R3-2启用分量和R6-1～7；不扩展到R3-3/4历史自适应。保留R3-2色度native回退。Python参考只验证代数及代码路径契约，不是生产C++、完整CABAC、视频或速度认证。
+范围为R3-1、R3-2启用分量和R6-1～7；不扩展到R3-3/4历史自适应，不改变R3-2色度native回退。数学参考没有执行生产C++、完整视频或计时。
 
-## 2. 已经记录的优化与局部结果
+## 2. 新内核已经做了什么、仍留下什么
 
-见[已有R3/R6精确优化](../experiments/TS_Predictor_R3_R6_Exact_Optimization.md)：
+[TsR36Exact.h固定源码](https://github.com/zhy2249/HHI_TS_Pred/blob/0d1e8b06b130ef7ffa9a376fec3122e9eaaf31a8/source/Lib/CommonLib/TsR36Exact.h)已确认：
 
-- 非零幅值去重、共享C(a)及可达C(a+1)、精确前缀评分；真实Current=max(L,U)下dense路径至多九次cost调用。
-- predictor动作路径与完整诊断分离，不再为一个最终整数输出反复计算parent、hit、score等字段。
-- 直接使用scan已有x/y/idx和R3/R6提前分派；无状态路径避免无用finish诊断调用。
-- 一次Writer子块调用内用栈数组/bitmask复用regular remapping，不跨量化trial缓存。
-- 宏保留原路径对照，已登记局部payload和q/absSum一致性检查。
-- [最新统计设置](../experiments/TS_Predictor_Statistics_Defaults.md)说明各轮统计改为显式开启；旧文档的默认开启不再代表当前本地版本，旧二进制/外部环境也不会自动变化。
+| 位置 | 已完成 | 剩余空间 |
+|---|---|---|
+| R36ScoreTable | 有界插入排序、相同幅值共享cost与multiplicity、不可达raised不计算 | 可达raised仍调用syntaxCost；尚未利用CI偶数/Rice商平台 |
+| r36Guard | 原候选分数用精确前缀计算，gain用分数差 | 仍无0/1/2直接解；部分R6动作不需要guard时也先完成它 |
+| r36Predict的R6-3/4 | 与诊断parent分离、共享cost表 | 每个候选仍扫描全部不同幅值，并同时计算sum/minimum/saving |
+| 稀疏分支 | n<3直接处理max/mean/min | 仍先读完五邻域；TU边界和低幅值可有更早的精确出口 |
+| QuantRDOQ | action已经在level候选循环外计算 | 非末尾必定零早退前仍先算action；部分无候选依赖的bypass也可省略 |
+| Writer | 文档登记同次CG的remapping缓存 | 不重复开发；不等同于跨RDOQ trial缓存 |
 
-文档记录的计时中位数（优化/原实现）：
+R6-3/4的评分阶段目前为O(u²)，u是不同非零幅值数、u≤5；下面的解析式可配合现有前缀变成O(u)。这是评分阶段，不是宣称含排序的整个函数或整编码时间同比变化。
 
-| 模式 | 合成原生语法/参考夹具 | 合成TS-RDOQ夹具 |
+已有文档还登记动作/诊断分离、scan x/y/idx复用、无状态finish早退和原生回归；最新统计规范已改为显式开启。旧二进制和显式环境不会自动随文档改变。
+
+[已有等价优化报告](../experiments/TS_Predictor_R3_R6_Exact_Optimization.md)的局部计时中位数（优化/原实现）：
+
+| 模式 | 合成语法/参考夹具 | 合成TS-RDOQ夹具 |
 |---|---:|---:|
 | Current未改动对照 | 1.0122 | 0.9993 |
 | R3-1 | 0.9317 | 0.7733 |
 | R6-2 | 0.9188 | 0.7465 |
 
-这些是已报告的合成局部计时，不是本次重测或整编码加速。不能把22.7%/25.3%的量化夹具降幅直接乘到101.4%上，也不能宣布已到100.8%。
+这是文档中的已执行合成计时，不是本次重测，也不代表整编码22.7%/25.3%加速。不能把它直接乘到101.4%上。
 
-## 3. 优先项A：先证明预测值会被使用
+## 3. 优先项A：预测值不被使用时，避免整个predictor调用
 
-### 3.1 不重复做已完成的量化循环外提
+新提交的QuantRDOQ与初始读取版本内容相同。它先求一次action，传入候选循环；因此不能再声称有“将predictor从每个量化候选循环外提”的新收益。
 
-已提交`QuantRDOQ.cpp`在候选循环外调用一次`magnitudeActionTS`，再将prediction/protect传给`xGetCodedLevelTSPred`。后者循环只做映射和rate计算。不能把“每个候选改为只算一次predictor”作为新的优化收益。
+### 非末尾roundAbsLevel=0
 
-### 3.2 roundAbsLevel=0且非末尾：避免无用predictor
-
-原路径先算action，再进入如下早退：
+`xGetCodedLevelTSPred`中的原逻辑：
 
 ```cpp
 if (!isLast && coeffLevels[0] < 3) {
-    // 仍需执行原来的zero cost、significance和bin输出更新。
+    // 保留原zero cost、significance和bin输出更新。
     if (coeffLevels[0] == 0) return 0;
 }
 ```
 
-roundAbsLevel=0时，down=0、up=1、min=1，up不是独立新增候选。若!lastCoeff成立，prediction既不影响候选集合，也不会被当前level评分读取。
+roundAbsLevel=0时，down=0、up=1、min=1，up不是独立新增候选。若!lastCoeff同时成立，prediction既不影响候选列表，也不被level评分读取。
 
-对无状态R3-local/R6、无额外观察需求的动作路径，可在原调用之前判定该条件并跳过predictor。lastCoeff按原“CG末尾且此前无非零”条件提前求得。**不跳过零代价/significance/bin输出，不提前改变CG判零，不跳过原量化更新。**
+对无状态R3-local/R6且无额外观察需求的动作路径，可在原action调用前识别并跳过predictor。lastCoeff仍按原“CG末尾且此前无非零”定义提前取得。**不跳过原zero cost/significance/bin更新，不提前改CG判零，不省略其它量化输出。**
 
-不能仅检查roundAbsLevel=0：受隐含非零约束的最后位置可能仍比较候选，必须保留原逻辑。
+不能只看roundAbsLevel=0；最后的隐含非零位置不一定走这个零早退。
 
-### 3.3 bypass也必须检查allowUp依赖
+### 有限bypass跳过
 
-remRegBins<4时rate不应用remapping，但prediction仍可能影响额外up候选是否进入搜索。安全的另一条件是：
+remRegBins<4时rate不映射，但prediction仍可能让额外up候选进入。因此只有同时满足：
 
 ```text
 remRegBins < 4
@@ -64,25 +68,25 @@ remRegBins < 4
 (upAbsLevel == roundAbsLevel 或 upAbsLevel == minAbsLevel)
 ```
 
-此时没有独立up候选，也没有bypass映射依赖，才可省略predictor。不能一律跳过bypass预测；本次数学测试已找到这种错误改法的反例。
+才确认没有候选准入和映射依赖。其它bypass位置保留原预测。本次数学检查找到了“所有bypass都跳过”的反例。
 
-初版限于R3-local/R6，额外量化搜索、R7 shadow或完整诊断需求走原路径。参考验证只比较候选与会读取的映射签名，完整原生q/CABAC回归仍需工程实施。
+初版限R3-local/R6；R7 shadow、其它额外量化搜索、完整诊断需求走原路径。这里测试的是候选/映射依赖签名，仍需完整原生q/CABAC回归。
 
-## 4. 优先项B：0/1/2域可以直接解出原算法
+## 4. 优先项B：0/1/2支持直接解，不再排序和评分
 
-当五邻域幅值均≤2，定义：
+新r36Predict尚无此快路径。当五邻域幅值均≤2，定义：
 
 ```math
 n_1=\#\{a_j=1\},\quad n_2=\#\{a_j=2\},\quad d=n_2-n_1,\quad c=\max(L,U).
 ```
 
-对n=n1+n2≥3，只有identity与p=2两种不同动作。原CI为C(1)=1、C(2)=C(3)=3：
+n=n1+n2≥3时，只有identity和p=2两种不同动作。原CI为C(1)=1、C(2)=C(3)=3：
 
 ```math
 S(0)=n_1+3n_2,\qquad S(2)=3n_1+n_2.
 ```
 
-原R3精确结果：
+R3精确解：
 
 ```math
 p_{R3}=\begin{cases}
@@ -92,9 +96,7 @@ c,&\text{其它情况}.
 \end{cases}
 ```
 
-差2来自原H>0，不是新门控。无需候选排序和Rice评分；支持出现>2时回现有通用精确实现。
-
-R6各组必须保留独立语义：
+差2来自原最大正贡献删除后的H>0，不是新阈值；幅值>2回现有精确通用路径。
 
 | dense模式 | c≤1 | c=2 |
 |---|---|---|
@@ -104,15 +106,15 @@ R6各组必须保留独立语义：
 | R6-3 | d>0则2，否则c | d<0则0，否则2 |
 | R6-4 | d>1则2，否则c | d<1则0，否则2 |
 
-例如h=(2,1,1,0,0)，R3返回2，R6-2按拒绝后NoPred返回0；不能共用一个错误表。n<3仍按原稀疏规则，Current=1的原整数返回也应保留。这是原公式专用实现，不是改变低幅值算法；收益取决于真实试算覆盖及新增分支成本。
+n<3保留各组原稀疏处理，Current=1的原整数返回也不随意规范化。例如h=(2,1,1,0,0)，R3返回2，R6-2返回0；不能共用错误查表。这里是相同算法的专用实现，不是低幅值时改用新算法。
 
-## 5. 优先项C：R6-3/4不必逐候选重新求min/max
+## 5. 优先项C：R6-3/4解析评分，替代当前双循环
 
-前提：原整数CI，非identity预测值p来自非零支持。Current=max(L,U)满足这一条件；若独立通用函数传入支持之外的Current，必须回通用实现。
+前提：原整数CI、非identity预测值p来自非零支持。Current=max(L,U)满足；支持外任意Current的通用API不得无条件套用。
 
 ### R6-3
 
-每个非identity候选命中至少一个样本，映射为1；CI的非零最小代价为1：
+每个非identity候选必命中一个样本而映射为1，非零CI最小值为1：
 
 ```math
 T_3(p)=\begin{cases}
@@ -121,11 +123,11 @@ S(p)-1,&p>1\text{ 且 }p\in\{a_j\}.
 \end{cases}
 ```
 
-支持含1时，所有候选统一减1，排序与Raw一致；仍保持R6自己的Current-first和平局整数返回，不把Current=1自动改成0。
+支持含1时，所有候选减同一个1，排序与Raw一致；保留原Current-first和平局返回整数。
 
 ### R6-4
 
-合法原CI非减。候选命中a=p提供C(p)-1正节省；a<p被上推不提供正节省；a>p不变：
+合法CI非减。a=p贡献C(p)-1；a<p被上推，不产生正节省；a>p不变：
 
 ```math
 T_4(p)=\begin{cases}
@@ -134,92 +136,85 @@ S(p)+C(p)-1,&p>1\text{ 且 }p\in\{a_j\}.
 \end{cases}
 ```
 
-无需每个候选重扫最大节省；max项仍不乘重复次数。**不能推广到可能非单调的fractional cost。** 本次测试含合法幅值、Rice1～8和range15/20随机/边界；原生集成仍需确认所有实际range及limited escape。
+直接复用r36Guard已有的前缀S(p)，无需每个候选遍历min/max。最大项不乘命中次数。**不推广到非单调fractional cost。** 当前小模板u≤5，因此结构减少不保证实际5倍加速；需要测净耗时。
 
-## 6. 其它精确优化
+## 6. 其它已从新源码确认可继续检查的点
 
-### R6-1/2省去不影响最终动作的guard
+### R6-1/2的无用guard
 
-n≥3：raw与Current等价时，R6-1直接0、R6-2原Current；raw严格不同且为identity时，两组无论guard结果如何都返回0；只有raw严格不同且非identity才必须做guard。完整诊断需要G/H时仍算原字段。
+新内核目前先完整调用r36Guard再应用fallback。动作路径中：
 
-若raw赢家p>Current且只出现一次，则唯一可能正贡献来自命中p，删最大贡献后H≤0；可直接执行各自的拒绝fallback，不能改成剔除该候选后重新选次优。
+- n≥3且raw与Current等价：R6-1输出0、R6-2原Current。
+- raw严格不同且为identity：两组最终都输出0，无论guard是否通过，可不算G/H。
+- raw严格不同且非identity：继续原guard。
 
-### TU边界
+完整诊断需要gain/margin时仍算。若raw赢家p>Current且只出现一次，唯一正贡献来自命中p，删除最大贡献后H≤0，可执行原拒绝fallback；不删除候选后另选次优。
 
-TU首行/首列的支持最多两个同轴位置，n<3必然成立。R3-local/R6-1～4直接Current；R6-5～7因L/U不可能都非零而直接0。**不能把每个CG边界当TU边界**，前一CG仍可提供合法邻居。分量和BDPCM检查保持原样。
+### TU首行/首列
 
-### CI平台复用
+这些位置五邻域最多两个同轴值，n<3必然成立。R3-local/R6-1～4直接Current；R6-5～7因L/U不能同时非零而直接0。不是每个CG边界都可这样做，前一CG仍可能提供合法支持。
+
+### CI平台避免第二次syntaxCost
+
+新R36ScoreTable对所有v<largest仍调用syntaxCost(v+1)。可利用：
 
 ```math
 C(2m)=C(2m+1),\quad m\ge1.
 ```
 
-偶数a≥2可直接复用C(a)作为C(a+1)。a≥10时若下列Rice商相同，也可复用：
+偶数a≥2直接复用C(a)。a≥10时若两个Rice商相同，也复用：
 
 ```math
 (((a-10)\gg1)\gg r)=(((a-9)\gg1)\gg r).
 ```
 
-其它边界照旧调用，不裁剪高幅值。已有九次cost是上界，这项可能继续减少重复Rice求值；不是对实际时间的百分比承诺。
+不截断高幅值，跨阈值继续原函数。已有至多九次cost是上界，这项可能进一步省重复Rice求值。
 
-### Rice前缀整数位长
+### Rice escape循环
 
-保留普通Rice及饱和分支后，原循环：
+保留普通Rice和饱和分支后：
 
 ```cpp
 while (code > ((2u << prefix) - 2)) ++prefix;
 ```
 
-精确等价于：
+严格等价于整数位长：
 
 ```math
 prefix=\lfloor\log_2(code+1)\rfloor.
 ```
 
-用工程整数位长/前导零实现，不用浮点log2；保留饱和判断、移位宽度及code+1范围。小幅值不会走这里，只有确认escape是热点才优先做。
+使用工程整数位长/前导零，不用浮点log2；保留饱和检查和移位范围。只有escape确为热点才列优先项。
 
-## 7. 实施优先级和时间目标
+## 7. 实施和时间目标
 
-先核对本地TsR36Exact.h，已实施项不再重复。优先顺序：
+建议先做profile和触发计数，再依次检查：
 
-1. 测调用覆盖，验证RDOQ确实不使用prediction的零早退/bypass状态；保持所有原输出更新。
-2. 0/1/2精确快路径；R6-3/4解析分数；R6-1/2identity出口。
-3. 视热点加入TU边界、CI平台、Rice位长。每项单独开关与计时，净开销更高的分支不强留。
+1. RDOQ无使用依赖的零早退/bypass跳过；
+2. 0/1/2直接解；R6-3/4解析分数；R6-1/2identity出口；
+3. TU边界、CI平台、Rice位长。
 
-重型跨trial缓存不列第一优先：需匹配完整支持、mode、Rice/range，缓存键读取和比较可能比现在的小内核更贵。原Writer单次CG缓存已做，不重复估算收益。
+不为这些优化新增R实验编号；逐项保留原模式和工程开关，完整bitstream、q/absSum和CABAC状态一致。不要只以BD-rate接近或重建hash一致代替码流比较。R3-3/4历史状态、其它工具必要回放不动。
 
-文档记录的目标是旧R3-1相对Current约101.4%降至100.8%。如果二者是同条件、无统计基准，则需要减少旧R3总时间约0.592%，或减少额外1.4%开销约42.9%；不能将两种百分比混淆。目前旧101.4%是否含观察未确认，新精确优化尚无完整视频计时，应先测真实起点。
+重型跨trial缓存暂不优先：键必须含完整支持、mode、Rice/range，键读取和比较可能比现在的小内核更贵；单次Writer缓存已经存在。
 
-最终要求同模式完整bitstream逐字节一致，q/absSum、重建和CABAC状态一致；不是只看BD-rate接近。双方关闭统计/trace，控制编译、线程、负载及顺序。R3-3/4历史状态和其它工具必要回放不动。
+文档记录的目标是旧R3-1约101.4%降至100.8%。若它确为同条件无统计基准，需要减少旧R3总时间约0.592%，或额外1.4%开销的42.9%。当前旧值是否含观察未确认，已优化内核也尚无完整视频计时，先测真实起点，不能用合成夹具比值外推。
 
-## 8. 本次数学验证与交付
+## 8. 本次验证与文件
 
-本次执行Python标准库参考脚本，以下检查全部通过：
+本次实际执行Python数学参考：0/1/2动作1,944项；R6-3/4评分149,080项；R6-1/2guard出口30,980项；单个向上赢家拒绝2,235项；CI相邻单调262,136项；偶数平台131,064项；Rice商平台245,755项；Rice循环/位长48,115项；TU边界15,120项；RDOQ依赖签名18,048项。
 
-| 检查 | 案例数 |
-|---|---:|
-| 0/1/2精确predictor | 1,944 |
-| R6-3/4完整评分化简 | 149,080 |
-| R6-1/2guard出口 | 30,980 |
-| 单个向上赢家的拒绝 | 2,235 |
-| 合法CI相邻单调性 | 262,136 |
-| 偶幅值平台 | 131,064 |
-| 同Rice商平台 | 245,755 |
-| Rice循环/位长 | 48,115 |
-| TU边界predictor | 15,120 |
-| RDOQ候选及映射签名 | 18,048 |
+总计904,477项断言通过。病例并非独立统计样本，数量不证明视频收益或速度。没有运行生产C++或原生视频；这些检查不是TsR36Exact完整集成验收。
 
-合计904,477项断言案例。案例不是独立统计样本；数量不能证明视频收益或速度。已找到blanket bypass skip的反例。没有运行原生C++或视频，本次不是TsR36Exact的完整集成验收。
+完整展开文档、`verify_exact_rules.py`、`validation.json`随会话附件 `R3_R6_Remaining_Optimization_Bundle.zip` 提供。包内脚本只用Python标准库，不调用编码器。本Git文件是分析摘要，不是完整独立复算目录。
 
-完整展开文档、`verify_exact_rules.py`与本次`validation.json`随会话附件`R3_R6_Remaining_Optimization_Bundle.zip`交付；本仓库文件是分析摘要，不是独立完整复算目录。运行包内脚本只需Python标准库，不会调用编码器。
+## 9. 来源
 
-## 9. 原始依据
+原语义读取于4421232，最终优化内核读取于0d1e8b0：
 
-固定读取版本：`4421232d2858d47ff3c0f56f55ac86d8315646ac`。
-
-- `docs/experiments/TS_Predictor_R3_R6_Exact_Optimization.md`：已有优化、局部计时和未推送源码边界。
-- `docs/experiments/TS_Predictor_Statistics_Defaults.md`：当前本地统计默认值与更新二进制要求。
-- `source/Lib/CommonLib/TsFixedPrediction.h`：原R3、CI/Rice、Current平局、guard。
-- `source/Lib/CommonLib/TsR6Prediction.h`：七组R6独立fallback与对称目标。
-- `source/Lib/CommonLib/QuantRDOQ.cpp`：action位于候选循环外、zero early return、allowUp与bypass依赖。
-- `source/Lib/CommonLib/CommonDef.h`：COEF_REMAIN_BIN_REDUCTION=5。
+- `source/Lib/CommonLib/TsR36Exact.h`：本次新增可见优化内核，blob `3b0efb91d6b76c877624a1aec46963e9de76293c`。
+- `source/Lib/CommonLib/TsFixedPrediction.h`、`TsR6Prediction.h`：原CI、Rice、guard与七组fallback。
+- `source/Lib/CommonLib/QuantRDOQ.cpp`：blob `d5d8cc712c3ca24b29ed17073e377aaea3f9fa1e`，补推前后未变化；predictor调用、zero早退和allowUp依赖。
+- `source/Lib/CommonLib/ContextModelling.h`：新R36提前dispatch。
+- `docs/experiments/TS_Predictor_R3_R6_Exact_Optimization.md`：已完成优化、原生回归及局部计时报告。
+- `docs/experiments/TS_Predictor_Statistics_Defaults.md`：当前统计开关与重编译要求。
