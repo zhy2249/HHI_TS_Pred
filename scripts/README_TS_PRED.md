@@ -11,6 +11,46 @@ R6/R8/R9/R10 正式 wrapper 与 R8 preflight 不再默认开启，R11/R12 保持
 统计关闭的日志没有 activity 表；新源码须重新编译，变更统计设置勿复用旧结果目录的成功标记。
 开关位置、R7 shadow 例外和续跑指纹说明见[统计默认值规范](../docs/experiments/TS_Predictor_Statistics_Defaults.md)。
 
+## R13 KeepHit（R13-KH-168-v1）
+
+[冻结设计](../docs/experiments/TS_Predictor_R13_Experiment_Design.md)、[实现及验证范围](../docs/experiments/TS_Predictor_R13_Implementation.md)。在 `TypeDef.h` 开启
+`JVET_BJUT_TS_FIXED_PREDICTOR=1`，用 `JVET_BJUT_TS_R13_MODE=1/2` 选择默认；其它算法模式为0。
+MODE1是 `r13_keep_hit_uniform`（11111），MODE2是 `r13_keep_hit_spatial`（22111）。
+`--fixed-predictors` 可显式覆盖默认，因此两组批量使用同一个支持R13的编解码程序。
+原量化搜索规则不变；新隐式 predictor 要求匹配的 Encoder/Decoder，不兼容未修改的标准解码器。
+
+构建完成并通过局部验证后，先规划，再由用户在服务器执行；以下命令本身不表示已完成编码：
+
+```bash
+bash scripts/run_ts_r13_lb_ce.sh --input-dir /path/to/videos --jobs 10 --dry-run --allow-missing-input
+bash scripts/run_ts_r13_lb_ce.sh --input-dir /path/to/videos --jobs 10
+```
+
+默认使用 `build/ts-r13/bin/{EncoderApp,DecoderApp}`，可在尾部用 `--encoder`/`--decoder` 覆盖。
+两组共56项，QP22/27/32/37；LBeu INI已是半帧，不再除2，不使用 `--full-sequence`。
+默认不重跑Current，不输出重建视频，保留解码hash；所有组共享池，某组任务全部返回就写该组工作簿。
+输出为 `runs/ts_r13_kh168_LB_CE_half/r13_<MODE>_<name>/`，含各组 `summary.csv`、`JVET-hhi.xlsm`、
+任务日志、`*.done.json` 及 `*.identity.json`。原模板Reference只读；失败点不伪装完成。
+重复同一命令续跑；改变模式、二进制、配置、输入身份或观察参数将使不匹配的成功标记失效。
+身份记录包括Encoder/Decoder SHA256及本地checkout提交/已跟踪源码补丁hash；未跟踪源码单列名称，
+并明确 `binary_build_origin_verified=false`，不能据此反向宣称服务器程序一定由该checkout编译。
+
+统计默认关闭，正式计时保持关闭。`TS_R13_STATS=1` 在最终Writer聚合两个R13 shadow，
+适用于Current、R2-2、R3-1、R6-2及R13实际轨迹；`TS_R13_TRACE=1` 开有限人工明细，
+`TS_R13_DETAIL_LIMIT` 默认64、范围0..1024，`TS_R13_POC` 未设置表示所有POC，显式值必须非负。
+wrapper保留这些显式R13设置，但关闭旧轮观察；统计请求不能复用不匹配的旧成功标记。
+从日志导出而不是重跑编码：
+
+```bash
+python3 scripts/ts_r13_activity.py /path/to/task.encode.log --output /path/to/activity.csv
+python3 -m unittest discover -s scripts -p 'test_ts_r13_batch.py'
+```
+
+最终Writer条件统计不是全RD搜索人口，更不是BD-rate。收件目录与必须保留的远端运行证据见
+[`experiments/ts_predictor_r13/`](../experiments/ts_predictor_r13/README.md)。短帧活动检查请单独输出并加
+`--frames 17 --sequences PartyScene,RaceHorsesC,BQMall,KristenAndSara --qps 22,37 --no-xlsm-report`；
+只有用户运行授权后才执行，不把17帧点填入正式半帧表。
+
 R12（2026-10-01，R12-POS-01）：[十二组实现及运行](../docs/experiments/TS_Predictor_R12_Implementation.md)。
 直接设置 `TypeDef.h` 的 `JVET_BJUT_TS_R12_MODE=1..12`，其它模式及R10_CACHE为0，master为1。
 `bash scripts/run_ts_r12_lb_ce.sh --dry-run --allow-missing-input` 默认1/2/4/7/8/9，共168个CE半帧点，

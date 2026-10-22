@@ -20,7 +20,8 @@
 - [R12 等价复杂度优化与回归验证](TS_Predictor_R12_Exact_Optimization.md)
 - [R3 / R6 等价复杂度优化、统计开关与局部计时](TS_Predictor_R3_R6_Exact_Optimization.md)
 - [当前所有实验统计默认关闭：开关、脚本与续跑](TS_Predictor_Statistics_Defaults.md)
-- [R13 KeepHit：统一 / 空间加权两组冻结设计（未实现）](TS_Predictor_R13_Experiment_Design.md)
+- [R13 KeepHit：统一 / 空间加权两组冻结设计](TS_Predictor_R13_Experiment_Design.md)
+- [R13 实现、宏、默认关闭的观察与运行命令](TS_Predictor_R13_Implementation.md)
 - [KeepHit 评分原始推导与工程指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)
 - [R3 / R6 后续等价复杂度建议（与 R13 分开）](../external_inputs/R3_R6_Remaining_Complexity_Review.md)
 - [脚本使用说明](../../scripts/README_TS_PRED.md)
@@ -44,7 +45,7 @@
 | R10 | [用户原始计划](../external_inputs/R10_Experiment_Plan.md)、[实现与运行](TS_Predictor_R10_Implementation.md) | [验收记录](TS_Predictor_R10_Validation.md)、[1～6 CE及3的部分B明细](results/r10.md)；7未登记 |
 | R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE及2的部分B明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；RA/AI未登记 |
 | R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组LB CE明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；B/RA/AI未登记 |
-| R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md) | 仅设计与独立公式核验；尚未实现，无编码/计时结果 |
+| R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md)、[实现与验证](TS_Predictor_R13_Implementation.md) | 两组已实现；仅本地非序列验收，无序列编码/计时结果 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 
