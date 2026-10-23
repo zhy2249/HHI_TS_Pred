@@ -8,6 +8,7 @@
 - 正式anchor仍为Current；机制父对照为R13-1／R13-2；R3、R6、R12只作完整方法性能参照。
 - 现行实验：**12组动态＋3组固定对照，共15组、420个完整CE编码点**；旧确认类编号退役，不复用其运行身份。
 - [独立参考脚本](reference/ts_r14_design_reference.py) · [本次验证记录](reference/TS_R14_Design_Validation_20261023.md)。
+- 同步后的[本地源码核验与工程接入计划](TS_Predictor_R14_Engineering_Plan.md)：逐系数提交、完整微状态回滚、TSRC目标范围、下一位置收益观察及阶段A/B条件；未修改本页v3公式、编号或生产算法。
 
 ## 1. 背景与共同边界
 
