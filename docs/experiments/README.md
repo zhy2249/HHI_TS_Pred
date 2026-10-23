@@ -9,7 +9,7 @@
 - [逐序列 / 逐 QP 明细与可筛选 CSV](results/README.md)
 - [R9 逐序列 / 逐 QP 结果（仅汇总）](results/r9.md)
 - [R10-1～6 CE 及 R10-3 完整 B 明细（仅记录）](results/r10.md)
-- [R11 八组 CE 及 R11-2 部分 B 明细（仅汇总）](results/r11.md)
+- [R11 八组 CE 与七组部分 B 明细（仅汇总）](results/r11.md)
 - [R12 十二组 CE 与七组部分 B 明细（仅汇总）](results/r12.md)
 - [R13 两组 CE 结果分析（2026-10-23）](TS_Predictor_R13_LB_CE_Results_20261023.md)
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
@@ -24,7 +24,7 @@
 - [当前所有实验统计默认关闭：开关、脚本与续跑](TS_Predictor_Statistics_Defaults.md)
 - [R13 KeepHit：统一 / 空间加权两组冻结设计](TS_Predictor_R13_Experiment_Design.md)
 - [R13 实现、宏、默认关闭的观察与运行命令](TS_Predictor_R13_Implementation.md)
-- [R14 近／远邻动态权重：18组动态＋3组固定对照设计](TS_Predictor_R14_Experiment_Design.md)
+- [R14 v3：方向驱动的单／双状态，12组动态＋3组固定对照](TS_Predictor_R14_Experiment_Design.md)
 - [R14 独立设计参考](reference/ts_r14_design_reference.py) · [纯函数检查记录，非编解码验收](reference/TS_R14_Design_Validation_20261023.md)
 - [KeepHit 评分原始推导与工程指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)
 - [R3 / R6 后续等价复杂度建议（与 R13 分开）](../external_inputs/R3_R6_Remaining_Complexity_Review.md)
@@ -50,7 +50,7 @@
 | R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE及2的部分B明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；RA/AI未登记 |
 | R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组CE/七组部分B明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；无完整B/BCE，RA/AI未登记 |
 | R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md)、[实现与验证](TS_Predictor_R13_Implementation.md) | [两组完整CE分析](TS_Predictor_R13_LB_CE_Results_20261023.md)、[逐点明细](results/r13.md)；服务器身份未完整核验，无B/可靠计时结论 |
-| R14 | [18组动态＋3组固定对照设计](TS_Predictor_R14_Experiment_Design.md)、[独立纯函数参考](reference/ts_r14_design_reference.py) | [设计规则检查](reference/TS_R14_Design_Validation_20261023.md)；未实现编解码器，未运行视频，无BD-rate或计时结果 |
+| R14 | [v3：12组动态＋3组固定对照，NONE／PAIR2](TS_Predictor_R14_Experiment_Design.md)、[独立纯函数参考](reference/ts_r14_design_reference.py) | [设计规则检查](reference/TS_R14_Design_Validation_20261023.md)；旧TARGET2/DIR2退役，未实现编解码器，未运行视频，无BD-rate或计时结果 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 
