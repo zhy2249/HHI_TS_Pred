@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""R14-NF-168-v1: independent pure-function DESIGN reference; not codec code.
+"""R14-NF-168-v2: independent pure-function DESIGN reference; not codec code.
 
 No encoder calls, input video, external packages or network access.
 Run with Python 3.10+: python3 ts_r14_design_reference.py
@@ -153,9 +153,14 @@ def step(state: State, wanted: int | None, mode: str,
     """One post-coefficient update; invalid freezes, valid neutral clears.
 
     TARGET2 pending is an absolute target r. DIR2 pending is -1 or +1.
-    On confirmation jump to THIS event's wanted target (not an old target).
+    Every committed update moves ONE adjacent grid level towards wanted.
+    Production grids are 0..K, so this means exactly +1 or -1, never a jump.
+    Sparse grids are supported only for equivalent-rescaling tests.
+    Each move clears pending; another buffered move needs fresh confirmation.
     """
     grid = tuple(grid)
+    if not grid or tuple(sorted(set(grid))) != grid:
+        raise ValueError("Grid must be sorted, unique and nonempty")
     if mode not in MODES or state.r not in grid:
         raise ValueError("Invalid mode or current state")
     if mode == "NONE" and state.pending is not None:
@@ -171,11 +176,13 @@ def step(state: State, wanted: int | None, mode: str,
         raise ValueError("Valid feedback must have a target on the grid")
     if wanted == state.r:
         return State(state.r)
+    direction = 1 if wanted > state.r else -1
+    next_r = grid[grid.index(state.r) + direction]
     if mode == "NONE":
-        return State(wanted)
-    token = wanted if mode == "TARGET2" else (1 if wanted > state.r else -1)
+        return State(next_r)
+    token = wanted if mode == "TARGET2" else direction
     if state.pending == token:
-        return State(wanted)
+        return State(next_r)
     return State(state.r, token)
 
 
@@ -216,19 +223,23 @@ def oracle_winner(h: Sequence[int], k: int, r: int, cost: Cost) -> int:
 
 
 def oracle_step(state: State, wanted: int | None, mode: str,
-                valid: bool) -> State:
+                valid: bool, grid: Sequence[int]) -> State:
     if not valid:
         return state
     if wanted == state.r:
         return State(state.r)
+    if wanted > state.r:
+        neighbor = min(r for r in grid if r > state.r)
+    else:
+        neighbor = max(r for r in grid if r < state.r)
     if mode == "NONE":
-        return State(wanted)
+        return State(neighbor)
     if mode == "TARGET2":
         confirmed = state.pending is not None and wanted == state.pending
-        return State(wanted) if confirmed else State(state.r, wanted)
+        return State(neighbor) if confirmed else State(state.r, wanted)
     direction = 1 if wanted > state.r else -1
     confirmed = state.pending is not None and direction == state.pending
-    return State(wanted) if confirmed else State(state.r, direction)
+    return State(neighbor) if confirmed else State(state.r, direction)
 
 
 def small_cost(a: int) -> int:
@@ -242,7 +253,7 @@ def run_tests() -> dict[str, object]:
     count = dict(rational_table_entries=0, neighborhoods=0,
                  eligible_grid_winner_checks=0, state_transition_checks=0,
                  synthetic_feedback_events=0, scaled_grid_steps=0,
-                 explicit_boundary_cases=0)
+                 explicit_boundary_cases=0, exhaustive_unit_step_checks=0)
 
     # Two exact fractional integrals at each c=1..256, including high tails.
     for c in range(1, 257):
@@ -280,8 +291,32 @@ def run_tests() -> dict[str, object]:
                     valid = j % 4 != 0
                     wanted = (r if j % 4 == 1 else alt[j % len(alt)]) if valid else None
                     assert step(state, wanted, mode, grid, valid) == oracle_step(
-                        state, wanted, mode, valid)
+                        state, wanted, mode, valid, grid)
                     count["state_transition_checks"] += 1
+
+    # Exhaust all legal state/pending/target combinations on production grids.
+    for k in (2, 4):
+        grid = tuple(range(k + 1))
+        for mode in MODES:
+            for r in grid:
+                tokens = ((None,) if mode == "NONE" else
+                          (None, -1, 1) if mode == "DIR2" else
+                          (None,) + tuple(t for t in grid if t != r))
+                for pending in tokens:
+                    before = State(r, pending)
+                    for wanted in (None,) + grid:
+                        valid = wanted is not None
+                        after = step(before, wanted, mode, grid, valid)
+                        assert after == oracle_step(before, wanted, mode, valid, grid)
+                        assert abs(after.r - before.r) <= 1
+                        if after.r != before.r:
+                            assert after.pending is None
+                            assert abs(wanted - after.r) < abs(wanted - before.r)
+                        if not valid:
+                            assert after == before
+                        elif wanted == r:
+                            assert after == State(r)
+                        count["exhaustive_unit_step_checks"] += 1
 
     # Six deterministic random streams, 2000 coefficient events each.
     rng = random.Random(20261023)
@@ -307,15 +342,19 @@ def run_tests() -> dict[str, object]:
                     assert fixed_q_cost(a, winners[wanted], small_cost) <= fixed_q_cost(
                         a, winners[state.r], small_cost)
                 state2 = step(state, wanted, mode, grid, valid)
-                assert state2 == oracle_step(state, wanted, mode, valid)
+                assert state2 == oracle_step(state, wanted, mode, valid, grid)
                 assert 0 <= state2.r <= k
+                assert abs(state2.r - state.r) <= 1
+                if state2.r != state.r:
+                    assert state2.pending is None
                 state = state2
                 if i % 16 == 15 and rng.randrange(4) == 0:
                     state = saved  # Abstract whole-CG rollback of BOTH fields.
                     assert state == saved
                 count["synthetic_feedback_events"] += 1
 
-    # G2 vs doubled grid {0,2,4}; do NOT compare G2 to full 5-level G4.
+    # One ADJACENT LEGAL level: 0->1 in G2 maps to 0->2 on test-only {0,2,4}.
+    # This scaled representation is not the production full 5-level G4.
     for mode in MODES:
         for init in (0, 1, 2):
             s2, s4 = State(init), State(2 * init)
@@ -352,7 +391,55 @@ def run_tests() -> dict[str, object]:
     for wanted in (3, 4):
         target = step(target, wanted, "TARGET2", range(5))
         direction = step(direction, wanted, "DIR2", range(5))
-    assert target == State(2, 4) and direction == State(4)
+    assert target == State(2, 4) and direction == State(3)
+    count["explicit_boundary_cases"] += 1
+
+    # Both directions require every intermediate production weight.
+    for mode in MODES:
+        state = State(0)
+        up, down = [], []
+        events = 4 if mode == "NONE" else 8
+        for _ in range(events):
+            state = step(state, 4, mode, range(5))
+            up.append(state.r)
+        for _ in range(events):
+            state = step(state, 0, mode, range(5))
+            down.append(state.r)
+        assert up == ([1, 2, 3, 4] if mode == "NONE" else
+                      [0, 1, 1, 2, 2, 3, 3, 4])
+        assert down == ([3, 2, 1, 0] if mode == "NONE" else
+                        [4, 3, 3, 2, 2, 1, 1, 0])
+        assert state == State(0)
+        count["explicit_boundary_cases"] += 1
+
+    # A confirmed move spends its evidence, even if the target remains distant.
+    for mode in ("TARGET2", "DIR2"):
+        state = State(0)
+        state = step(step(state, 4, mode, range(5)), 4, mode, range(5))
+        assert state == State(1)
+        first_reverse = step(state, 0, mode, range(5))
+        assert first_reverse.r == 1
+        assert step(first_reverse, 0, mode, range(5)) == State(0)
+    count["explicit_boundary_cases"] += 1
+
+    # Ineligible events freeze pending; eligible neutral events clear it.
+    for mode in ("TARGET2", "DIR2"):
+        token = 4 if mode == "TARGET2" else 1
+        state = State(1, token)
+        assert step(state, None, mode, range(5), False) == state
+        neutral = step(state, 1, mode, range(5))
+        assert neutral == State(1)
+        assert step(neutral, 4, mode, range(5)) == State(1, token)
+    count["explicit_boundary_cases"] += 1
+
+    # Preserve the global target rule; moving one level is NOT a local-loss guard.
+    winners = {0: 0, 1: 6, 2: 3}
+    wanted = feedback_target(winners, 0, 3, small_cost)
+    assert wanted == 2
+    moved = step(State(0), wanted, "NONE", (0, 1, 2))
+    assert moved == State(1)
+    assert fixed_q_cost(3, winners[moved.r], small_cost) > fixed_q_cost(
+        3, winners[0], small_cost)
     count["explicit_boundary_cases"] += 1
 
     assert count == {
@@ -362,10 +449,12 @@ def run_tests() -> dict[str, object]:
         "state_transition_checks": 288,
         "synthetic_feedback_events": 12000,
         "scaled_grid_steps": 9000,
-        "explicit_boundary_cases": 4,
+        "explicit_boundary_cases": 10,
+        "exhaustive_unit_step_checks": 354,
     }
-    return {"revision": "R14-NF-168-v1", "status": "pass", "checks": count,
+    return {"revision": "R14-NF-168-v2", "status": "pass", "checks": count,
             "scope": "Pure mathematical/state reference only; no codec integration or video encoding",
+            "transition": "one-adjacent-grid-level; production max abs(delta_r)=1",
             "seed": 20261023}
 
 
