@@ -1,18 +1,18 @@
 {
-  "updated": "2026-10-02",
+  "updated": "2026-10-23",
   "method": "PCHIP per component, then (6Y+U+V)/8; equal sequence means",
-  "experiments": 96,
-  "sequence_records": 757,
-  "point_records": 3028,
+  "experiments": 98,
+  "sequence_records": 806,
+  "point_records": 3224,
   "point_status": {
-    "measured": 3001,
-    "anchor_imputed": 20,
-    "missing": 7
+    "measured": 3168,
+    "anchor_imputed": 16,
+    "missing": 40
   },
   "sequence_status": {
-    "complete": 730,
-    "imputed": 19,
-    "incomplete": 7,
+    "complete": 757,
+    "imputed": 15,
+    "incomplete": 33,
     "invalid_anchor": 1
   },
   "invalid_anchor_points": [
@@ -78,7 +78,7 @@
     },
     {
       "path": "experiments/ts_predictor_r10/3_B.csv",
-      "sha256": "e2e66598d89809fe265a75f7f032402611429fc424bae828aae93fe035aa2cf1"
+      "sha256": "41d422cbe012c57ba668c0447ebc335e18a329e92dc9654b7dd09a38ac857047"
     },
     {
       "path": "experiments/ts_predictor_r10/4.csv",
@@ -102,7 +102,7 @@
     },
     {
       "path": "experiments/ts_predictor_r10/R10_3_JVET-hhi.xlsm",
-      "sha256": "8e60ece0105aafdc0a48d062ab8173e938c5b227bc64ca824eb5fcd736a83e80"
+      "sha256": "eae04e77abf162e6a33e43cea80878bf5634bb25aa55b44fcfe20efefbc8e16a"
     },
     {
       "path": "experiments/ts_predictor_r10/R10_4_JVET-hhi.xlsm",
@@ -154,7 +154,7 @@
     },
     {
       "path": "experiments/ts_predictor_r11/R11_2_JVET-hhi.xlsm",
-      "sha256": "bfe802a709d841d6b412b2b569cf97e141d0cdcb34c2153cd9e23f616982c619"
+      "sha256": "d79c021157afe54a93aebedf8942d0aa1fd6fe19bd922850175ce08ea0ffbbcc"
     },
     {
       "path": "experiments/ts_predictor_r11/R11_3_JVET-hhi.xlsm",
@@ -230,11 +230,11 @@
     },
     {
       "path": "experiments/ts_predictor_r12/R12_10_JVET-hhi.xlsm",
-      "sha256": "6c051188db1deef94c8a1f60935e5088ab590e4c573f18dc148f542f1937f7f5"
+      "sha256": "015314655af90c093e4e634e60d28224000e12dad83dbc9f8258f9ba2fb23e4c"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_11_JVET-hhi.xlsm",
-      "sha256": "894b4a8fd5115e5799886db235e8eb25b429f2d91c254bace202b539b1b30d2e"
+      "sha256": "40e16dfdad065352a4e82fed9e301c8fb797827022cab2e5b425b0dc17cc7a11"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_12_JVET-hhi.xlsm",
@@ -242,19 +242,19 @@
     },
     {
       "path": "experiments/ts_predictor_r12/R12_1_JVET-hhi.xlsm",
-      "sha256": "d82837c3ce3a284e3eaad3553adba754adc9dbd1247e6754f1d357c0faa6ebf0"
+      "sha256": "198b65414cf5fee1439df9fd7b44d7a275090eaafe9902bbd560ce9479fa9a01"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_2_JVET-hhi.xlsm",
-      "sha256": "bbcb973594740b778c8b338cf8557bdfd109f689b29162797a06094b0d891be2"
+      "sha256": "8cff9ba93f9683bfbc8348516f3b2167e941ae77a2ce0ab638269b30b6e5a5cf"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_3_JVET-hhi.xlsm",
-      "sha256": "ffaee6322948bbc7b431de95a5d34d06f9c2e707eb2f1451b16c163e0f24aa7f"
+      "sha256": "a758892b950fde92dd671ee5da47cc296fb5021541a459e73cb7ca655b613210"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_4_JVET-hhi.xlsm",
-      "sha256": "5dc0e7ca22e6f77ceba2c3c3ca0d22fdebcf1bd1d17e112947e4f232cee7fb7a"
+      "sha256": "37b498d2aaeb74d83f89693456e54d483771b70e541d1ae6a67a4c4a55aac9d1"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_5_JVET-hhi.xlsm",
@@ -262,7 +262,7 @@
     },
     {
       "path": "experiments/ts_predictor_r12/R12_6_JVET-hhi.xlsm",
-      "sha256": "8d32a7b53bec7f5166dd49009896a9ea64fb378a60cbc951467310adb83ac5ee"
+      "sha256": "21a87501e50e33ebff296c27c53fe03f21c21b833c137f700ad51fcbcf0ce55b"
     },
     {
       "path": "experiments/ts_predictor_r12/R12_7_JVET-hhi.xlsm",
@@ -275,6 +275,22 @@
     {
       "path": "experiments/ts_predictor_r12/R12_9_JVET-hhi.xlsm",
       "sha256": "b2f5352cf14687591388fce8b8a3f4ae6d7d43c9fd24d734091431f0be1e3bb6"
+    },
+    {
+      "path": "experiments/ts_predictor_r13/R13_1.csv",
+      "sha256": "78cc5f045de1d8648e90fc89d48967c7d8a43bfbdf89e54f07ca52c1ec9b758d"
+    },
+    {
+      "path": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+      "sha256": "8e4a95a3bc647def5fa9d4d425623e6af51e96b2f91711bcc56c5c6ee828f570"
+    },
+    {
+      "path": "experiments/ts_predictor_r13/R13_2.csv",
+      "sha256": "7d438b19e62486ddfb0c4a6d1ef7a929b6658ae33632bcf1a48e94efa15ef0e4"
+    },
+    {
+      "path": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+      "sha256": "c0650a773ba7ccb5725612d940b17ff9341f0178f236e5fd993d8024b968d528"
     },
     {
       "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/JVET-hhi.xlsm",
@@ -786,7 +802,7 @@
     },
     {
       "path": "experiments/ts_predictor_r9/R9_9_JVET-hhi.xlsm",
-      "sha256": "99be84817584b08b58247ea69e6be4b45bb7b4c9946480c556bc33550f79d8b3"
+      "sha256": "12d16c029e07ac1be109eb1899d8d6c0a74ec3aaee30f6333873de4e8503c945"
     },
     {
       "path": "runs/ts_fixed_LB_CE_half/directional/JVET-hhi.xlsm",
@@ -1174,7 +1190,7 @@
     {
       "experiment": "R10-3",
       "source": "experiments/ts_predictor_r10/3_B.csv",
-      "matched_points": 14
+      "matched_points": 20
     },
     {
       "experiment": "R10-4",
@@ -1289,6 +1305,16 @@
     {
       "experiment": "R12-12",
       "source": "experiments/ts_predictor_r12/12.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R13-1",
+      "source": "experiments/ts_predictor_r13/R13_1.csv",
+      "matched_points": 28
+    },
+    {
+      "experiment": "R13-2",
+      "source": "experiments/ts_predictor_r13/R13_2.csv",
       "matched_points": 28
     }
   ]

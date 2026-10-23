@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, catalog, csv_sources, csv_text, imputation_allowed,
+from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, R13_MODES, catalog, csv_sources, csv_text, imputation_allowed,
                                point_values, read_sheet, sequence_result)
 
 
@@ -21,6 +21,47 @@ def curve(scale=1):
 
 
 class ResultsLedgerTests(unittest.TestCase):
+    def test_r13_registration_preserves_public_numbering(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs = [s for s in catalog(root) if s['round'] == 'r13']
+        self.assertEqual([s['experiment'] for s in specs], ['R13-1', 'R13-2'])
+        self.assertEqual([s['mode'] for s in specs], list(R13_MODES))
+        # These committed experiment definitions are independent of pending codec
+        # registration edits; result-ledger tests must work before codec upload.
+        metadata_root = Path(__file__).resolve().parents[1] / 'experiments/ts_predictor_r13'
+        for number, spec in enumerate(specs, 1):
+            folder = f'r13_{number}_' + spec['mode'].removeprefix('r13_')
+            metadata = json.loads((metadata_root / folder / 'run_metadata.template.json').read_text())
+            self.assertEqual(metadata['public_mode'], number)
+            self.assertEqual(metadata['runtime'], spec['mode'])
+            self.assertEqual(metadata['revision'], 'R13-KH-168-v1')
+        self.assertEqual([s['path'] for s in specs],
+                         [f'experiments/ts_predictor_r13/R13_{i}_JVET-hhi.xlsm' for i in (1, 2)])
+        self.assertTrue(all(s['expected_lb'] == 'CE' for s in specs))
+
+    def test_r13_csv_pairing_is_exact_and_missing_never_imputed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)
+            for name in ('R13_1.csv', 'R13_2.csv', 'R13_1_B.csv', 'R13_10.csv',
+                         'R13_1_backup.csv', '1.csv', '2.csv'):
+                (p / name).touch()
+            for i in (1, 2):
+                self.assertEqual(csv_sources(dict(round='r13', experiment=f'R13-{i}'),
+                                             p / f'R13_{i}_JVET-hhi.xlsm'), [p / f'R13_{i}.csv'])
+            self.assertEqual(csv_sources(dict(round='r13', experiment='R13-3'),
+                                         p / 'R13_3_JVET-hhi.xlsm'), [])
+        for exp in ('R13-1', 'R13-2'):
+            for config in ('lb', 'ra', 'ai'):
+                for seq in ('BasketballDrill', 'BQMall', 'PartyScene', 'RaceHorsesC',
+                            'FourPeople', 'Johnny', 'KristenAndSara'):
+                    for qp in QPS:
+                        self.assertFalse(imputation_allowed(exp, config, seq, qp))
+
     def test_r9_registration_preserves_mode_numbering(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

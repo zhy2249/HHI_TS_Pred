@@ -51,6 +51,20 @@ python3 -m unittest discover -s scripts -p 'test_ts_r13_batch.py'
 `--frames 17 --sequences PartyScene,RaceHorsesC,BQMall,KristenAndSara --qps 22,37 --no-xlsm-report`；
 只有用户运行授权后才执行，不把17帧点填入正式半帧表。
 
+2026-10-23两组完整CE已登记，结果见[分析报告](../docs/experiments/TS_Predictor_R13_LB_CE_Results_20261023.md)。
+以下仅复核/分析已收数据，不启动编码，也不改写源工作簿：
+
+```bash
+python3 scripts/ts_results_ledger.py --date 2026-10-23 --check
+python3 scripts/ts_r13_results_analysis.py
+python3 -m unittest discover -s scripts -p 'test_ts_r13_results_analysis.py'
+```
+
+新分析脚本只读台账中的六组完整实测LB CE（Current对照、R2-2/R3-1/R6-2/R12-11/R13两组），
+核对原始来源SHA及共同Current；缺点/补点/失败点拒绝计算。输出在`runs/ts_r13_results_20261023/`，
+包括逐序列、直接方法配对、序列bootstrap、留一法、完整曲线质量半区和逐QP码率/分量PSNR变化。
+质量半区不重拟合两点曲线，逐QP变化不是BD-rate；这些数值检查不代替服务器程序身份核验。
+
 R12（2026-10-01，R12-POS-01）：[十二组实现及运行](../docs/experiments/TS_Predictor_R12_Implementation.md)。
 直接设置 `TypeDef.h` 的 `JVET_BJUT_TS_R12_MODE=1..12`，其它模式及R10_CACHE为0，master为1。
 `bash scripts/run_ts_r12_lb_ce.sh --dry-run --allow-missing-input` 默认1/2/4/7/8/9，共168个CE半帧点，

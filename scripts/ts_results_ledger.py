@@ -36,6 +36,7 @@ R12_MODES = ('r12_ci_near1', 'r12_r3_near1', 'r12_current_near1', 'r12_loo_unsta
              'r12_direct_first', 'r12_r3_near1_loo', 'r12_c_distance_raw',
              'r12_c_distance_fulltrim', 'r12_validation_distance', 'r12_validation_distance_tie',
              'r12_c_distance_softtrim', 'r12_c_and_validation_distance')  # R12-POS-01 public numbering.
+R13_MODES = ('r13_keep_hit_uniform', 'r13_keep_hit_spatial')  # R13-KH-168-v1 public numbering.
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -84,6 +85,8 @@ def catalog(root):
             'BCE' if i == 2 else 'CE')
     for i, mode in enumerate(R12_MODES, 1):
         add('r12', f'R12-{i}', mode, f'experiments/ts_predictor_r12/R12_{i}_JVET-hhi.xlsm')
+    for i, mode in enumerate(R13_MODES, 1):
+        add('r13', f'R13-{i}', mode, f'experiments/ts_predictor_r13/R13_{i}_JVET-hhi.xlsm')
     return specs
 
 
@@ -104,6 +107,10 @@ def imputation_allowed(experiment, config, seq, qp):
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
+    if spec['round'] == 'r13':
+        # Server exports use R13_1.csv, not 1.csv; accept only the exact name.
+        source = path.parent / (spec['experiment'].replace('-', '_') + '.csv')
+        return [source] if source.exists() else []
     if spec['round'] in ('r8', 'r9', 'r10', 'r11', 'r12'):
         names = [spec['experiment'].split('-')[1] + '.csv', *spec.get('extra_csv', ())]
         return [path.parent / name for name in names if (path.parent / name).exists()]

@@ -3,7 +3,12 @@
 冻结规格：`R13-KH-168-v1`。正式anchor始终为Current；R2-2是机制对照。
 两组分别为 `r13_1_keep_hit_uniform`（MODE1 / policy98 / 11111）和
 `r13_2_keep_hit_spatial`（MODE2 / policy99 / 22111），固定rho=21/2、score-scale=168。
-目前仅建立收件目录；没有R13序列编码结果，不把目录存在理解为实验完成。
+2026-10-23已接收两组完整LB CE，各28/28实测点，无补点；B/RA/AI尚无结果。
+原始文件实际在本目录根层：`R13_1_JVET-hhi.xlsm`/`R13_1.csv`和
+`R13_2_JVET-hhi.xlsm`/`R13_2.csv`，按编号严格配对，未移动或改写源表。
+逐点登记见[数据明细](../../docs/experiments/results/r13.md)，
+解读见[CE报告](../../docs/experiments/TS_Predictor_R13_LB_CE_Results_20261023.md)。
+尚未收到服务器启动日志、done/identity，实际宏/编译来源/帧数/hash仍未完整核验。
 
 每组先收 `LB_CE/`：LBeu半帧、7序列×4QP=28点；短帧另放 `short_activity/`，不可混入正式曲线。
 后续B须明确获准且使用同一revision，不自动创建或跑B/RA/AI任务。

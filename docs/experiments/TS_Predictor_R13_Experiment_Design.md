@@ -1,7 +1,7 @@
 # R13：保持 / 相邻命中的量化感知代理评分
 
 - 日期：2026-10-22；冻结设计 revision：`R13-KH-168-v1`。
-- 状态：**两组代码已实现，编译及本地非序列验收通过；无 R13 序列编码结果。** 具体开关、运行与验证边界见[实现说明](TS_Predictor_R13_Implementation.md)。
+- 状态更新（2026-10-23）：**两组已实现并收到完整CE，共56/56实测点**，见[结果分析](TS_Predictor_R13_LB_CE_Results_20261023.md)及[逐点明细](results/r13.md)。服务器身份仍未完整核验，无B或可靠复杂度结论；下文保留2026-10-22冻结设计及当时证据，不因结果调整公式。开关、运行与本地验证边界见[实现说明](TS_Predictor_R13_Implementation.md)。
 - 正式 anchor：Current；直接机制对照：R2-2 `r2_risk`。
 - 当前分支：`experiment/ts-predictor-study`；设计基线：`a47686d518a59b51e253941287eb773f71759a6c`。
 - 原始依据：[KeepHit 评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)，版本 `TS-KH-SCORE-20261022-v1`。该文核对基线 `786da636...` 至本次 HEAD 的 `source/`、`scripts/` 差异为空。
@@ -24,7 +24,7 @@
 
 ## 2. 已有证据及不能推导的结论
 
-以下只引用[结果台账](TS_Predictor_Results_Ledger.md)，本次没有重算或接收新结果。单位为分量 BD-rate 后 6:1:1 加权的百分数。
+以下为2026-10-22设计时引用的[结果台账](TS_Predictor_Results_Ledger.md)，该设计阶段没有重算或接收新结果。单位为分量 BD-rate 后 6:1:1 加权的百分数；后续更新以台账和注明日期的报告为准。
 
 | 已有方法 | LB CE（7序列） | LB BCE（12序列） | 对本轮的意义 |
 | --- | ---: | ---: | --- |
