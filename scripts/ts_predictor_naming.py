@@ -49,35 +49,38 @@ R12_MODE_NUMBERS = dict(zip((
     'r12_validation_distance_tie','r12_c_distance_softtrim','r12_c_and_validation_distance'), range(1,13)))
 R13_MODE_NUMBERS = {'r13_keep_hit_uniform': 1, 'r13_keep_hit_spatial': 2}
 R14_REVISION = 'R14-NF-168-v3'
-# Explicit active v3 registry. Retired TARGET2/DIR2 names and numeric gaps are
-# deliberately absent; public numbers never equal internal policy identifiers.
+R14_NUMBERING = 'compact-15-v1'
+# Public numbering was compacted at the user's request; algorithms/runtime
+# names are unchanged. Old public numbers are provenance, never numeric aliases.
 R14_MODE_SPECS = {
     'r14_g2_none_equal': (1, 2, 'NONE', 2, None),
-    'r14_g4_none_equal': (4, 4, 'NONE', 4, None),
-    'r14_g2_none_half': (7, 2, 'NONE', 1, None),
-    'r14_g4_none_half': (10, 4, 'NONE', 2, None),
-    'r14_g2_none_zero': (13, 2, 'NONE', 0, None),
-    'r14_g4_none_zero': (16, 4, 'NONE', 0, None),
-    'r14_fixed_near_only': (19, 2, 'fixed', 0, None),
-    'r14_fixed_quarter': (20, 4, 'fixed', 1, None),
-    'r14_fixed_threequarter': (21, 4, 'fixed', 3, None),
-    'r14_g2_pair2_equal': (22, 2, 'PAIR2', 2, 5),
-    'r14_g4_pair2_equal': (23, 4, 'PAIR2', 4, 9),
-    'r14_g2_pair2_half': (24, 2, 'PAIR2', 1, 2),
-    'r14_g4_pair2_half': (25, 4, 'PAIR2', 2, 4),
-    'r14_g2_pair2_zero': (26, 2, 'PAIR2', 0, 0),
-    'r14_g4_pair2_zero': (27, 4, 'PAIR2', 0, 0),
+    'r14_g4_none_equal': (2, 4, 'NONE', 4, None),
+    'r14_g2_none_half': (3, 2, 'NONE', 1, None),
+    'r14_g4_none_half': (4, 4, 'NONE', 2, None),
+    'r14_g2_none_zero': (5, 2, 'NONE', 0, None),
+    'r14_g4_none_zero': (6, 4, 'NONE', 0, None),
+    'r14_fixed_near_only': (7, 2, 'fixed', 0, None),
+    'r14_fixed_quarter': (8, 4, 'fixed', 1, None),
+    'r14_fixed_threequarter': (9, 4, 'fixed', 3, None),
+    'r14_g2_pair2_equal': (10, 2, 'PAIR2', 2, 5),
+    'r14_g4_pair2_equal': (11, 4, 'PAIR2', 4, 9),
+    'r14_g2_pair2_half': (12, 2, 'PAIR2', 1, 2),
+    'r14_g4_pair2_half': (13, 4, 'PAIR2', 2, 4),
+    'r14_g2_pair2_zero': (14, 2, 'PAIR2', 0, 0),
+    'r14_g4_pair2_zero': (15, 4, 'PAIR2', 0, 0),
 }
 R14_MODE_NUMBERS = {name: spec[0] for name, spec in R14_MODE_SPECS.items()}
-R14_PHASE_A = (19, 1, 22, 20, 21, 4, 23)
-R14_PHASE_B = (7, 10, 13, 16, 24, 25, 26, 27)
+R14_LEGACY_PUBLIC_MODES = dict(zip(R14_MODE_SPECS, (1, 4, 7, 10, 13, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27)))
+R14_PHASE_A = (7, 1, 10, 8, 9, 2, 11)
+R14_PHASE_B = (3, 4, 5, 6, 12, 13, 14, 15)
 
 
 def r14_protocol(mode: str) -> dict:
     """Frozen algorithm identity, distinct from observed execution/build facts."""
     public, k, update, r0, s0 = R14_MODE_SPECS[mode]
     return {
-        'revision': R14_REVISION, 'public_mode': public, 'internal_policy': 99 + public,
+        'revision': R14_REVISION, 'numbering': R14_NUMBERING,
+        'public_mode': public, 'legacy_public_mode': R14_LEGACY_PUBLIC_MODES[mode], 'internal_policy': 99 + public,
         'runtime': mode, 'macro': 'JVET_BJUT_TS_R14_MODE', 'anchor': 'current',
         'mechanism_controls': ['r13_keep_hit_uniform', 'r13_keep_hit_spatial'],
         'K': k, 'grid': [r0] if update == 'fixed' else list(range(k + 1)),

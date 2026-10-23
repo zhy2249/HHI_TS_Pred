@@ -14,29 +14,29 @@ inline const char *r14Name(int m)
   switch(m)
   {
   case 1: return "r14_g2_none_equal";
-  case 4: return "r14_g4_none_equal";
-  case 7: return "r14_g2_none_half";
-  case 10: return "r14_g4_none_half";
-  case 13: return "r14_g2_none_zero";
-  case 16: return "r14_g4_none_zero";
-  case 19: return "r14_fixed_near_only";
-  case 20: return "r14_fixed_quarter";
-  case 21: return "r14_fixed_threequarter";
-  case 22: return "r14_g2_pair2_equal";
-  case 23: return "r14_g4_pair2_equal";
-  case 24: return "r14_g2_pair2_half";
-  case 25: return "r14_g4_pair2_half";
-  case 26: return "r14_g2_pair2_zero";
-  case 27: return "r14_g4_pair2_zero";
+  case 2: return "r14_g4_none_equal";
+  case 3: return "r14_g2_none_half";
+  case 4: return "r14_g4_none_half";
+  case 5: return "r14_g2_none_zero";
+  case 6: return "r14_g4_none_zero";
+  case 7: return "r14_fixed_near_only";
+  case 8: return "r14_fixed_quarter";
+  case 9: return "r14_fixed_threequarter";
+  case 10: return "r14_g2_pair2_equal";
+  case 11: return "r14_g4_pair2_equal";
+  case 12: return "r14_g2_pair2_half";
+  case 13: return "r14_g4_pair2_half";
+  case 14: return "r14_g2_pair2_zero";
+  case 15: return "r14_g4_pair2_zero";
   default: return nullptr;
   }
 }
 inline int r14PublicMode(int policy)
-{ return policy>=100 && policy<=126 && r14Name(policy-99) ? policy-99 : 0; }
+{ return policy>=100 && policy<=114 ? policy-99 : 0; }
 inline bool r14(int policy) { return r14PublicMode(policy)!=0; }
 inline int r14Policy(const char *value)
 {
-  for(int m=1;m<=27;++m)
+  for(int m=1;m<=15;++m)
     if(r14Name(m) && !std::strcmp(value,r14Name(m))) { return m+99; }
   return 0;
 }
@@ -50,21 +50,21 @@ inline R14Config r14Config(int m)
   switch(m)
   {
   case 1: return {m,2,2,-1,false,true};
-  case 4: return {m,4,4,-1,false,true};
-  case 7: return {m,2,1,-1,false,true};
-  case 10: return {m,4,2,-1,false,true};
-  case 13: return {m,2,0,-1,false,true};
-  case 16: return {m,4,0,-1,false,true};
-  case 19: return {m,2,0,0,false,false};
-  case 20: return {m,4,1,1,false,false};
-  case 21: return {m,4,3,3,false,false};
-  case 22: return {m,2,5,-1,true,true};
-  case 23: return {m,4,9,-1,true,true};
-  case 24: return {m,2,2,-1,true,true};
-  case 25: return {m,4,4,-1,true,true};
-  case 26: return {m,2,0,-1,true,true};
-  case 27: return {m,4,0,-1,true,true};
-  default: THROW("Invalid or retired R14 public mode");
+  case 2: return {m,4,4,-1,false,true};
+  case 3: return {m,2,1,-1,false,true};
+  case 4: return {m,4,2,-1,false,true};
+  case 5: return {m,2,0,-1,false,true};
+  case 6: return {m,4,0,-1,false,true};
+  case 7: return {m,2,0,0,false,false};
+  case 8: return {m,4,1,1,false,false};
+  case 9: return {m,4,3,3,false,false};
+  case 10: return {m,2,5,-1,true,true};
+  case 11: return {m,4,9,-1,true,true};
+  case 12: return {m,2,2,-1,true,true};
+  case 13: return {m,4,4,-1,true,true};
+  case 14: return {m,2,0,-1,true,true};
+  case 15: return {m,4,0,-1,true,true};
+  default: THROW("Invalid R14 compact-15-v1 public mode");
   }
 }
 inline int r14Output(const R14Config &config,int state)
@@ -526,11 +526,11 @@ inline void announce()
   if(r14(mode()))
   {
     const R14Config c=r14Config(r14PublicMode(mode()));
-    std::printf("TS R14 revision=R14-NF-168-v3; mode=%d; runtime=%s; K=%d; update=%s; r0=%d; s0=%d; score-scale=168; target=TSRC-enabled-nonBDPCM; stats=%d; trace=%d; anchor=current; scope=YUV; TU-local; rho=21/2; grid=0..%d; min-n=3; feedback=integer-syntax; feedback-tie=cost-distance-larger-r; quant-search=native; stats-default=off\n",
+    std::printf("TS R14 revision=R14-NF-168-v3; numbering=compact-15-v1; mode=%d; runtime=%s; K=%d; update=%s; r0=%d; s0=%d; score-scale=168; target=TSRC-enabled-nonBDPCM; stats=%d; trace=%d; anchor=current; scope=YUV; TU-local; rho=21/2; grid=0..%d; min-n=3; feedback=integer-syntax; feedback-tie=cost-distance-larger-r; quant-search=native; stats-default=off\n",
       c.publicMode,name(),c.k,c.dynamic?(c.pair?"PAIR2":"NONE"):"fixed",
       r14Output(c,c.initialState),c.pair?c.initialState:-1,int(r14Obs.stats),int(r14Obs.trace),c.k);
     if(r14Obs.stats || r14Obs.trace)
-      std::printf("TS R14 observation=final-Writer; revision=R14-NF-168-v3; trajectory=%s; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
+      std::printf("TS R14 observation=final-Writer; revision=R14-NF-168-v3; numbering=compact-15-v1; trajectory=%s; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
         name(),r14Obs.detailLimit,r14Obs.poc,int(r14Obs.trace));
   }
   if(r13Obs.stats || r13Obs.trace)

@@ -35,7 +35,7 @@ struct R14Stats
   {
     std::lock_guard<std::mutex> lock(mutex);
     if(detailCount>=r14Observation().detailLimit) { return; } ++detailCount;
-    std::fprintf(stderr,"TS_R14_DETAIL role=W mode=%d poc=%d c=%d w=%d h=%d qp=%d cg=%d scan=%d a=%d cutoff=%d n=%d state_in=%d state_out=%d r_in=%d r_out=%d p=%d target=%d direction=%d support=",
+    std::fprintf(stderr,"TS_R14_DETAIL numbering=compact-15-v1 role=W mode=%d poc=%d c=%d w=%d h=%d qp=%d cg=%d scan=%d a=%d cutoff=%d n=%d state_in=%d state_out=%d r_in=%d r_out=%d p=%d target=%d direction=%d support=",
       r14PublicMode(mode()),poc,component,width,height,qp,cg,scan,a,cutoff,d.n,before,u.state,u.beforeR,u.afterR,d.predictor,u.target,u.direction);
     for(int v:h) { std::fprintf(stderr,"%d,",v); }
     std::fprintf(stderr," winners=");
@@ -46,7 +46,7 @@ struct R14Stats
   {
     std::lock_guard<std::mutex> lock(mutex);
     if(traceCount[int(writer)]>=r14Observation().detailLimit) { return; } ++traceCount[int(writer)];
-    std::fprintf(stderr,"TS_R14_TRACE role=%c mode=%d poc=%d c=%d w=%d h=%d qp=%d cg=%d bins=%d state_in=%d state_out=%d hash=%llu\n",
+    std::fprintf(stderr,"TS_R14_TRACE numbering=compact-15-v1 role=%c mode=%d poc=%d c=%d w=%d h=%d qp=%d cg=%d bins=%d state_in=%d state_out=%d hash=%llu\n",
       writer?'W':'R',r14PublicMode(mode()),poc,component,width,height,qp,cg,bins,before,after,(unsigned long long)hash);
   }
   ~R14Stats()
@@ -60,7 +60,7 @@ struct R14Stats
     static_assert(sizeof(fields)/sizeof(fields[0])==COUNT,"R14 statistics schema mismatch");
     if(!rows.empty())
     {
-      std::fprintf(stderr,"TS_R14_STATS_HEADER mode,component,width,height,cu_qp,intra,bdpcm,target,cg_count_in_tu,cutoff,n,state,weight");
+      std::fprintf(stderr,"TS_R14_STATS_HEADER mode_n15,component,width,height,cu_qp,intra,bdpcm,target,cg_count_in_tu,cutoff,n,state,weight");
       for(const auto *field:fields) { std::fprintf(stderr,",%s",field); } std::fprintf(stderr,"\n");
       for(const auto &entry:rows)
       {
@@ -72,7 +72,7 @@ struct R14Stats
     }
     if(!trials.empty())
     {
-      std::fprintf(stderr,"TS_R14_TRIAL_HEADER mode,component,width,height,cu_qp,intra,cg_count_in_tu,target,cg_trial_count,zero_cg_count,rolled_back_state_count\n");
+      std::fprintf(stderr,"TS_R14_TRIAL_HEADER mode_n15,component,width,height,cu_qp,intra,cg_count_in_tu,target,cg_trial_count,zero_cg_count,rolled_back_state_count\n");
       for(const auto &entry:trials)
       {
         std::fprintf(stderr,"TS_R14_TRIAL "); bool first=true;

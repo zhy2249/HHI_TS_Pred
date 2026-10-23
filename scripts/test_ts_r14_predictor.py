@@ -20,13 +20,13 @@ spec.loader.exec_module(reference)
 
 # Independent list (does not import production naming/registry).
 MODES = {
-    1: (2, "NONE", 2), 4: (4, "NONE", 4),
-    7: (2, "NONE", 1), 10: (4, "NONE", 2),
-    13: (2, "NONE", 0), 16: (4, "NONE", 0),
-    19: (2, "fixed", 0), 20: (4, "fixed", 1), 21: (4, "fixed", 3),
-    22: (2, "PAIR2", 2), 23: (4, "PAIR2", 4),
-    24: (2, "PAIR2", 1), 25: (4, "PAIR2", 2),
-    26: (2, "PAIR2", 0), 27: (4, "PAIR2", 0),
+    1: (2, "NONE", 2), 2: (4, "NONE", 4),
+    3: (2, "NONE", 1), 4: (4, "NONE", 2),
+    5: (2, "NONE", 0), 6: (4, "NONE", 0),
+    7: (2, "fixed", 0), 8: (4, "fixed", 1), 9: (4, "fixed", 3),
+    10: (2, "PAIR2", 2), 11: (4, "PAIR2", 4),
+    12: (2, "PAIR2", 1), 13: (4, "PAIR2", 2),
+    14: (2, "PAIR2", 0), 15: (4, "PAIR2", 0),
 }
 
 
@@ -85,12 +85,12 @@ class R14Predictor(unittest.TestCase):
         self.assertTrue(result["pass"])
         self.assertEqual(result["decisions"], 18000 + 2 * 9 * 15)
 
-    def test_state_machine_phase_target_ties_and_fixed19_counterexamples(self):
+    def test_state_machine_phase_target_ties_and_fixed7_counterexamples(self):
         result = self.probe("state")
         self.assertTrue(result["pass"])
         self.assertGreater(result["updates"], 1000)
-        inputs = [(19, 0, 1, 15, 25, 25, 26, 1, 0, 0),
-                  (19, 0, 1, 15, 4095, 4094, 4096, 4095, 0, 0)]
+        inputs = [(7, 0, 1, 15, 25, 25, 26, 1, 0, 0),
+                  (7, 0, 1, 15, 4095, 4094, 4096, 4095, 0, 0)]
         self.assertEqual([r["predictor"] for r in self.query(inputs)], [25, 4095])
         c = lambda a: syntax_cost(a, 1, 15)
         self.assertEqual(2 * sum(reference.oracle_loss(a, 25, c) for a in (25, 26)), 3400)

@@ -1,5 +1,6 @@
 # R14-1 LB CE 结果收件
 
+- numbering：`compact-15-v1`；旧编号 1（只用于追溯，不是别名）。
 - revision：`R14-NF-168-v3`；runtime：`r14_g2_none_equal`。
 - 公开号 1，内部 policy 100；K=2，update=NONE，r0=2，s0=不适用。
 - 阶段 A（优先验证）；Current 为正式 anchor。

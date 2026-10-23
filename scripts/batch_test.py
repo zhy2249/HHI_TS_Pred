@@ -507,7 +507,7 @@ def _r14_startup_matches(text: str, mode: str | None) -> bool:
     if mode not in R14_MODE_NUMBERS:
         return True
     protocol = r14_protocol(mode)
-    expected = {"TS R14 revision": R14_REVISION, "mode": str(protocol['public_mode']),
+    expected = {"TS R14 revision": R14_REVISION, "numbering": protocol['numbering'], "mode": str(protocol['public_mode']),
                 "runtime": mode, "K": str(protocol['K']), "update": protocol['update'],
                 "r0": str(protocol['r0']), "s0": str(protocol['s0'] if protocol['s0'] is not None else -1),
                 "score-scale": "168", "target": "TSRC-enabled-nonBDPCM"}
@@ -721,6 +721,10 @@ def _run_one(job: TestJob) -> dict:
                            and job.bitstream.stat().st_size > 0
                            and job.encode_log.is_file()
                            and (not job.decode_md5 or job.decode_log.is_file()))
+            if r14_identity is not None:
+                # Numbering is a separate protocol identity: never accept a
+                # pre-compaction marker merely carrying a copied fingerprint.
+                ts_complete = ts_complete and marker.get("r14_identity") == r14_identity
             if job.ts_stats:
                 ts_complete = (ts_complete and job.ts_stats.stat().st_size > 0
                                and marker.get("stats_bytes") == job.ts_stats.stat().st_size

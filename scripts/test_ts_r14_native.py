@@ -21,14 +21,14 @@ LEGACY = {'current': 1, 'r2_risk': 10, 'r3_risk_guard': 13,
           'r6_reject_nopred': 26, 'r13_keep_hit_uniform': 98,
           'r13_keep_hit_spatial': 99}
 R14 = {
-    'r14_g2_none_equal': 1, 'r14_g4_none_equal': 4,
-    'r14_g2_none_half': 7, 'r14_g4_none_half': 10,
-    'r14_g2_none_zero': 13, 'r14_g4_none_zero': 16,
-    'r14_fixed_near_only': 19, 'r14_fixed_quarter': 20,
-    'r14_fixed_threequarter': 21, 'r14_g2_pair2_equal': 22,
-    'r14_g4_pair2_equal': 23, 'r14_g2_pair2_half': 24,
-    'r14_g4_pair2_half': 25, 'r14_g2_pair2_zero': 26,
-    'r14_g4_pair2_zero': 27,
+    'r14_g2_none_equal': 1, 'r14_g4_none_equal': 2,
+    'r14_g2_none_half': 3, 'r14_g4_none_half': 4,
+    'r14_g2_none_zero': 5, 'r14_g4_none_zero': 6,
+    'r14_fixed_near_only': 7, 'r14_fixed_quarter': 8,
+    'r14_fixed_threequarter': 9, 'r14_g2_pair2_equal': 10,
+    'r14_g4_pair2_equal': 11, 'r14_g2_pair2_half': 12,
+    'r14_g4_pair2_half': 13, 'r14_g2_pair2_zero': 14,
+    'r14_g4_pair2_zero': 15,
 }
 
 
@@ -80,6 +80,9 @@ def table(output, prefix):
     for line in output.splitlines():
         if line.startswith(prefix + '_HEADER '):
             candidate = next(csv.reader([line.split(' ', 1)[1]]))
+            if candidate[0] != 'mode_n15':
+                raise AssertionError('Old R14 numbering/schema cannot be interpreted as compact-15-v1')
+            candidate[0] = 'mode'
             if header is not None and header != candidate:
                 raise AssertionError('Conflicting observation schema: ' + prefix)
             header = candidate
@@ -168,15 +171,15 @@ def statistics_checks(output, public_mode, syntax):
                 rd_nontrivial_state_rollbacks=sum(row['rolled_back_state_count'] for row in trials))
 
 
-def run(executable, out, runtime):
+def run(executable, out, runtime, renumber_before=None):
     public_mode = R14.get(runtime)
     env = clean_environment(runtime)
     with tempfile.TemporaryDirectory(prefix=runtime + '_', dir=out) as temporary:
         temp = Path(temporary)
 
-        def call(tag, options):
+        def call(tag, options, program=None):
             payload, non_target = temp / (tag + '.bin'), temp / (tag + '_nontarget.bin')
-            process = subprocess.run([str(executable)],
+            process = subprocess.run([str(program or executable)],
                 env={**env, **options, 'TS_R14_EXACT_PAYLOAD': str(payload),
                      'TS_R14_NONTARGET_PAYLOAD': str(non_target)},
                 text=True, capture_output=True, timeout=300)
@@ -201,6 +204,12 @@ def run(executable, out, runtime):
                       non_target_sha256=sha256(non_target),
                       syntax_coverage=syntax, quant_coverage=quant,
                       _non_target=non_target.read_bytes())
+        if renumber_before:
+            previous, previous_payload, previous_non_target = call('before_numbering', {}, renumber_before)
+            if (quiet.stdout != previous.stdout or not identical(original, previous_payload)
+                    or not identical(non_target, previous_non_target)):
+                raise AssertionError('Renumbering changed native q/bytes/context/budget/state: ' + runtime)
+            result['renumber_byte_identical'] = True
         if public_mode:
             observed, observed_payload, observed_non_target = call('observed',
                 dict(TS_R14_STATS='1', TS_R14_TRACE='1', TS_R14_DETAIL_LIMIT='7'))
@@ -256,7 +265,9 @@ def main():
                         help='Preserved pre-R14 build/ts-r13/bin/TsR13NativeTest')
     parser.add_argument('--legacy-after-exe', type=Path,
                         help='Unchanged TsR13NativeTest harness built with new sources')
-    parser.add_argument('--out', type=Path, default=Path('runs/ts_r14_native'))
+    parser.add_argument('--renumber-before-exe', type=Path,
+                        help='Preserved old-numbering TsR14NativeTest; compare full records by unchanged runtime name')
+    parser.add_argument('--out', type=Path, default=Path('runs/ts_r14_n15_native'))
     parser.add_argument('--jobs', type=int, default=2)
     parser.add_argument('--modes', nargs='+', choices=list(LEGACY) + list(R14),
                         help='Debug subset only; default validates all 15 R14 and 6 legacy policies')
@@ -269,7 +280,8 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     modes = args.modes or list(LEGACY) + list(R14)
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        results = list(pool.map(lambda runtime: run(executable, args.out, runtime), modes))
+        results = list(pool.map(lambda runtime: run(executable, args.out, runtime,
+                            args.renumber_before_exe.resolve() if args.renumber_before_exe else None), modes))
     current = next((row['_non_target'] for row in results if row['runtime'] == 'current'), None)
     for result in results:
         if current is not None and result['public_mode']:
@@ -286,10 +298,12 @@ def main():
         before, after = args.legacy_before_exe.resolve(), args.legacy_after_exe.resolve()
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             legacy = list(pool.map(lambda runtime: legacy_compare(before, after, args.out, runtime), LEGACY))
-    report = dict(revision='R14-NF-168-v3', sequence_encode_decode=False,
+    report = dict(revision='R14-NF-168-v3', numbering='compact-15-v1', sequence_encode_decode=False,
                   complete_mode_matrix=not bool(args.modes),
                   rdoq_nontrivial_rollback_covered=rollback_covered,
                   native_exe_sha256=sha256(executable),
+                  renumber_before_exe_sha256=sha256(args.renumber_before_exe) if args.renumber_before_exe else None,
+                  renumber_status='checked' if args.renumber_before_exe else 'NOT RUN',
                   harness_sha256=sha256(Path(__file__).with_name('ts_r14_native_test.cpp')),
                   legacy_before_exe_sha256=sha256(args.legacy_before_exe) if legacy else None,
                   legacy_after_exe_sha256=sha256(args.legacy_after_exe) if legacy else None,
@@ -301,6 +315,7 @@ def main():
     for result in results:
         print(result['runtime'], 'PASS', 'full native records, causal state/context/budget')
     print('Pre-R14 legacy byte comparison:', report['legacy_status'])
+    print('Renumbering byte comparison:', report['renumber_status'])
 
 
 if __name__ == '__main__':

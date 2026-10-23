@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# R14 v3: A=196 jobs; optional B=224 jobs. One shared pool, no anchor encoding.
+# R14 v3, compact-15-v1: A=196 jobs; optional B=224 jobs. Shared pool, no anchor encoding.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 r14_phase=A
@@ -40,4 +40,4 @@ exec python3 -u scripts/batch_test.py \
   --encoder build/ts-r14/bin/EncoderApp --decoder build/ts-r14/bin/DecoderApp \
   --input-dir /home/zhy/videos --jobs 10 --decode-md5 --no-recon \
   --xlsm-report --xlsm-template scripts/JVET-hhi.xlsm \
-  --out-dir runs/ts_r14_nf168_v3_LB_CE_half "${r14_args[@]}"
+  --out-dir runs/ts_r14_nf168_v3_n15_LB_CE_half "${r14_args[@]}"

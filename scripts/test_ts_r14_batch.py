@@ -17,7 +17,8 @@ from unittest.mock import patch
 import batch_test as batch
 import test_ts_fixed_batch as existing
 from ts_predictor_naming import (R14_MODE_NUMBERS, R14_MODE_SPECS, R14_PHASE_A,
-                                R14_PHASE_B, R14_REVISION, directory_name, r14_protocol)
+                                R14_PHASE_B, R14_REVISION, R14_NUMBERING,
+                                R14_LEGACY_PUBLIC_MODES, directory_name, r14_protocol)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -31,8 +32,7 @@ class R14BatchTests(unittest.TestCase):
 
     def test_registry_and_shared_pool(self):
         existing.FixedBatchTests.exercise_modes_and_shared_pool(self, tuple(R14_MODE_NUMBERS))
-        self.assertEqual(set(R14_MODE_NUMBERS.values()),
-                         {1, 4, 7, 10, 13, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27})
+        self.assertEqual(set(R14_MODE_NUMBERS.values()), set(range(1, 16)))
         for mode, public in R14_MODE_NUMBERS.items():
             self.assertEqual(directory_name(mode), f'r14_{public}_{mode[4:]}')
             self.assertEqual(r14_protocol(mode)['internal_policy'], 99 + public)
@@ -46,7 +46,7 @@ class R14BatchTests(unittest.TestCase):
     @staticmethod
     def startup(mode):
         public, k, update, r0, s0 = R14_MODE_SPECS[mode]
-        return (f'TS R14 revision={R14_REVISION}; mode={public}; runtime={mode}; K={k}; '
+        return (f'TS R14 revision={R14_REVISION}; numbering={R14_NUMBERING}; mode={public}; runtime={mode}; K={k}; '
                 f'update={update}; r0={r0}; s0={s0 if s0 is not None else -1}; '
                 'score-scale=168; target=TSRC-enabled-nonBDPCM; stats=0; trace=0')
 
@@ -55,9 +55,15 @@ class R14BatchTests(unittest.TestCase):
             line = self.startup(mode)
             self.assertTrue(batch._r14_startup_matches(line, mode))
             for old, wrong in [('v3', 'v2'), ('score-scale=168', 'score-scale=128'),
+                               (R14_NUMBERING, 'legacy-gapped'),
                                ('target=TSRC-enabled-nonBDPCM', 'target=RDOQ-only'),
                                ('r0=', 'obsolete-r0='), ('s0=', 'obsolete-s0=')]:
                 self.assertFalse(batch._r14_startup_matches(line.replace(old, wrong), mode), (mode, old))
+            self.assertFalse(batch._r14_startup_matches(line.replace(f'numbering={R14_NUMBERING}; ', ''), mode))
+            old_public = R14_LEGACY_PUBLIC_MODES[mode]
+            if old_public != R14_MODE_NUMBERS[mode]:
+                old_identity = line.replace(f'mode={R14_MODE_NUMBERS[mode]};', f'mode={old_public};')
+                self.assertFalse(batch._r14_startup_matches(old_identity, mode))
             self.assertFalse(batch._r14_startup_matches('', mode))
         self.assertTrue(batch._r14_startup_matches('', 'r3_risk_guard'))
 
@@ -208,7 +214,7 @@ class R14BatchTests(unittest.TestCase):
                 self.assertEqual(cmd[-2:], ['-o', ''])
                 Path(cmd[cmd.index('-b') + 1]).write_bytes(b'mock bitstream')
                 kwargs['stdout'].write(f'EXPERIMENT: TS_FIXED_PREDICTOR={mode}; syntax=experimental-v1\n'
-                                       f'TS R14 revision={R14_REVISION}; mode=22; runtime={mode}; K=2; '
+                                       f'TS R14 revision={R14_REVISION}; numbering={R14_NUMBERING}; mode=10; runtime={mode}; K=2; '
                                        'update=PAIR2; r0=2; s0=5; score-scale=168; '
                                        'target=TSRC-enabled-nonBDPCM\n'
                                        'Total Frames Y-PSNR U-PSNR V-PSNR\n2 a 100.0 35.0 36.0 37.0\n')
@@ -233,6 +239,13 @@ class R14BatchTests(unittest.TestCase):
                 self.assertIsNone(identity['input_identity']['content_sha256'])
                 marker = json.loads(job.bitstream.with_suffix('.done.json').read_text())
                 self.assertEqual(marker['r14_identity']['revision'], R14_REVISION)
+                self.assertEqual(marker['r14_identity']['numbering'], R14_NUMBERING)
+                # Old markers cannot be resumed as new numbers, even when a
+                # runtime name and the algorithm revision remain unchanged.
+                stale = json.loads(job.bitstream.with_suffix('.done.json').read_text())
+                stale['r14_identity'].pop('numbering')
+                job.bitstream.with_suffix('.done.json').write_text(json.dumps(stale))
+                self.assertEqual(batch._run_one(job)['encode_status'], 'ok')
                 executable.write_bytes(b'changed executable')
                 self.assertEqual(batch._run_one(job)['encode_status'], 'ok')
                 job.sequence_cfg.write_text(job.sequence_cfg.read_text() + '\n# changed config\n')

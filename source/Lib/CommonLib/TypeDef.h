@@ -235,22 +235,23 @@
 #if JVET_BJUT_TS_R13_MODE && (JVET_BJUT_TS_R12_MODE || JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
 #error R13 and earlier TS defaults/cache are mutually exclusive
 #endif
-// R14-NF-168-v3: R13 KeepHit loss, TU-local near/far weight adaptation.
-// 0=off (Current if all other modes are off). Active public experiment numbers:
-// 1/4=NONE K2/K4 equal start; 7/10=NONE K2/K4 half start;
-// 13/16=NONE K2/K4 zero start; 19/20/21=fixed far weight 0,1/4,3/4;
-// 22/23=PAIR2 K2/K4 equal start; 24/25=PAIR2 K2/K4 half start;
-// 26/27=PAIR2 K2/K4 zero start. Retired TARGET2/DIR2 IDs are errors.
-// Stage A=1,4,22,23,19,20,21; Stage B=7,10,13,16,24,25,26,27.
+// R14-NF-168-v3 algorithm, compact-15-v1 numbering (runtime names unchanged).
+// 0=off (Current if all other modes are off). Consecutive public IDs 1..15:
+// 1/2=NONE K2/K4 equal start; 3/4=NONE K2/K4 half start;
+// 5/6=NONE K2/K4 zero start; 7/8/9=fixed far weight 0,1/4,3/4;
+// 10/11=PAIR2 K2/K4 equal start; 12/13=PAIR2 K2/K4 half start;
+// 14/15=PAIR2 K2/K4 zero start. Old sparse numbers are NOT aliases.
+// Old [1,4,7,10,13,16,19,20,21,22,23,24,25,26,27] -> new [1..15].
+// Stage A=7,1,10,8,9,2,11; Stage B=3,4,5,6,12,13,14,15.
 // Equal/half weights reproduce R13-1/R13-2 on identical target-path inputs.
-// Mode 19 keeps far candidates/support; it is NOT equivalent to Current.
+// Mode 7 (old 19) keeps far candidates/support; it is NOT equivalent to Current.
 // Explicit TS_FIXED_PREDICTOR overrides this default. Observation only:
 // TS_R14_STATS/TS_R14_TRACE environment flags default OFF; no old-round shadow.
 #ifndef JVET_BJUT_TS_R14_MODE
 #define JVET_BJUT_TS_R14_MODE                              0
 #endif
-#if JVET_BJUT_TS_R14_MODE != 0 && JVET_BJUT_TS_R14_MODE != 1 && JVET_BJUT_TS_R14_MODE != 4 && JVET_BJUT_TS_R14_MODE != 7 && JVET_BJUT_TS_R14_MODE != 10 && JVET_BJUT_TS_R14_MODE != 13 && JVET_BJUT_TS_R14_MODE != 16 && JVET_BJUT_TS_R14_MODE != 19 && JVET_BJUT_TS_R14_MODE != 20 && JVET_BJUT_TS_R14_MODE != 21 && JVET_BJUT_TS_R14_MODE != 22 && JVET_BJUT_TS_R14_MODE != 23 && JVET_BJUT_TS_R14_MODE != 24 && JVET_BJUT_TS_R14_MODE != 25 && JVET_BJUT_TS_R14_MODE != 26 && JVET_BJUT_TS_R14_MODE != 27
-#error Invalid or retired TS R14 mode (R14-NF-168-v3)
+#if JVET_BJUT_TS_R14_MODE < 0 || JVET_BJUT_TS_R14_MODE > 15
+#error Invalid TS R14 mode (compact-15-v1 requires 0..15)
 #endif
 #if JVET_BJUT_TS_R14_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
 #error TS R14 requires the fixed-predictor master

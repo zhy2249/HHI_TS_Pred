@@ -69,5 +69,7 @@
   "actual_observation_env": null,
   "actual_command": null,
   "actual_frame_counts": null,
-  "actual_decode_hash_status": null
+  "actual_decode_hash_status": null,
+  "numbering": "compact-15-v1",
+  "legacy_public_mode": 1
 }

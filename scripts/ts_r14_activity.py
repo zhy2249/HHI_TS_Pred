@@ -10,8 +10,9 @@ import csv
 from pathlib import Path
 
 REVISION = "R14-NF-168-v3"
-MODES = {1: 2, 4: 4, 7: 2, 10: 4, 13: 2, 16: 4, 19: 2, 20: 4,
-         21: 4, 22: 2, 23: 4, 24: 2, 25: 4, 26: 2, 27: 4}
+NUMBERING = "compact-15-v1"
+MODES = {1: 2, 2: 4, 3: 2, 4: 4, 5: 2, 6: 4, 7: 2, 8: 4,
+         9: 4, 10: 2, 11: 4, 12: 2, 13: 4, 14: 2, 15: 4}
 KEYS = ("mode", "component", "width", "height", "cu_qp", "intra", "bdpcm", "target",
         "cg_count_in_tu", "cutoff", "n", "state", "weight")
 COUNTERS = (
@@ -31,9 +32,10 @@ COUNTERS = (
 TRIAL_KEYS = ("mode", "component", "width", "height", "cu_qp", "intra", "cg_count_in_tu", "target")
 TRIAL_COUNTERS = ("cg_trial_count", "zero_cg_count", "rolled_back_state_count")
 SCHEMAS = {"stats": KEYS + COUNTERS, "trial": TRIAL_KEYS + TRIAL_COUNTERS}
+LOG_SCHEMAS = {population: ("mode_n15",) + columns[1:] for population, columns in SCHEMAS.items()}
 PREFIXES = {"stats": ("TS_R14_STATS_HEADER ", "TS_R14_STATS "),
             "trial": ("TS_R14_TRIAL_HEADER ", "TS_R14_TRIAL ")}
-LABELS = ("source_log", "sequence", "configuration", "nominal_qp")
+LABELS = ("numbering", "source_log", "sequence", "configuration", "nominal_qp")
 GROUP = LABELS + KEYS[:9]
 TRIAL_GROUP = LABELS + TRIAL_KEYS
 OUTPUT_NAMES = ("final_writer.csv", "final_writer_summary.csv", "state_residence.csv",
@@ -64,16 +66,16 @@ def _validate(row, population):
         _check(row["coeff_count"] == 0, "TU/CG sentinel cannot count coefficients")
     else:
         k = MODES[row["mode"]]
-        cap = 2 * k + 1 if row["mode"] >= 22 else k
+        cap = 2 * k + 1 if row["mode"] >= 10 else k
         _check(row["cutoff"] in (-1, 0, 2, 10) and 0 <= row["n"] <= 5
                and 0 <= row["state"] <= cap and 0 <= row["weight"] <= k,
                "Invalid R14 state/support/cutoff")
         _check(row["tu_count"] == 0 and row["cg_count"] == 0,
                "TU/CG totals must use sentinel rows")
-        _check(row["weight"] == (row["state"] // 2 if row["mode"] >= 22 else row["state"]),
+        _check(row["weight"] == (row["state"] // 2 if row["mode"] >= 10 else row["state"]),
                "R14 state/output weight mismatch")
-        if row["mode"] in (19, 20, 21):
-            _check(row["weight"] == {19: 0, 20: 1, 21: 3}[row["mode"]],
+        if row["mode"] in (7, 8, 9):
+            _check(row["weight"] == {7: 0, 8: 1, 9: 3}[row["mode"]],
                    "Fixed R14 weight changed")
     coeff, eligible, pairs = row["coeff_count"], row["eligible_count"], row["next_pair_count"]
     _check(row["nonzero_count"] + row["zero_event_count"] == coeff, "Coefficient zero/nonzero partition")
@@ -99,7 +101,7 @@ def _validate(row, population):
            and row["actual_remap_vs_initial_weight"] <= row["actual_remap_nonzero"]
            and row["next_actual_remap_changed"] <= row["next_p_changed"] <= pairs,
            "Invalid learning-specific activity denominator")
-    if row["n"] < 3 or row["mode"] in (19, 20, 21):
+    if row["n"] < 3 or row["mode"] in (7, 8, 9):
         _check(eligible == 0, "Sparse/fixed R14 cannot learn")
     if not row["target"] or row["bdpcm"]:
         _check(not any(row[k] for k in ("eligible_count", "p_vs_current", "actual_remap_vs_current",
@@ -124,9 +126,9 @@ def parse(text):
                 columns = tuple(line[len(header_prefix):].split(","))
                 _check(population not in headers,
                        f"Multiple R14 {population} reports in one log: split runs before extraction")
-                _check(len(set(columns)) == len(columns) and columns == SCHEMAS[population],
-                       f"Incompatible R14 {population} header at line {line_number}")
-                headers[population] = columns
+                _check(len(set(columns)) == len(columns) and columns == LOG_SCHEMAS[population],
+                       f"Incompatible R14 {population} header at line {line_number}; compact-15-v1 requires mode_n15 (do not reinterpret old numbering)")
+                headers[population] = SCHEMAS[population]
             elif line.startswith(row_prefix):
                 _check(population in headers, f"R14 {population} row before header")
                 fields = line[len(row_prefix):].split(",")
@@ -217,7 +219,7 @@ def _display(value, percent=False):
 
 
 def _markdown(stats, trials, inputs):
-    lines = [f"# R14 activity extraction ({REVISION})", "", f"Source logs: {len(inputs)}.", "",
+    lines = [f"# R14 activity extraction ({REVISION}, numbering={NUMBERING})", "", f"Source logs: {len(inputs)}.", "",
              "Final Writer and RDOQ trials are separate populations. Ratios below use sums of counts, "
              "not averages of log percentages. Missing denominators are shown as —.", "",
              "`g_next` is the next eligible coefficient's fixed-q integer syntax-cost difference; "
@@ -279,7 +281,7 @@ def export(inputs, output_dir, sequence="", configuration="", nominal_qp=""):
         parsed = parse(path.read_text(encoding="utf-8", errors="replace"))
         _check(bool(parsed["stats"] or parsed["trial"]),
                f"{path}: no R14 statistics; observation defaults OFF (TS_R14_STATS=1 required)")
-        labels = dict(source_log=str(path), sequence=sequence, configuration=configuration, nominal_qp=nominal_qp)
+        labels = dict(numbering=NUMBERING, source_log=str(path), sequence=sequence, configuration=configuration, nominal_qp=nominal_qp)
         stats.extend(dict(labels, **row) for row in parsed["stats"])
         trials.extend(dict(labels, **row) for row in parsed["trial"])
     final_summary = [dict(row, **final_metrics(row)) for row in aggregate(stats, GROUP, COUNTERS)]

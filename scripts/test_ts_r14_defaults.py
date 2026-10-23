@@ -7,13 +7,13 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = {
-    1: "r14_g2_none_equal", 4: "r14_g4_none_equal",
-    7: "r14_g2_none_half", 10: "r14_g4_none_half",
-    13: "r14_g2_none_zero", 16: "r14_g4_none_zero",
-    19: "r14_fixed_near_only", 20: "r14_fixed_quarter", 21: "r14_fixed_threequarter",
-    22: "r14_g2_pair2_equal", 23: "r14_g4_pair2_equal",
-    24: "r14_g2_pair2_half", 25: "r14_g4_pair2_half",
-    26: "r14_g2_pair2_zero", 27: "r14_g4_pair2_zero",
+    1: "r14_g2_none_equal", 2: "r14_g4_none_equal",
+    3: "r14_g2_none_half", 4: "r14_g4_none_half",
+    5: "r14_g2_none_zero", 6: "r14_g4_none_zero",
+    7: "r14_fixed_near_only", 8: "r14_fixed_quarter", 9: "r14_fixed_threequarter",
+    10: "r14_g2_pair2_equal", 11: "r14_g4_pair2_equal",
+    12: "r14_g2_pair2_half", 13: "r14_g4_pair2_half",
+    14: "r14_g2_pair2_zero", 15: "r14_g4_pair2_zero",
 }
 OLD_DEFAULTS = ("CONDITIONAL_MODE", "FIXED_NOPRED", "FIXED_GRADIENT", "FIXED_DIRECTIONAL",
                 "R10_CACHE", *[f"R{i}_MODE" for i in range(2, 14)], "RATE_MODE")
@@ -51,7 +51,7 @@ class R14Defaults(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn(f"ACTUAL_MODE={name}", result.stdout)
             self.assertIn("selection: TypeDef.h default", result.stdout)
-            self.assertIn(f"TS R14 revision=R14-NF-168-v3; mode={mode}; runtime={name};", result.stdout)
+            self.assertIn(f"TS R14 revision=R14-NF-168-v3; numbering=compact-15-v1; mode={mode}; runtime={name};", result.stdout)
             self.assertIn("score-scale=168; target=TSRC-enabled-nonBDPCM; stats=0; trace=0;", result.stdout)
         for mode in (0, "off"):
             result = self.run_probe(mode)
@@ -68,7 +68,7 @@ class R14Defaults(unittest.TestCase):
         for override in NAMES.values():
             self.assertNotEqual(self.run_probe("off", TS_FIXED_PREDICTOR=override).returncode, 0)
 
-    def test_retired_unknown_macros_and_all_legacy_conflicts(self):
+    def test_out_of_range_macros_and_all_legacy_conflicts(self):
         invalid = [i for i in range(-1, 29) if i != 0 and i not in NAMES]
         cases = [[f"-DJVET_BJUT_TS_R14_MODE={mode}"] for mode in invalid]
         cases += [["-DJVET_BJUT_TS_R14_MODE=1", "-DJVET_BJUT_TS_FIXED_PREDICTOR=0"]]
@@ -88,7 +88,7 @@ class R14Defaults(unittest.TestCase):
             self.assertNotEqual(self.run_probe(1, **env).returncode, 0, env)
 
     def test_observation_validation_and_no_implicit_enable(self):
-        result = self.run_probe(22, TS_R14_STATS="1", TS_R14_TRACE="1", TS_R14_DETAIL_LIMIT="4", TS_R14_POC="2")
+        result = self.run_probe(10, TS_R14_STATS="1", TS_R14_TRACE="1", TS_R14_DETAIL_LIMIT="4", TS_R14_POC="2")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("update=PAIR2; r0=2; s0=5;", result.stdout)
         self.assertIn("stats=1; trace=1;", result.stdout)

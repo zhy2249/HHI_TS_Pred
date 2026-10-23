@@ -5,12 +5,12 @@ import re
 import tempfile
 import unittest
 
-from ts_r14_activity import (COUNTERS, KEYS, LABELS, MODES, PREFIXES, SCHEMAS,
+from ts_r14_activity import (COUNTERS, KEYS, LABELS, LOG_SCHEMAS, MODES, NUMBERING, PREFIXES, SCHEMAS,
                             TRIAL_COUNTERS, TRIAL_KEYS, export, parse)
 
 
 def records():
-    key = dict(mode=22, component=0, width=8, height=4, cu_qp=22, intra=0,
+    key = dict(mode=10, component=0, width=8, height=4, cu_qp=22, intra=0,
                bdpcm=0, target=1, cg_count_in_tu=2, cutoff=-1, n=-1, state=-1, weight=-1)
     total = dict(key, **dict.fromkeys(COUNTERS, 0))
     total.update(tu_count=1, cg_count=2, tu_valid_sum=6, tu_first_weight_event_sum=2,
@@ -45,7 +45,7 @@ def render(stats=None, trials=None):
             continue
         header, prefix = PREFIXES[population]
         columns = SCHEMAS[population]
-        lines.append(header + ",".join(columns))
+        lines.append(header + ",".join(LOG_SCHEMAS[population]))
         for row in rows:
             lines.append(prefix + ",".join(str(row[k]) for k in columns))
     return "\n".join(lines) + "\n"
@@ -62,8 +62,8 @@ class R14ActivityTests(unittest.TestCase):
         match = re.search(r'const char \*const fields\[\]=\{(.*?)\};', source, re.S)
         self.assertIsNotNone(match)
         self.assertEqual(tuple(re.findall(r'"([a-z_]+)"', match.group(1))), COUNTERS)
-        self.assertIn("TS_R14_STATS_HEADER " + ",".join(KEYS), source)
-        self.assertIn("TS_R14_TRIAL_HEADER " + ",".join(SCHEMAS["trial"]), source)
+        self.assertIn("TS_R14_STATS_HEADER " + ",".join(LOG_SCHEMAS["stats"][:len(KEYS)]), source)
+        self.assertIn("TS_R14_TRIAL_HEADER " + ",".join(LOG_SCHEMAS["trial"]), source)
 
     def test_separate_populations_normalization_and_residence(self):
         stats, trials = records()
@@ -84,6 +84,7 @@ class R14ActivityTests(unittest.TestCase):
             self.assertEqual(summary["cu_qp"], "22")
             self.assertEqual(summary["nominal_qp"], "27")
             self.assertEqual(summary["sequence"], "Example")
+            self.assertEqual(summary["numbering"], NUMBERING)
             self.assertEqual(float(summary["mean_next_gain"]), 0.2)
             self.assertEqual(float(summary["next_positive_fraction"]), 0.4)
             self.assertEqual(float(summary["next_zero_fraction"]), 0.4)
@@ -121,7 +122,7 @@ class R14ActivityTests(unittest.TestCase):
                 self.assertIn(wording, (root / "out/summary.md").read_text())
             # Fixed mode has no feedback, not a measured g_next=0.
             for row in stats:
-                row["mode"] = 19
+                row["mode"] = 7
                 if row["state"] >= 0:
                     row["state"] = row["weight"] = 0
                 for counter in COUNTERS:
@@ -159,15 +160,16 @@ class R14ActivityTests(unittest.TestCase):
         text = render(stats, trials)
         invalid = ["TS_R14_STATS 1,2\n", "TS_R14_TRIAL 1,2\n", text + "TS_R14_STATS 1,2\n",
                    text + render(stats), text + render(trials=trials),
-                   text.replace("mode,component", "mode,mode", 1),
-                   text.replace("TS_R14_STATS 22,", "TS_R14_STATS x,", 1),
+                   text.replace("mode_n15,component", "mode,component", 1),
+                   text.replace("mode_n15,component", "mode_n15,mode_n15", 1),
+                   text.replace("TS_R14_STATS 10,", "TS_R14_STATS x,", 1),
                    text + "TS_R14_STATS " + ",".join(str(stats[0][k]) for k in SCHEMAS["stats"]) + "\n"]
         for case in invalid:
             with self.subTest(case=case[:100]), self.assertRaises(ValueError):
                 parse(case)
         for key, value in (("next_phase_gain_sum", 1), ("eligible_count", 7),
                            ("next_positive_count", 3), ("actual_remap_vs_current", 9),
-                           ("next_p_changed", 9), ("mode", 2), ("state", 12)):
+                           ("next_p_changed", 9), ("mode", 16), ("state", 12)):
             changed = [r.copy() for r in stats]
             changed[1][key] = value
             with self.subTest(key=key), self.assertRaises(ValueError):

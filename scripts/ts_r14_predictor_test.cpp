@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace T=TsFixedPrediction;
-static const int modes[]={1,4,7,10,13,16,19,20,21,22,23,24,25,26,27};
+static const int modes[]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 static void require(bool condition,const char *message)
 { if(!condition) { throw std::runtime_error(message); } }
 
@@ -178,24 +178,31 @@ static void stateCases()
       }
   }
   // Symmetric target distance selects larger r; current ties always win.
-  auto c=T::r14Config(10); T::R14Decision d;
+  auto c=T::r14Config(4); T::R14Decision d;
   d.k=4; d.r=2; d.n=3; d.nearCount=2; d.farCount=1; d.scored=true;
   for(int t=0;t<=4;++t) { d.winners[t]=(t==1 || t==3)?7:0; }
   require(T::r14Commit(c,2,d,7,1,15).target==3,"equidistant target tie");
   d.winners[2]=7;
   require(T::r14Commit(c,2,d,7,1,15).state==2,"current target tie");
   // Two outward evidences cross PAIR2 at endpoint; neutral preserves half phase.
-  c=T::r14Config(22); d.k=2; d.r=2; d.winners[0]=7; d.winners[1]=d.winners[2]=0;
+  c=T::r14Config(10); d.k=2; d.r=2; d.winners[0]=7; d.winners[1]=d.winners[2]=0;
   auto first=T::r14Commit(c,5,d,7,1,15); require(first.state==4 && first.afterR==2,"PAIR2 endpoint first");
   auto neutral=T::r14Commit(c,4,d,0,1,15); require(neutral.state==4,"PAIR2 neutral phase");
   auto second=T::r14Commit(c,4,d,7,1,15); require(second.state==3 && second.afterR==1,"PAIR2 endpoint second");
 }
 static void regressions()
 {
-  const auto c=T::r14Config(19);
+  for(int mode=1;mode<=15;++mode)
+  {
+    require(T::r14PublicMode(99+mode)==mode,"compact internal/public roundtrip");
+    require(T::r14Policy(T::r14Name(mode))==99+mode,"compact runtime dispatch");
+  }
+  for(int policy:{0,99,115,118,126,127})
+    require(!T::r14(policy) && !T::r14PublicMode(policy),"old internal policy must not alias compact mode");
+  const auto c=T::r14Config(7);
   const int h[5]{25,26,1,0,0};
   require(referenceScore(h,2,0,25,1,15)==3400 && referenceScore(h,2,0,26,1,15)==3402,"25/26 exact scores");
-  require(T::r14Prepare(c,0,h,1,15).predictor==25,"R14-19 is not Current");
+  require(T::r14Prepare(c,0,h,1,15).predictor==25,"R14-7 (old 19) is not Current");
   const int far[5]{4094,4096,4095,0,0};
   require(T::r14Prepare(c,0,far,1,15).predictor==4095,"far sample remains candidate at weight zero");
   const int tie[5]{2,3,1,0,0};
@@ -203,8 +210,8 @@ static void regressions()
   const int support[5]{0,0,1,1,1};
   const auto d=T::r14Prepare(c,0,support,1,15);
   require(d.n==3 && d.scored && d.predictor==0,"n counts physical far support");
-  bool rejected=false; try { (void)T::r14Config(2); } catch(const std::exception &) { rejected=true; }
-  require(rejected,"retired config must fail");
+  bool rejected=false; try { (void)T::r14Config(16); } catch(const std::exception &) { rejected=true; }
+  require(rejected,"out-of-range compact config must fail");
 }
 static void query()
 {

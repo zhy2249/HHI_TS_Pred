@@ -2,6 +2,7 @@
 
 日期：2026-10-23。基于[冻结设计](TS_Predictor_R14_Experiment_Design.md)及
 [工程计划](TS_Predictor_R14_Engineering_Plan.md)，实现 `R14-NF-168-v3` 的15个活动模式。
+当前编号身份为 **`compact-15-v1`**，公开MODE连续1..15；这是编号整理，runtime名称和算法参数不变。
 本轮没有运行帧/序列编解码，没有新增BD-rate或整编码计时结果。
 
 ## 1. 已实现的规则
@@ -20,8 +21,8 @@ n<3使用原始Current；n>=3沿用R13的KeepHit整数损失与候选顺序，�
 RDOQ开关不决定最终Writer/Reader是否启用算法。纯bypass不remap，但仍按完整q更新状态。
 没有新模式比特；实验码流必须使用相同R14模式的实验解码器。
 
-固定19/20/21只评分自己的r，不学习、不计算无用的完整网格。19不等于anchor：
-Rice=1/range=15/H=(25,26,1,0,0)时，Current=26，而19选择25（3400<3402）；
+固定7/8/9（旧19/20/21）只评分自己的r，不学习、不计算无用的完整网格。7不等于anchor：
+Rice=1/range=15/H=(25,26,1,0,0)时，Current=26，而7选择25（3400<3402）；
 H=(4094,4096,4095,0,0)时仍可选择远组候选4095。相关反例已加入回归。
 
 ## 2. 代码位置及状态安全
@@ -53,26 +54,28 @@ Reader尚未恢复的未来幅值、源残差与原始像素不参与prepare。R
 其它轮次和早期固定/条件模式全部为0。默认R14_MODE=0，所有模式为0时仍为Current。
 runtime环境 `TS_FIXED_PREDICTOR` 或batch的 `--fixed-predictors` 显式覆盖宏默认。
 
-| MODE | runtime | K | 更新 | 初始r/s | 首批 |
-| --- | --- | --- | --- | --- | --- |
-| 1 | r14_g2_none_equal | 2 | NONE | r=2 | A |
-| 4 | r14_g4_none_equal | 4 | NONE | r=4 | A |
-| 7 | r14_g2_none_half | 2 | NONE | r=1 | B |
-| 10 | r14_g4_none_half | 4 | NONE | r=2 | B |
-| 13 | r14_g2_none_zero | 2 | NONE | r=0 | B |
-| 16 | r14_g4_none_zero | 4 | NONE | r=0 | B |
-| 19 | r14_fixed_near_only | 2 | fixed | r=0 | A |
-| 20 | r14_fixed_quarter | 4 | fixed | r=1 | A |
-| 21 | r14_fixed_threequarter | 4 | fixed | r=3 | A |
-| 22 | r14_g2_pair2_equal | 2 | PAIR2 | r=2/s=5 | A |
-| 23 | r14_g4_pair2_equal | 4 | PAIR2 | r=4/s=9 | A |
-| 24 | r14_g2_pair2_half | 2 | PAIR2 | r=1/s=2 | B |
-| 25 | r14_g4_pair2_half | 4 | PAIR2 | r=2/s=4 | B |
-| 26 | r14_g2_pair2_zero | 2 | PAIR2 | r=0/s=0 | B |
-| 27 | r14_g4_pair2_zero | 4 | PAIR2 | r=0/s=0 | B |
+| 当前MODE | 旧v3号 | runtime | K | 更新 | 初始r/s | 首批 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1 | r14_g2_none_equal | 2 | NONE | r=2 | A |
+| 2 | 4 | r14_g4_none_equal | 4 | NONE | r=4 | A |
+| 3 | 7 | r14_g2_none_half | 2 | NONE | r=1 | B |
+| 4 | 10 | r14_g4_none_half | 4 | NONE | r=2 | B |
+| 5 | 13 | r14_g2_none_zero | 2 | NONE | r=0 | B |
+| 6 | 16 | r14_g4_none_zero | 4 | NONE | r=0 | B |
+| 7 | 19 | r14_fixed_near_only | 2 | fixed | r=0 | A |
+| 8 | 20 | r14_fixed_quarter | 4 | fixed | r=1 | A |
+| 9 | 21 | r14_fixed_threequarter | 4 | fixed | r=3 | A |
+| 10 | 22 | r14_g2_pair2_equal | 2 | PAIR2 | r=2/s=5 | A |
+| 11 | 23 | r14_g4_pair2_equal | 4 | PAIR2 | r=4/s=9 | A |
+| 12 | 24 | r14_g2_pair2_half | 2 | PAIR2 | r=1/s=2 | B |
+| 13 | 25 | r14_g4_pair2_half | 4 | PAIR2 | r=2/s=4 | B |
+| 14 | 26 | r14_g2_pair2_zero | 2 | PAIR2 | r=0/s=0 | B |
+| 15 | 27 | r14_g4_pair2_zero | 4 | PAIR2 | r=0/s=0 | B |
 
-旧TARGET2/DIR2空洞编号一律拒绝；内部policy=99+MODE，不用于目录编号。
-启动行包括v3、MODE、runtime、K、update、r0/s0、score-scale和target；固定模式的`grid=0..K`
+“旧v3号”是`5279978`源码、`c2d5a76`文档使用的非连续编号。旧宏值不能直接照搬，
+例如旧4必须改为新2；runtime字符串不变。旧数字没有别名兼容，16及以上报错；
+TARGET2/DIR2旧runtime继续拒绝。内部policy=99+当前MODE（100..114），不用于目录编号。
+启动行包括v3、`numbering=compact-15-v1`、MODE、runtime、K、update、r0/s0、score-scale和target；固定模式的`grid=0..K`
 表示合法档范围，其实际评估网格在manifest中为单个r0。观察/算法旧轮误接会明确报错。
 
 ## 4. 统计格式与分析界限
@@ -81,12 +84,15 @@ runtime环境 `TS_FIXED_PREDICTOR` 或batch的 `--fixed-predictors` 显式覆盖
 `TS_R14_POC`未设置代表全部，设0只观察POC0。DETAIL仅最终Writer输出；TRACE的Writer/Reader各自受上限控制。
 
 - `TS_R14_STATS_HEADER`/`TS_R14_STATS`：最终Writer，每最终位置一份。
-  key为mode、component、W/H、CU QP、intra、BDPCM、target、每TU CG数、cutoff、n、入口s/r、入口权重。
+  key为mode_n15、component、W/H、CU QP、intra、BDPCM、target、每TU CG数、cutoff、n、入口s/r、入口权重。
   TU/CG计数使用cutoff/n/state/weight=-1的哨兵行。cutoff=-1为全零CG、0为bypass、2/10为实际regular路径。
 - `TS_R14_TRIAL_HEADER`/`TS_R14_TRIAL`：独立RDOQ CG试编码次数、最终零CG次数、回滚了非平凡状态的次数。
   `zero_cg_count`包括本来全零的CG；`rolled_back_state_count`才证明曾推进后被恢复。
 - `TS_R14_DETAIL`：有界H、各档赢家、a、p、入口/出口state及目标方向。
 - `TS_R14_TRACE`：有界每CG的q/p/state/cutoff摘要、真实预算、入口/出口状态，W/R应一致。
+
+STATS与TRIAL首列均用`mode_n15`明确连续编号，解析器内部仍统一称`mode`。
+旧表首列`mode`不自动重解释为新号；旧无当前编号身份的日志拒绝，应保留原版本解析或明确迁移。
 
 主表不按POC/坐标无限增加key；具体POC/CG位置在有界trace/detail中保留。
 序列、配置、标称QP来自外层任务身份，不能把cu_qp当作标称QP。
@@ -105,6 +111,11 @@ g_next仍是已选中TS的同轨迹固定q静态语法代理，不能解释为CA
 同一a即时最小化的收益也不能证明历史可预测。真实效果以独立闭环编码为准。
 
 ## 5. 本地验收
+
+### 5.1 生产接入验收历史（非连续编号）
+
+以下为`5279978`归档实现对应的已完成验收，表内实验数字均为**旧v3号**；
+不将旧报告冒充连续编号版本的新验收。对应runtime和方法含义见第3节对照表。
 
 Release构建完成：EncoderApp、DecoderApp、TsR14NativeTest、TsR13NativeTest。
 产物在`build/ts-r14/bin/`。本机使用GCC11.4、LTO开启（链接并行6），没有测整编码复杂度。
@@ -129,12 +140,32 @@ Release构建完成：EncoderApp、DecoderApp、TsR14NativeTest、TsR13NativeTes
 仅保留小日志、SHA和`runs/ts_r14_native/validation.json`；master-OFF另有同目录JSON。
 对所有动态模式，最终Writer有效事件8,630、下一事件配对8,508、跨CG配对1,161；
 与TU尾未配对数守恒，相位事件g_next恒0。数字只是合成覆盖，不代表自然序列分布或收益。
-19在真实regular路径确有映射变化，不能按anchor跳过实验。
+旧19（现7）在真实regular路径确有映射变化，不能按anchor跳过实验。
 
 冻结r=K/K/2对R13等价已在纯评分验证；不扩大为所有工具条件下完整码流等价。
 尚未完成服务器短帧/CE hash验收、正式BD-rate或实际计时，因此不能宣称R14优于R13。
 
-复现纯核/宏及日志分析：
+### 5.2 连续编号核验
+
+本次只调整注册/宏编号、身份、目录及统计schema，公式、runtime、参数和状态规则不变。
+已按同一runtime核对重编号前后完整字节/q/context/budget/state，不能按碰巧相同的数字比较两种不同方法。
+
+| 连续编号检查 | 实际结果 |
+| --- | --- |
+| Release构建 | TsR14NativeTest、EncoderApp、DecoderApp成功 |
+| 重编号前后完整回归 | 21个runtime（15个R14＋6个旧模式）全矩阵；与保留的旧`TsR14NativeTest`完整记录逐字节一致 |
+| 观察隔离与同步 | 15组统计开关前后bit-exact，Writer/Reader状态与trace同步通过 |
+| 纯核/宏 | 4＋5项通过，覆盖205,770例、1,836项转移与1,200项独立参考；当前1..15身份和范围外拒绝通过 |
+| 脚本 | R14 batch 11项、旧R13 batch 8项、通用batch 21项、activity 5项通过；阶段A实际dry-run为196点 |
+| 日志提取 | 新MODE12的实际合成观察日志成功导出，最终Writer与trial人口分离 |
+| 真实RDOQ非平凡回滚 | 新3/4/12/13各2次、新5/6/14/15各4次，其余0；与旧同方法覆盖一致 |
+
+报告：`runs/ts_r14_n15_native/validation.json`，`numbering=compact-15-v1`、
+`renumber_status=checked`。对照二进制为`runs/ts_r14_renumber_before/TsR14NativeTest`，
+完整回归使用`--renumber-before-exe`显式指定它；旧运行输出和结果未重命名。
+本次没有执行视频编解码、修改BD-rate或更新数值台账，局部记录一致不替代服务器视频验收。
+
+复现当前纯核/宏及日志分析：
 
 ```bash
 python3 -m unittest discover -s scripts -p 'test_ts_r14_predictor.py'
@@ -158,7 +189,7 @@ cmake --build build/ts-r14 --target EncoderApp DecoderApp TsR14NativeTest TsR13N
 python3 scripts/test_ts_r14_native.py --jobs 2
 ```
 
-默认阶段A顺序19/1/22/20/21/4/23，7组×7序列×4QP=196点。LBeu配置已是半帧，不再次减半。
+默认阶段A顺序7/1/10/8/9/2/11，7组×7序列×4QP=196点。LBeu配置已是半帧，不再次减半。
 Current使用既有anchor，不重复编码；R13-1/2是既有固定比例机制对照。
 
 ```bash
@@ -167,13 +198,15 @@ bash scripts/run_ts_r14_lb_ce.sh --dry-run --allow-missing-input
 bash scripts/run_ts_r14_lb_ce.sh --input-dir /实际视频目录 --jobs 10
 ```
 
-阶段B为八个初态消融（224点），需要先有动态价值/初态瓶颈证据，再加`--phase B`；不是Class B。
+阶段B为3/4/5/6/12/13/14/15八个初态消融（224点），需要先有动态价值/初态瓶颈证据，再加`--phase B`；不是Class B。
 同一共享任务池跨组调度，每组完成即写独立工作簿；不开重建，保留decode hash；二进制、配置、协议、
 观察环境变化使done指纹失效。正常续跑不用`--overwrite`。保留了缺点/失败日志，不伪补QP22。
+当前默认输出根为`runs/ts_r14_nf168_v3_n15_LB_CE_half`，与旧非连续编号任务分开；
+不移动或覆盖旧runs结果。当前收件目录数字前缀同步为新MODE。
 
 结果收件路径及metadata见[目录说明](../../experiments/ts_predictor_r14/README.md)。
 在完整CE前建议按冻结的PartyScene/RaceHorsesC/BQMall/KristenAndSara、QP22/37、17帧做活动/hash短测，
-初始1/22/19三组；短测另目录，不能写入半帧结果曲线。本轮未执行该短测或正式编码。
+初始1/10/7三组；短测另目录，不能写入半帧结果曲线。本轮未执行该短测或正式编码。
 
 ## 7. 归档边界
 
