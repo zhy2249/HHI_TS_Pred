@@ -1,0 +1,75 @@
+{
+  "revision": "R14-NF-168-v3",
+  "public_mode": 10,
+  "internal_policy": 109,
+  "runtime": "r14_g4_none_half",
+  "macro": "JVET_BJUT_TS_R14_MODE",
+  "anchor": "current",
+  "mechanism_controls": [
+    "r13_keep_hit_uniform",
+    "r13_keep_hit_spatial"
+  ],
+  "K": 4,
+  "grid": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "update": "NONE",
+  "r0": 2,
+  "s0": null,
+  "rho": "21/2",
+  "score_scale": 168,
+  "physical_slots": [
+    "L",
+    "U",
+    "D",
+    "LL",
+    "UU"
+  ],
+  "weights": "K,K,r,r,r",
+  "minimum_nonzero_positions": 3,
+  "n_includes_zero_weight_positions": true,
+  "targetActive": "TS && !TSRC_disabled && BDPCM==NONE",
+  "feedback_cost": "unscaled syntaxCost(remap(final_abs_q,p))",
+  "feedback_tie": [
+    "cost",
+    "abs(t-r)",
+    "-t"
+  ],
+  "state_scope": "TU-local per component/trial; CG all-zero rollback",
+  "phase": "B",
+  "status": "defined_no_sequence_results",
+  "preset": "LBeu",
+  "classes": [
+    "C",
+    "E"
+  ],
+  "qps": [
+    22,
+    27,
+    32,
+    37
+  ],
+  "frame_range": "HHI INI half-frame counts; no second halving",
+  "expected_points": 28,
+  "observations_default": {
+    "stats": 0,
+    "trace": 0,
+    "detail_limit": 64,
+    "poc": null
+  },
+  "server_build_verified": false,
+  "actual_source_commit": null,
+  "actual_source_patch_sha256": null,
+  "actual_encoder_sha256": null,
+  "actual_decoder_sha256": null,
+  "actual_configuration_fingerprints": null,
+  "actual_input_fingerprints": null,
+  "actual_observation_env": null,
+  "actual_command": null,
+  "actual_frame_counts": null,
+  "actual_decode_hash_status": null
+}

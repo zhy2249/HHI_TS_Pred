@@ -11,6 +11,28 @@ R6/R8/R9/R10 正式 wrapper 与 R8 preflight 不再默认开启，R11/R12 保持
 统计关闭的日志没有 activity 表；新源码须重新编译，变更统计设置勿复用旧结果目录的成功标记。
 开关位置、R7 shadow 例外和续跑指纹说明见[统计默认值规范](../docs/experiments/TS_Predictor_Statistics_Defaults.md)。
 
+## R14 近/远权重学习（R14-NF-168-v3）
+
+[实现、15模式与局部验收](../docs/experiments/TS_Predictor_R14_Implementation.md)。
+TypeDef.h用总开关1、`JVET_BJUT_TS_R14_MODE`选择默认，旧算法模式全部0；runtime继续覆盖宏默认。
+统计/trace默认关闭，与必要的逐系数学习独立。模式编号不是连续1..27，退役编号报错。
+
+```bash
+bash scripts/run_ts_r14_lb_ce.sh --dry-run --allow-missing-input
+# 用户在服务器执行/续跑；本轮仅做了上面的dry-run，没有执行视频编码
+bash scripts/run_ts_r14_lb_ce.sh --input-dir /path/to/videos --jobs 10
+python3 scripts/ts_r14_activity.py /path/to/task.encode.log --output-dir runs/r14_activity
+```
+
+默认阶段A顺序19/1/22/20/21/4/23，196个半帧CE点，不重跑Current、不输出重建、保留decode hash。
+跨组共享任务池，每组完成即写工作簿；成功指纹不匹配则不能续跑为旧完成点。
+阶段B（`--phase B`，并非Class B）八组224点需先根据阶段A证据决定。
+应用默认路径`build/ts-r14/bin/`；使用`NX2_TOPLEVEL_OUTPUT_DIRS=OFF`隔离构建产物，
+算法仍直接用宏选择，不加CMake算法开关。
+收件目录为[带MODE编号的15个文件夹](../experiments/ts_predictor_r14/README.md)。
+`TS_R14_STATS=1`输出最终Writer与RDOQ trial两张表；activity导出时严格分离，g_next不能当CABAC/BD收益。
+源码尚在本地工作树；只同步文档的提交不包含完整R13/R14生产实现。
+
 ## R13 KeepHit（R13-KH-168-v1）
 
 [冻结设计](../docs/experiments/TS_Predictor_R13_Experiment_Design.md)、[实现及验证范围](../docs/experiments/TS_Predictor_R13_Implementation.md)。在 `TypeDef.h` 开启

@@ -1,13 +1,13 @@
 # TS 实验统计默认关闭
 
-更新：2026-10-22（新增R13接口；原默认值改动发生于2026-10-04）。本说明取代历史文档中的“R2～R6、R8/R9 默认开启统计”约定。
+更新：2026-10-23（新增R14接口；原默认值改动发生于2026-10-04）。本说明取代历史文档中的“R2～R6、R8/R9 默认开启统计”约定。
 只修改观察默认值，不修改算法、模式编号、predictor、必要历史状态或码流语法。
 
 ## 当前行为
 
 | 范围 | 统计接口 | 默认 | 显式开启 |
 |---|---|---|---|
-| R2～R6、R8～R13 | 对应 `TS_Rn_STATS` 环境变量 | 关闭 | `TS_Rn_STATS=1` |
+| R2～R6、R8～R14 | 对应 `TS_Rn_STATS` 环境变量 | 关闭 | `TS_Rn_STATS=1` |
 | R7 shadow | `JVET_BJUT_TS_R7_SHADOW` 编译宏＋`TS_RATE_SHADOW` 环境变量 | 均关闭 | 宏为1且环境设1 |
 | R7 RDOQ shadow | 同一编译宏＋`TS_RATE_RDOQ_SHADOW` | 关闭 | 宏为1且环境设1 |
 | 最初固定 q 分析 | `JVET_BJUT_TS_PRED_ANALYSIS`＋`TS_PRED_STATS` 输出路径 | 关闭 | 沿用专用分析流程 |
@@ -23,6 +23,10 @@ R13新增时即默认关闭；`TS_R13_TRACE`也默认0，`TS_R13_DETAIL_LIMIT`�
 `TS_R13_POC`未设置表示不限POC。实现位置为`TsFixedPrediction.h`参数解析与
 `ContextModelling.cpp` / `TsR13Stats.h`最终Writer观察，详见[R13实现](TS_Predictor_R13_Implementation.md)。
 该轮不改变旧模式的默认值；非R13任务未显式设置R13环境时保留此前续跑指纹。
+
+R14同样默认关闭；`TS_R14_STATS`独立输出最终Writer与RDOQ trial两张表，不能混合人口。
+`TS_R14_TRACE=0`，DETAIL_LIMIT默认64/最大1024，POC未设置表示全部。
+实际TU内逐系数学习不受统计开关控制。接口、g_next与非视频隔离验收见[R14实现](TS_Predictor_R14_Implementation.md)。
 
 修改入口：
 
