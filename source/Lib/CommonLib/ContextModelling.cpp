@@ -53,6 +53,8 @@
 #include "TsR10Stats.h"
 #include "TsR11Stats.h"
 #include "TsR12Stats.h"
+#include "TsR13Stats.h"
+#include "TsR14Stats.h"
 #include "TsR12Exact.h"
 #include "TsRateReplay.h"
 #endif
@@ -145,6 +147,13 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
                  tu.mtsIdx[component] == MtsType::SKIP ? tu.cu->slice->m_tsrcIndex : 0);
   m_tsPoc = tu.cu->slice->m_poc;
   m_tsIntra = tu.cu->predMode == MODE_INTRA;
+  if(TsFixedPrediction::r14(TsFixedPrediction::mode()))
+  {
+    m_tsR14Config=TsFixedPrediction::r14Config(TsFixedPrediction::r14PublicMode(TsFixedPrediction::mode()));
+    m_tsR14State=m_tsR14EntryState=m_tsR14Config.initialState;
+    m_tsR14Active=tu.mtsIdx[component]==MtsType::SKIP &&
+                 !tu.cu->slice->m_tsResidualCodingDisabledFlag && bdpcm==BdpcmMode::NONE;
+  }
   if ((TsFixedPrediction::r9(TsFixedPrediction::mode()) || TsFixedPrediction::r10(TsFixedPrediction::mode()) ||
        TsFixedPrediction::r11(TsFixedPrediction::mode()) || TsFixedPrediction::r12(TsFixedPrediction::mode()) ||
        (TsFixedPrediction::r11StatsEnabled() && TsFixedPrediction::r11ObservedPolicy(TsFixedPrediction::mode()))) && tu.mtsIdx[component] == MtsType::SKIP)
@@ -744,10 +753,235 @@ void CoeffCodingContext::finishTsR12CG(const TCoeff *coeff,bool trace,bool verif
   if(debug) { std::fprintf(stderr,"TS_R12_TRACE trajectory=%d c=%d w=%u h=%u qp=%d cg=%d bins=%d hash=%llu\n",mode(),int(m_compID),m_width,m_height,m_tsQp,m_subSetId,m_tsR12HistoryBins,(unsigned long long)hash); }
 }
 
+void CoeffCodingContext::finishTsR13CG(const TCoeff *coeff,bool trace,bool verifyBudget,bool report)
+{
+  using namespace TsFixedPrediction;
+  const auto &options=r13Observation();
+  const bool collect=report && options.stats,debug=trace && options.trace;
+  if((!collect && !debug) || (options.poc>=0 && options.poc!=m_tsPoc)) { return; }
+  CHECK(m_tsR13EntryBins<0,"R13 observation missing actual TS CG entry budget");
+  struct NullSink { void encodeBin(unsigned,unsigned) {} void encodeBinEP(unsigned) {}
+    void encodeRemAbsEP(unsigned,unsigned,unsigned,unsigned) {} } sink;
+  auto copy=*this; int bins=m_tsR13EntryBins;
+  const auto path=replayRateCG(copy,coeff,[&](int s){return rateAction(copy,s,coeff);},bins,m_tsRice,sink);
+  if(verifyBudget) { CHECK(bins!=remRegBins,"R13 observation replay budget mismatch"); }
+  R13Stats::Key key{{mode(),0,int(m_compID),int(m_width),int(m_height),m_tsQp,
+                    int(m_tsIntra),int(m_bdpcm),lastSubSet()+1,-1,-1,-1}};
+  if(collect) for(int m=1;m<=2;++m)
+  {
+    key[1]=m; std::array<int64_t,R13Stats::COUNT> v{};
+    v[R13Stats::TU]=m_subSetId==0; v[R13Stats::CG]=1; r13Stats().add(key,v);
+  }
+  uint64_t hash=1469598103934665603ULL;
+  for(int s=m_minSubPos;s<=m_maxSubPos;++s)
+  {
+    const int a=std::abs(int(coeff[blockPos(s)])),cutoff=s<=path.pass2?10:s<=path.pass1?2:0;
+    const bool regular=m_bdpcm==BdpcmMode::NONE && cutoff;
+    hash=(hash^uint64_t(int64_t(coeff[blockPos(s)])))*1099511628211ULL;
+    if(debug && regular)
+    {
+      const auto action=rateAction(copy,s,coeff);
+      hash=(hash^uint64_t(action.predictor))*1099511628211ULL;
+    }
+    if(!collect && !debug) { continue; }
+    int h[5]; const unsigned valid=r13SupportTS(s,coeff,h);
+    const auto u=r13Decision(1,h,m_tsRice,m_maxLog2TrDynamicRange);
+    const auto spatial=r13Decision(2,h,m_tsRice,m_maxLog2TrDynamicRange);
+    int nz[5],n=0; for(int v:h) { if(v) { nz[n++]=v; } }
+    const int old=localPredict(10,std::max(h[0],h[1]),nz,n,m_tsRice,m_maxLog2TrDynamicRange);
+    if(debug && report) { r13Stats().detail(m_tsPoc,int(m_compID),m_width,m_height,m_subSetId,s,a,cutoff,h,old,u,spatial); }
+    if(!collect) { continue; }
+    for(int m=1;m<=2;++m)
+    {
+      const auto &d=m==1?u:spatial;
+      key[1]=m; key[9]=cutoff; key[10]=d.n; key[11]=d.weightSum;
+      std::array<int64_t,R13Stats::COUNT> v{};
+      v[R13Stats::COEFF]=1; v[R13Stats::NZ]=a!=0;
+      v[R13Stats::REMAP_POSITION]=regular; v[R13Stats::REMAP_NZ]=regular && a!=0;
+      v[R13Stats::SPARSE]=!d.scored; v[R13Stats::SCORED]=d.scored;
+      const bool sameCurrent=equivalentPredictors(d.predictor,d.current);
+      v[sameCurrent?R13Stats::SELECT_CURRENT:d.predictor<=1?R13Stats::SELECT_IDENTITY:R13Stats::SELECT_OTHER]=1;
+      v[R13Stats::IDENTITY_ACTION]=d.predictor<=1; v[R13Stats::TIED_BEST]=d.tiedBest;
+      v[R13Stats::VS_R2]=!equivalentPredictors(d.predictor,old);
+      v[R13Stats::VS_PAIR]=!equivalentPredictors(u.predictor,spatial.predictor);
+      v[R13Stats::MAP_VS_R2]=regular && remap(a,d.predictor)!=remap(a,old);
+      v[R13Stats::MAP_VS_PAIR]=regular && remap(a,u.predictor)!=remap(a,spatial.predictor);
+      if(d.scored)
+      {
+        v[R13Stats::BEST_SCORE_SUM]=d.bestScore;
+        int64_t currentScore=0;
+        for(int k=0;k<d.candidateCount;++k)
+          if(equivalentPredictors(d.candidates[k],d.current)) { currentScore=d.scores[k]; }
+        v[R13Stats::CURRENT_SCORE_SUM]=currentScore;
+        if(d.secondScore>=0)
+        {
+          v[R13Stats::VALID_MARGIN]=1; v[R13Stats::MARGIN_SUM]=d.secondScore-d.bestScore;
+          v[R13Stats::SECOND_SCORE_SUM]=d.secondScore;
+        }
+        // Compare old and new costs on the SAME sample weights. For uniform
+        // this is exactly R2-2; for spatial this is a diagnostic weighted-old tie.
+        int64_t oldCurrent=0;
+        for(int j=0;j<5;++j) if(h[j])
+          oldCurrent+=(m==2 && j<2?2:1)*syntaxCost(remap(h[j],d.current),m_tsRice,m_maxLog2TrDynamicRange);
+        for(int k=0;k<d.candidateCount;++k)
+        {
+          int64_t oldCost=0;
+          for(int j=0;j<5;++j) if(h[j])
+            oldCost+=(m==2 && j<2?2:1)*syntaxCost(remap(h[j],d.candidates[k]),m_tsRice,m_maxLog2TrDynamicRange);
+          if(oldCost==oldCurrent && d.scores[k]<currentScore) { v[R13Stats::CURRENT_TIE_BROKEN]=1; }
+        }
+      }
+      v[R13Stats::HIT]=d.hit; v[R13Stats::DOWN]=d.down; v[R13Stats::UP]=d.up;
+      v[R13Stats::WEIGHTED_HIT]=d.weightedHit;
+      v[R13Stats::WEIGHTED_DOWN]=d.weightedDown; v[R13Stats::WEIGHTED_UP]=d.weightedUp;
+      for(int j=0;j<5;++j)
+      {
+        v[R13Stats::UNIT_SAMPLE]+=h[j]==1; v[R13Stats::TWO_SAMPLE]+=h[j]==2;
+        v[R13Stats::VALID_L+j]=(valid>>j)&1; v[R13Stats::NZ_L+j]=h[j]!=0;
+      }
+      r13Stats().add(key,v);
+    }
+  }
+  if(debug) { r13Stats().trace(report,m_tsPoc,int(m_compID),m_width,m_height,m_tsQp,m_subSetId,bins,hash); }
+}
+
+void CoeffCodingContext::reportTsR14TrialCG(int trialState,bool zeroed)
+{
+  using namespace TsFixedPrediction;
+  const auto &o=r14Observation();
+  if(!o.stats || (o.poc>=0 && o.poc!=m_tsPoc)) { return; }
+  r14Stats().trial({m_tsR14Config.publicMode,int(m_compID),int(m_width),int(m_height),m_tsQp,
+    int(m_tsIntra),lastSubSet()+1,int(m_tsR14Active)},zeroed,trialState!=m_tsR14EntryState);
+}
+
+void CoeffCodingContext::finishTsR14CG(const TCoeff *coeff,bool trace,bool report)
+{
+  using namespace TsFixedPrediction;
+  const auto &o=r14Observation();
+  const bool collect=report && o.stats,debug=trace && o.trace;
+  if((!collect && !debug) || (o.poc>=0 && o.poc!=m_tsPoc)) { return; }
+  // Reconstruct only from the saved entry state and final coefficients. Never
+  // commit observations into the live algorithm or mix trial statistics here.
+  auto copy=*this; copy.restoreTsR14State(m_tsR14EntryState);
+  R14Stats::Key key{{m_tsR14Config.publicMode,int(m_compID),int(m_width),int(m_height),m_tsQp,
+    int(m_tsIntra),int(m_bdpcm),int(m_tsR14Active),lastSubSet()+1,-1,-1,-1,-1}};
+  if(collect)
+  {
+    std::array<int64_t,R14Stats::COUNT> v{};
+    v[R14Stats::TU]=m_subSetId==0; v[R14Stats::CG]=1; r14Stats().add(key,v);
+  }
+  uint64_t hash=1469598103934665603ULL;
+  for(int scan=m_minSubPos;scan<=m_maxSubPos;++scan)
+  {
+    const int64_t signedLevel=coeff[blockPos(scan)];
+    const int64_t wideMagnitude=signedLevel<0?-signedLevel:signedLevel;
+    CHECK(wideMagnitude>std::numeric_limits<int>::max(),"R14 observation magnitude overflow");
+    const int a=int(wideMagnitude),before=copy.tsR14State();
+    const int cutoff=isSigGroup()?(scan<=m_tsR14Pass2?10:scan<=m_tsR14Pass1?2:0):-1;
+    int h[5]; r13SupportTS(scan,coeff,h);
+    R14Decision d; d.k=m_tsR14Config.k; d.r=r14Output(m_tsR14Config,before);
+    d.predictor=-1; d.current=std::max(h[0],h[1]);
+    for(int j=0;j<5;++j) if(h[j]) { ++d.n; if(j<2) { ++d.nearCount; } else { ++d.farCount; } }
+    R14Update u; u.state=before; u.beforeR=u.afterR=u.target=d.r;
+    const bool evaluated=m_tsR14Active && isSigGroup();
+    if(evaluated) { d=copy.prepareTsR14(scan,coeff); u=copy.commitTsR14(d,a); }
+    for(int64_t value:{signedLevel,int64_t(d.predictor),int64_t(before),int64_t(u.state),int64_t(cutoff)})
+      hash=(hash^uint64_t(value))*1099511628211ULL;
+    if(debug && report) { r14Stats().detail(m_tsPoc,int(m_compID),m_width,m_height,m_tsQp,m_subSetId,scan,a,cutoff,before,h,d,u); }
+    if(!collect) { continue; }
+    key[9]=cutoff; key[10]=d.n; key[11]=before; key[12]=d.r;
+    std::array<int64_t,R14Stats::COUNT> v{};
+    v[R14Stats::COEFF]=1; v[R14Stats::NZ]=a!=0; v[R14Stats::TARGET]=m_tsR14Active;
+    v[R14Stats::SPARSE]=d.n<3; v[R14Stats::ZERO_EVENT]=a==0;
+    v[R14Stats::MISSING_NEAR]=!d.nearCount; v[R14Stats::MISSING_FAR]=!d.farCount;
+    v[R14Stats::FIXED_EVENT]=evaluated && !m_tsR14Config.dynamic;
+    v[R14Stats::NEAR_SUM]=d.nearCount; v[R14Stats::FAR_SUM]=d.farCount;
+    const bool pChanged=evaluated && !equivalentPredictors(d.predictor,d.current);
+    v[R14Stats::P_CURRENT]=pChanged; m_tsR14ObsPChanged|=pChanged;
+    v[R14Stats::REMAP_NZ]=evaluated && cutoff>0 && a!=0;
+    v[R14Stats::MAP_CURRENT]=evaluated && cutoff>0 && remap(a,d.predictor)!=remap(a,d.current);
+    if(evaluated)
+    {
+      const int initialPredictor=d.winners[r14Output(m_tsR14Config,m_tsR14Config.initialState)];
+      v[R14Stats::P_INITIAL]=!equivalentPredictors(d.predictor,initialPredictor);
+      v[R14Stats::MAP_INITIAL]=cutoff>0 && remap(a,d.predictor)!=remap(a,initialPredictor);
+    }
+    if(u.eligible)
+    {
+      ++m_tsR14ObsEligible;
+      v[R14Stats::ELIGIBLE]=1; v[R14Stats::SAME_WINNERS]=u.sameWinners;
+      v[u.direction>0?R14Stats::UP:u.direction<0?R14Stats::DOWN:R14Stats::NEUTRAL]=1;
+      v[R14Stats::STATE_CHANGE]=u.state!=before;
+      v[R14Stats::WEIGHT_CHANGE]=u.beforeR!=u.afterR;
+      const bool phaseOnly=u.state!=before && u.beforeR==u.afterR;
+      v[R14Stats::PHASE_ONLY]=phaseOnly;
+      v[R14Stats::TARGET_DISTANCE]=std::abs(u.target-u.beforeR);
+      if(u.beforeR!=u.afterR && m_tsR14ObsFirstWeight<0) { m_tsR14ObsFirstWeight=m_tsR14ObsEligible; }
+      if(u.direction)
+      {
+        v[R14Stats::DIRECTION_REVERSE]=m_tsR14ObsDirection && m_tsR14ObsDirection!=u.direction;
+        m_tsR14ObsDirection=u.direction;
+      }
+      int costs[5]; int best=INT_MAX,ties=0;
+      for(int r=0;r<=d.k;++r) { costs[r]=r14FeedbackCost(a,d.winners[r],m_tsRice,m_maxLog2TrDynamicRange); best=std::min(best,costs[r]); }
+      for(int r=0;r<=d.k;++r) { ties+=costs[r]==best; }
+      v[R14Stats::FEEDBACK_TIE]=ties>1;
+      const int gain=costs[u.beforeR]-costs[u.afterR];
+      v[gain>0?R14Stats::STEP_BETTER:gain<0?R14Stats::STEP_WORSE:R14Stats::STEP_EQUAL]=1;
+      if(m_tsR14ObsPair)
+      {
+        const int nextGain=costs[m_tsR14ObsBefore]-costs[m_tsR14ObsAfter];
+        v[R14Stats::NEXT_PAIR]=1; v[R14Stats::NEXT_GAIN]=nextGain;
+        v[nextGain>0?R14Stats::NEXT_POS:nextGain<0?R14Stats::NEXT_NEG:R14Stats::NEXT_ZERO]=1;
+        v[R14Stats::NEXT_CROSS_CG]=m_tsR14ObsCG!=m_subSetId;
+        v[R14Stats::NEXT_PHASE_PAIR]=m_tsR14ObsPhase;
+        v[R14Stats::NEXT_PHASE_GAIN]=m_tsR14ObsPhase?nextGain:0;
+        const int beforePredictor=d.winners[m_tsR14ObsBefore],afterPredictor=d.winners[m_tsR14ObsAfter];
+        v[R14Stats::NEXT_P_CHANGED]=!equivalentPredictors(beforePredictor,afterPredictor);
+        v[R14Stats::NEXT_MAP_CHANGED]=cutoff>0 && remap(a,beforePredictor)!=remap(a,afterPredictor);
+        CHECK(m_tsR14ObsPhase && nextGain,"R14 phase-only next gain must be zero");
+      }
+      m_tsR14ObsPair=true; m_tsR14ObsPhase=phaseOnly;
+      m_tsR14ObsBefore=u.beforeR; m_tsR14ObsAfter=u.afterR; m_tsR14ObsCG=m_subSetId;
+    }
+    r14Stats().add(key,v);
+  }
+  CHECK(copy.tsR14State()!=m_tsR14State,"R14 final observation state differs from actual syntax state");
+  if(collect && m_subSetId==lastSubSet())
+  {
+    key[9]=key[10]=key[11]=key[12]=-1;
+    std::array<int64_t,R14Stats::COUNT> v{};
+    v[R14Stats::TU_VALID_SUM]=m_tsR14ObsEligible;
+    v[m_tsR14ObsFirstWeight>=0?R14Stats::TU_WITH_WEIGHT:R14Stats::TU_NO_WEIGHT]=1;
+    v[m_tsR14ObsPChanged?R14Stats::TU_WITH_PDIFF:R14Stats::TU_NO_PDIFF]=1;
+    if(m_tsR14ObsFirstWeight>=0)
+    {
+      v[R14Stats::TU_FIRST_WEIGHT_SUM]=m_tsR14ObsFirstWeight;
+      v[R14Stats::TU_REMAIN_VALID_SUM]=m_tsR14ObsEligible-m_tsR14ObsFirstWeight;
+    }
+    v[R14Stats::NEXT_UNPAIRED]=m_tsR14ObsPair;
+    r14Stats().add(key,v);
+  }
+  if(debug) { r14Stats().trace(report,m_tsPoc,int(m_compID),m_width,m_height,m_tsQp,m_subSetId,remRegBins,m_tsR14EntryState,m_tsR14State,hash); }
+}
+
 void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report)
 {
   using namespace TsFixedPrediction;
   const int policy = mode();
+  if(r14(policy))
+  {
+    if(trace || report) { finishTsR14CG(coeff,trace,report); }
+    return; // R14 has already committed once per coefficient, never per CG.
+  }
+  // No history is committed for R13. Shadow collection on a legacy trajectory
+  // is opt-in and must not replace that trajectory's own state updates.
+  if(trace || report)
+  {
+    const auto &o=r13Observation();
+    if(o.stats || o.trace) { finishTsR13CG(coeff,trace,verifyBudget,report); }
+  }
+  if(r13(policy)) { return; }
 #if JVET_BJUT_TS_R36_EXACT_OPT
   // R3-local/R6 have no predictor history to commit after an RDOQ CG. Their
   // original finish paths also return without work when neither observation

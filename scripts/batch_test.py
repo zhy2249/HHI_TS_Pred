@@ -13,9 +13,10 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
-from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS
+from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS, R13_MODE_NUMBERS, R14_MODE_NUMBERS, R14_REVISION, r14_protocol
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -39,17 +40,31 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
                        "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
                        "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
-                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS)
+                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS, *R13_MODE_NUMBERS, *R14_MODE_NUMBERS)
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 # Store raw observer settings rather than guessing the executable's compiled
 # defaults. In particular TS_COND_TRACE is enabled by presence (even "0"),
-# unlike the separately parsed R8..R12 trace flags. Missing and explicit values
+# unlike the separately parsed R8..R13 trace flags. Missing and explicit values
 # therefore remain distinct; this only affects resume identity, not job env.
 _TS_OBSERVATION_ENV_KEYS = (
     "TS_COND_TRACE",
     *(f"TS_R{round_}_STATS" for round_ in (*range(2, 7), *range(8, 13))),
     *(f"TS_R{round_}_TRACE" for round_ in range(8, 13)),
 )
+_TS_R13_OBSERVATION_KEYS = ("TS_R13_STATS", "TS_R13_TRACE", "TS_R13_DETAIL_LIMIT", "TS_R13_POC")
+_TS_R13_REVISION = "R13-KH-168-v1"
+_TS_R14_OBSERVATION_KEYS = ("TS_R14_STATS", "TS_R14_TRACE", "TS_R14_DETAIL_LIMIT", "TS_R14_POC")
+
+
+def _observation_identity(mode: str | None) -> dict:
+    # Preserve existing successful markers when R13 is entirely unused. Explicit
+    # R13 observer requests also matter on supported Current/R2/R3/R6 controls.
+    keys = _TS_OBSERVATION_ENV_KEYS
+    if mode in R13_MODE_NUMBERS or any(key in os.environ for key in _TS_R13_OBSERVATION_KEYS):
+        keys = (*keys, *_TS_R13_OBSERVATION_KEYS)
+    if mode in R14_MODE_NUMBERS or any(key in os.environ for key in _TS_R14_OBSERVATION_KEYS):
+        keys = (*keys, *_TS_R14_OBSERVATION_KEYS)
+    return {key: os.environ.get(key) for key in keys}
 
 _PRESET_CFGS = {
     "AI": "cfg/encoder_intra_nx2.cfg",
@@ -358,7 +373,7 @@ def _detect_experiment_line(exe: Path, cwd: Path, mode: str | None = None) -> st
         probe_env.pop("TS_FIXED_PREDICTOR", None)  # Probe compiled default, not ambient shell override.
         probe_env.pop("TS_RATE_SHADOW", None)  # Observers constrain actual jobs, not capability probes.
         probe_env.pop("TS_RATE_RDOQ_SHADOW", None)
-        for key in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT"):
+        for key in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT", *_TS_R13_OBSERVATION_KEYS, *_TS_R14_OBSERVATION_KEYS):
             probe_env.pop(key, None)  # Actual jobs inherit observers; capability/default probes do not.
         probe_env["TS_R10_CACHE"] = "0"  # Capability probes must not reject a Current default for an actual R10 job.
         if mode is not None:
@@ -488,6 +503,23 @@ def _job_env(job: TestJob) -> dict[str, str]:
     return env
 
 
+def _r14_startup_matches(text: str, mode: str | None) -> bool:
+    if mode not in R14_MODE_NUMBERS:
+        return True
+    protocol = r14_protocol(mode)
+    expected = {"TS R14 revision": R14_REVISION, "mode": str(protocol['public_mode']),
+                "runtime": mode, "K": str(protocol['K']), "update": protocol['update'],
+                "r0": str(protocol['r0']), "s0": str(protocol['s0'] if protocol['s0'] is not None else -1),
+                "score-scale": "168", "target": "TSRC-enabled-nonBDPCM"}
+    for line in text.splitlines():
+        if not line.startswith('TS R14 revision='):
+            continue
+        fields = dict(part.strip().split('=', 1) for part in line.split(';') if '=' in part)
+        if all(fields.get(key) == value for key, value in expected.items()):
+            return True
+    return False
+
+
 def _run_decode(job: TestJob) -> dict:
     _safe_mkdir(job.decode_log.parent)
     cmd = [str(job.decoder), "-b", str(job.bitstream)]
@@ -515,7 +547,8 @@ def _run_decode(job: TestJob) -> dict:
     status = "failed" if proc.returncode != 0 else _parse_decode_status(text)
     if job.fixed_predictor:
         expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
-        if expected not in text or (job.frames and text.count("(OK)") != job.frames):
+        if (expected not in text or not _r14_startup_matches(text, job.fixed_predictor)
+                or (job.frames and text.count("(OK)") != job.frames)):
             status = "failed"
     result = {
         "decode_status": status,
@@ -527,6 +560,87 @@ def _run_decode(job: TestJob) -> dict:
     if "vmpeak_kb" in parsed:
         result["dec_vmpeak_kb"] = parsed["vmpeak_kb"]
     return result
+
+
+@lru_cache(maxsize=32)
+def _binary_sha256(path: str, size: int, mtime_ns: int, ctime_ns: int) -> str:
+    """Hash small executables once per stat identity; never hash input video."""
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+@lru_cache(maxsize=16)
+def _local_source_snapshot(root: str) -> dict:
+    """Local checkout metadata, NOT proof of an executable's build source.
+
+    The tracked patch hash excludes untracked files; their names are retained
+    explicitly. Cache freezes one checkout snapshot per batch invocation.
+    """
+    def git(*args):
+        result = subprocess.run(["git", "-C", root, *args], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, check=False)
+        return result.stdout if result.returncode == 0 else None
+    try:
+        head = git("rev-parse", "HEAD")
+        patch = git("diff", "HEAD", "--binary", "--", "source", "CMakeLists.txt", "cmake")
+        untracked = git("ls-files", "--others", "--exclude-standard", "--", "source", "CMakeLists.txt", "cmake")
+    except OSError:
+        head = patch = untracked = None
+    return {
+        "root": root,
+        "head": head.decode().strip() if head else None,
+        "tracked_source_patch_sha256": hashlib.sha256(patch).hexdigest() if patch is not None else None,
+        "untracked_source_paths": untracked.decode().splitlines() if untracked is not None else None,
+        "binary_build_origin_verified": False,
+    }
+
+
+def _r13_identity(job: TestJob) -> dict:
+    def executable(path):
+        stat = path.stat()
+        return {"path": str(path), "sha256": _binary_sha256(str(path), stat.st_size,
+                                                           stat.st_mtime_ns, stat.st_ctime_ns)}
+    return {
+        "revision": _TS_R13_REVISION,
+        "public_mode": R13_MODE_NUMBERS[job.fixed_predictor],
+        "runtime": job.fixed_predictor,
+        "anchor": "current", "mechanism_control": "r2_risk",
+        "rho": "21/2", "score_scale": 168,
+        "weights": [1, 1, 1, 1, 1] if R13_MODE_NUMBERS[job.fixed_predictor] == 1 else [2, 2, 1, 1, 1],
+        "observation_env": {key: os.environ.get(key) for key in _TS_R13_OBSERVATION_KEYS},
+        "encoder": executable(job.encoder),
+        "decoder": executable(job.decoder) if job.decode_md5 else None,
+        "local_source_snapshot": _local_source_snapshot(str(job.repo_root)),
+        "configuration_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                                  for p in [*job.cfgs, job.sequence_cfg]},
+    }
+
+
+def _r14_identity(job: TestJob) -> dict:
+    def executable(path):
+        stat = path.stat()
+        return {"path": str(path), "sha256": _binary_sha256(str(path), stat.st_size,
+                                                           stat.st_mtime_ns, stat.st_ctime_ns)}
+    input_stat = job.input_path.stat()
+    return {
+        **r14_protocol(job.fixed_predictor),
+        "observation_env": {key: os.environ.get(key) for key in _TS_R14_OBSERVATION_KEYS},
+        "observations_default": {"stats": 0, "trace": 0, "detail_limit": 64, "poc": None},
+        "encoder": executable(job.encoder),
+        "decoder": executable(job.decoder) if job.decode_md5 else None,
+        "local_source_snapshot": _local_source_snapshot(str(job.repo_root)),
+        "configuration_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                                  for p in [*job.cfgs, job.sequence_cfg]},
+        "input_identity": {"path": str(job.input_path), "bytes": input_stat.st_size,
+                           "mtime_ns": input_stat.st_mtime_ns, "content_sha256": None},
+        "input_fingerprint_method": "path/size/mtime; not content SHA256",
+        "decode_hash_requested": job.decode_md5,
+        "no_reconstruction": job.no_recon,
+        "execution_status": "prepared; completion/hash status is in done.json result",
+    }
 
 
 def _run_one(job: TestJob) -> dict:
@@ -557,6 +671,8 @@ def _run_one(job: TestJob) -> dict:
     }
 
     ts_fingerprint = None
+    r13_identity = _r13_identity(job) if job.fixed_predictor in R13_MODE_NUMBERS else None
+    r14_identity = _r14_identity(job) if job.fixed_predictor in R14_MODE_NUMBERS else None
     ts_done = job.ts_stats.with_suffix(".done.json") if job.ts_stats else job.bitstream.with_suffix(".done.json")
     if ts_done:
         def identity(path):
@@ -568,7 +684,9 @@ def _run_one(job: TestJob) -> dict:
             "qp": job.qp, "frames": job.frames, "extra": job.extra_args,
             "rate_shadow": os.environ.get("TS_RATE_SHADOW", "0"),
             "rate_rdoq_shadow": os.environ.get("TS_RATE_RDOQ_SHADOW", "0"),
-            "observation_env": {key: os.environ.get(key) for key in _TS_OBSERVATION_ENV_KEYS},
+            "observation_env": _observation_identity(job.fixed_predictor),
+            **({"r13_identity": r13_identity} if r13_identity is not None else {}),
+            **({"r14_identity": r14_identity} if r14_identity is not None else {}),
             **({"r12_revision": "R12-POS-01", "r12_stats": os.environ.get("TS_R12_STATS", "0"),
                 "r12_trace": os.environ.get("TS_R12_TRACE", "0"),
                 "r12_shadow_modes": os.environ.get("TS_R12_SHADOW_MODES", ""),
@@ -652,6 +770,12 @@ def _run_one(job: TestJob) -> dict:
             encode_env["TS_PRED_DEBUG"] = str(job.ts_stats.with_suffix(".debug.csv"))
     if ts_done.exists():
         ts_done.unlink()  # Only this task's obsolete completion marker; outputs are retained.
+    experiment_identity = r14_identity if r14_identity is not None else r13_identity
+    if experiment_identity is not None:
+        job.bitstream.with_suffix(".identity.json").write_text(
+            json.dumps({**experiment_identity, "command": cmd, "frames": job.frames, "qp": job.qp,
+                        "sequence": job.sequence_cfg.stem, "input": str(job.input_path),
+                        "resume_fingerprint": ts_fingerprint}, indent=2), encoding="utf-8")
     with job.encode_log.open("w", encoding="utf-8") as logf:
         _write_log_header(logf, cmd, job.cwd)
         proc = subprocess.run(
@@ -687,7 +811,8 @@ def _run_one(job: TestJob) -> dict:
     if job.fixed_predictor:
         enc_text = job.encode_log.read_text(encoding="utf-8", errors="replace")
         expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
-        if (expected not in enc_text or not job.bitstream.is_file() or job.bitstream.stat().st_size == 0
+        if (expected not in enc_text or not _r14_startup_matches(enc_text, job.fixed_predictor)
+                or not job.bitstream.is_file() or job.bitstream.stat().st_size == 0
                 or not result.get("encoded_frames")
                 or (job.frames and result.get("encoded_frames") != job.frames)):
             encode_status = "failed"
@@ -708,6 +833,8 @@ def _run_one(job: TestJob) -> dict:
         )
     if ts_done and result["error_info"] == "pass":
         ts_done.write_text(json.dumps({"fingerprint": ts_fingerprint, "command": cmd,
+                                      **({"r13_identity": r13_identity} if r13_identity is not None else {}),
+                                      **({"r14_identity": r14_identity} if r14_identity is not None else {}),
                                       "sequence": job.sequence_cfg.stem,
                                       "configuration": job.xlsm_tag or job.cfgs[0].stem,
                                       "QP": job.qp,

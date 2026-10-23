@@ -57,6 +57,8 @@
 #include "TsR10Prediction.h"
 #include "TsR11Prediction.h"
 #include "TsR12Prediction.h"
+#include "TsR13Prediction.h"
+#include "TsR14Prediction.h"
 #endif
 
 #include <bitset>
@@ -606,6 +608,67 @@ public:
   }
 
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  // Physical L/U/D/LL/UU slots, not a compacted nonzero list. The native grouped
+  // TS scan makes every in-bounds slot causal; no current/future level is read.
+  unsigned r13SupportTS(int scanPos,const TCoeff *coeff,int (&h)[5]) const
+  {
+    const auto &point=m_scan[scanPos];
+    const int pos=point.idx,x=point.x,y=point.y;
+    const auto magnitude=[&](int offset) {
+      const int64_t value=coeff[pos+offset];
+      const uint64_t a=value<0 ? uint64_t(-(value+1))+1 : uint64_t(value);
+      CHECK(a>uint64_t(std::numeric_limits<int>::max()),"R13 support exceeds integer magnitude range");
+      return int(a);
+    };
+    h[0]=x?magnitude(-1):0; h[1]=y?magnitude(-int(m_width)):0;
+    h[2]=x && y?magnitude(-1-int(m_width)):0;
+    h[3]=x>=2?magnitude(-2):0; h[4]=y>=2?magnitude(-2*int(m_width)):0;
+    return unsigned(x>0) | (unsigned(y>0)<<1) | (unsigned(x>0 && y>0)<<2) |
+           (unsigned(x>=2)<<3) | (unsigned(y>=2)<<4);
+  }
+  // R14 is coefficient-causal, unlike the older finish-CG history. Preparation
+  // is const; ONLY the explicit commit advances this trial's TU-local state.
+  bool tsR14Active() const { return m_tsR14Active; }
+  int tsR14State() const { return m_tsR14State; }
+  int tsR14CGEntryState() const { return m_tsR14EntryState; }
+  const TsFixedPrediction::R14Config &tsR14Config() const { return m_tsR14Config; }
+  void restoreTsR14State(int state)
+  {
+    (void)TsFixedPrediction::r14Output(m_tsR14Config,state);
+    m_tsR14State=state;
+  }
+  TsFixedPrediction::R14Decision prepareTsR14(int scanPos,const TCoeff *coeff) const
+  {
+    CHECK(!m_tsR14Active,"R14 preparation on a non-target path");
+    int h[5]; r13SupportTS(scanPos,coeff,h);
+    return TsFixedPrediction::r14Prepare(m_tsR14Config,m_tsR14State,h,m_tsRice,m_maxLog2TrDynamicRange);
+  }
+  TsFixedPrediction::R14Update commitTsR14(const TsFixedPrediction::R14Decision &decision,int magnitude)
+  {
+    CHECK(!m_tsR14Active,"R14 commit on a non-target path");
+    const auto update=TsFixedPrediction::r14Commit(m_tsR14Config,m_tsR14State,decision,magnitude,m_tsRice,m_maxLog2TrDynamicRange);
+    m_tsR14State=update.state;
+    return update;
+  }
+  void beginTsR14CG()
+  {
+    if(!m_tsR14Config.publicMode) { return; }
+    m_tsR14EntryState=m_tsR14State;
+    m_tsR14Pass1=m_tsR14Pass2=-1;
+  }
+  void finishTsR14SyntaxCG(int pass1,int pass2)
+  {
+    if(!m_tsR14Config.publicMode) { return; }
+    m_tsR14Pass1=pass1; m_tsR14Pass2=pass2;
+  }
+  void reportTsR14TrialCG(int trialState,bool zeroed);
+  // Called only at real TS syntax entry, where remRegBins is initialized.
+  // This is observation state, not predictor history or a CABAC probability copy.
+  void beginTsR13CGObservation()
+  {
+    const auto &o=TsFixedPrediction::r13Observation();
+    if((o.stats || o.trace) && (o.poc<0 || o.poc==m_tsPoc)) { m_tsR13EntryBins=remRegBins; }
+  }
   TsFixedPrediction::R9Decision r9PredictionTS(int publicMode,int scanPos,const TCoeff *coeff) const;
   void r9SupportTS(int scanPos,const TCoeff *coeff,int (&a)[5],int (&positions)[5]) const;
   TsFixedPrediction::R10Actions tsLocalExperts(int mode,int scanPos,const int (&h)[5]) const;
@@ -697,6 +760,17 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r14(mode))
+    {
+      // TSRC-disabled, non-TS and BDPCM remain native even when this runtime is
+      // selected. Decoder-visible target scope is frozen in the constructor.
+      return m_tsR14Active ? prepareTsR14(scanPos,coeff).predictor : -1;
+    }
+    if (TsFixedPrediction::r13(mode))
+    {
+      int h[5]; r13SupportTS(scanPos,coeff,h);
+      return TsFixedPrediction::r13Predict(TsFixedPrediction::r13PublicMode(mode),h,m_tsRice,m_maxLog2TrDynamicRange);
+    }
 #if JVET_BJUT_TS_R36_EXACT_OPT
     if(TsFixedPrediction::r3Local(mode) || TsFixedPrediction::r6(mode))
     {
@@ -773,6 +847,8 @@ public:
   void finishTsR10CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR11CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR12CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR13CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void finishTsR14CG(const TCoeff *coeff, bool trace, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
   int tsPathWeight10() const { return m_tsPath10; }
@@ -852,6 +928,17 @@ private:
   int m_tsHistoryBins = 0;
   int m_tsR11HistoryBins = 0; // Observation replay only; never shared with older state machines.
   int m_tsR12HistoryBins = 0; // Separate final-Writer observation/trace budget.
+  int m_tsR13EntryBins = -1; // Same-CG observation snapshot only; never used to select p.
+  TsFixedPrediction::R14Config m_tsR14Config{};
+  bool m_tsR14Active=false;
+  int m_tsR14State=0,m_tsR14EntryState=0;
+  int m_tsR14Pass1=-1,m_tsR14Pass2=-1;
+  // Optional FINAL-Writer observations, never read by the predictor. A zero CG
+  // preserves the pending next-event pair; all of these reset with this TU.
+  int m_tsR14ObsEligible=0,m_tsR14ObsFirstWeight=-1;
+  bool m_tsR14ObsPChanged=false,m_tsR14ObsPair=false;
+  bool m_tsR14ObsPhase=false;
+  int m_tsR14ObsBefore=0,m_tsR14ObsAfter=0,m_tsR14ObsCG=-1,m_tsR14ObsDirection=0;
   int m_tsRice = 1;
   int m_tsPoc = 0;
   bool m_tsIntra = false;

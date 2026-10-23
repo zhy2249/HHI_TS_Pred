@@ -1275,6 +1275,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 
   CoeffCodingContext cctx(tu, compID, tu.cs->slice->m_signDataHidingEnabledFlag, m_bdpcm);
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  const bool useR14=cctx.tsR14Active();
   // Estimator input, NOT necessarily actual final Writer context. No writeback.
   Ctx rateTrial;
   const bool useRateModel = TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode());
@@ -1308,6 +1309,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
     cctx.initSubblock(sbId);
 
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if(useR14) { cctx.beginTsR14CG(); }
     if (trackRateModel) { cctx.freezeTsRateContext(rateTrial); }
 #endif
 
@@ -1347,7 +1349,18 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       int rightPixel, belowPixel, predPixel;
 
       cctx.neighTS(rightPixel, belowPixel, scanPos, dstCoeff);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      TsFixedPrediction::R14Decision r14Decision;
+      TsFixedPrediction::MagnitudeAction action;
+      if(useR14)
+      {
+        r14Decision=cctx.prepareTsR14(scanPos,dstCoeff);
+        action={r14Decision.predictor,0};
+      }
+      else { action=cctx.magnitudeActionTS(scanPos,dstCoeff); }
+#else
       const auto action=cctx.magnitudeActionTS(scanPos,dstCoeff);
+#endif
       predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
                                      action.predictor,action.protect);
 
@@ -1448,6 +1461,9 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 
       TCoeff level     = cLevel;
       dstCoeff[blkPos] = (level != 0 && srcCoeff[blkPos] < 0) ? -level : level;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      if(useR14) { cctx.commitTsR14(r14Decision,int(cLevel)); }
+#endif
       baseCost += costCoeff[scanPos];
       rdStats.d64SigCost += costSig[scanPos];
 
@@ -1508,6 +1524,14 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 #if JVET_BJUT_TS_FIXED_PREDICTOR
     // Only finalized CG coefficients, including the all-zero RD alternative.
     // State lives in this trial's CoeffCodingContext and never escapes the TU.
+    if(useR14)
+    {
+      const int trialState=cctx.tsR14State();
+      // q=0 contributes no update. Restore the COMPLETE microstate, not only
+      // its output weight, when the CG-level all-zero RD alternative wins.
+      if(!cctx.isSigGroup()) { cctx.restoreTsR14State(cctx.tsR14CGEntryState()); }
+      cctx.reportTsR14TrialCG(trialState,!cctx.isSigGroup());
+    }
     if (trackRateModel)
     {
       TsFixedPrediction::FractionalSink sink{static_cast<CtxStore<BinProbModel_Std> &>(rateTrial)};

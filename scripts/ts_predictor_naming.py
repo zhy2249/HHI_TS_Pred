@@ -47,9 +47,57 @@ R12_MODE_NUMBERS = dict(zip((
     'r12_ci_near1','r12_r3_near1','r12_current_near1','r12_loo_unstable_cf','r12_direct_first',
     'r12_r3_near1_loo','r12_c_distance_raw','r12_c_distance_fulltrim','r12_validation_distance',
     'r12_validation_distance_tie','r12_c_distance_softtrim','r12_c_and_validation_distance'), range(1,13)))
+R13_MODE_NUMBERS = {'r13_keep_hit_uniform': 1, 'r13_keep_hit_spatial': 2}
+R14_REVISION = 'R14-NF-168-v3'
+# Explicit active v3 registry. Retired TARGET2/DIR2 names and numeric gaps are
+# deliberately absent; public numbers never equal internal policy identifiers.
+R14_MODE_SPECS = {
+    'r14_g2_none_equal': (1, 2, 'NONE', 2, None),
+    'r14_g4_none_equal': (4, 4, 'NONE', 4, None),
+    'r14_g2_none_half': (7, 2, 'NONE', 1, None),
+    'r14_g4_none_half': (10, 4, 'NONE', 2, None),
+    'r14_g2_none_zero': (13, 2, 'NONE', 0, None),
+    'r14_g4_none_zero': (16, 4, 'NONE', 0, None),
+    'r14_fixed_near_only': (19, 2, 'fixed', 0, None),
+    'r14_fixed_quarter': (20, 4, 'fixed', 1, None),
+    'r14_fixed_threequarter': (21, 4, 'fixed', 3, None),
+    'r14_g2_pair2_equal': (22, 2, 'PAIR2', 2, 5),
+    'r14_g4_pair2_equal': (23, 4, 'PAIR2', 4, 9),
+    'r14_g2_pair2_half': (24, 2, 'PAIR2', 1, 2),
+    'r14_g4_pair2_half': (25, 4, 'PAIR2', 2, 4),
+    'r14_g2_pair2_zero': (26, 2, 'PAIR2', 0, 0),
+    'r14_g4_pair2_zero': (27, 4, 'PAIR2', 0, 0),
+}
+R14_MODE_NUMBERS = {name: spec[0] for name, spec in R14_MODE_SPECS.items()}
+R14_PHASE_A = (19, 1, 22, 20, 21, 4, 23)
+R14_PHASE_B = (7, 10, 13, 16, 24, 25, 26, 27)
+
+
+def r14_protocol(mode: str) -> dict:
+    """Frozen algorithm identity, distinct from observed execution/build facts."""
+    public, k, update, r0, s0 = R14_MODE_SPECS[mode]
+    return {
+        'revision': R14_REVISION, 'public_mode': public, 'internal_policy': 99 + public,
+        'runtime': mode, 'macro': 'JVET_BJUT_TS_R14_MODE', 'anchor': 'current',
+        'mechanism_controls': ['r13_keep_hit_uniform', 'r13_keep_hit_spatial'],
+        'K': k, 'grid': [r0] if update == 'fixed' else list(range(k + 1)),
+        'update': update, 'r0': r0, 's0': s0,
+        'rho': '21/2', 'score_scale': 168,
+        'physical_slots': ['L', 'U', 'D', 'LL', 'UU'], 'weights': 'K,K,r,r,r',
+        'minimum_nonzero_positions': 3, 'n_includes_zero_weight_positions': True,
+        'targetActive': 'TS && !TSRC_disabled && BDPCM==NONE',
+        'feedback_cost': 'unscaled syntaxCost(remap(final_abs_q,p))',
+        'feedback_tie': ['cost', 'abs(t-r)', '-t'],
+        'state_scope': 'TU-local per component/trial; CG all-zero rollback',
+        'phase': 'A' if public in R14_PHASE_A else 'B',
+    }
 
 
 def directory_name(mode: str) -> str:
+    if mode in R14_MODE_NUMBERS:
+        return f'r14_{R14_MODE_NUMBERS[mode]}_{mode.removeprefix("r14_")}'
+    if mode in R13_MODE_NUMBERS:
+        return f'r13_{R13_MODE_NUMBERS[mode]}_{mode.removeprefix("r13_")}'
     if mode in R12_MODE_NUMBERS:
         return f'r12_{R12_MODE_NUMBERS[mode]}_{mode.removeprefix("r12_")}'
     if mode in R11_MODE_NUMBERS:

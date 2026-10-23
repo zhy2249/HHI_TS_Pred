@@ -4104,6 +4104,25 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
                                              const int riceParam, bool ricePresentFlag)
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  cctx.beginTsR14CG();
+  // A single coefficient-causal walk of immutable FINAL q. This is required
+  // in BOTH the real Writer and fractional estimator; never gated by isEncoding.
+  const bool r14Active=cctx.tsR14Active();
+  int r14Mapped[1 << MLS_CG_SIZE];
+  if(r14Active && cctx.isSigGroup())
+  {
+    CHECK(cctx.maxSubPos()-cctx.minSubPos()+1>(1 << MLS_CG_SIZE),"R14 CG cache too small");
+    for(int s=cctx.minSubPos();s<=cctx.maxSubPos();++s)
+    {
+      const auto decision=cctx.prepareTsR14(s,coeff);
+      const int64_t signedLevel=coeff[cctx.blockPos(s)];
+      const int64_t magnitude=signedLevel<0?-signedLevel:signedLevel;
+      CHECK(magnitude>std::numeric_limits<int>::max(),"R14 magnitude exceeds supported range");
+      r14Mapped[s-cctx.minSubPos()]=TsFixedPrediction::remap(int(magnitude),decision.predictor);
+      cctx.commitTsR14(decision,int(magnitude));
+    }
+  }
+  cctx.beginTsR13CGObservation();
   if (TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode()) ||
       (TsFixedPrediction::r11StatsEnabled() && TsFixedPrediction::r11ObservedPolicy(TsFixedPrediction::mode())))
     { cctx.freezeTsRateContext(getCtx()); }
@@ -4121,6 +4140,14 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
     CHECK(cctx.maxSubPos() - cctx.minSubPos() + 1 > (1 << MLS_CG_SIZE), "TS CG exceeds local remapping cache");
 #endif
   const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    if(r14Active)
+    {
+      // The syntax passes do not advance history. Pure bypass is identity,
+      // although the prewalk still learns from its finalized magnitude.
+      return disabled ? int(level) : r14Mapped[scanPos-cctx.minSubPos()];
+    }
+#endif
 #if JVET_BJUT_TS_PRED_ANALYSIS
     if (m_tsAnalysisMode != 1)
     {
@@ -4302,6 +4329,9 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
       }
     }
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  cctx.finishTsR14SyntaxCG(lastScanPosPass1,lastScanPosPass2);
+#endif
 }
 
 //================================================================================

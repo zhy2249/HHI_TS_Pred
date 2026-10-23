@@ -59,11 +59,11 @@
 // 总开关=1且所有实验模式=0 -> Current=max(|L|,|U|)，唯一正式 anchor。
 // TS_FIXED_PREDICTOR 环境变量 / batch --fixed-predictors 可以覆盖编译默认模式。
 // 改宏后须重新编译 Encoder/Decoder，并核对每个任务的 EXPERIMENT 启动行。
-// 在线统计默认全部关闭（2026-10-04）：TS_R2/3/4/5/6/8/9/10/11/12_STATS 是环境变量，
+// 在线统计默认全部关闭：TS_R2/3/4/5/6/8/9/10/11/12/13/14_STATS 是环境变量，
 // 未设置或=0关闭，显式=1开启；不是算法 *_MODE 宏，不改变 predictor/码流。
 // R7 shadow 另需下面的编译开关及显式环境请求；TRACE/SHADOW 默认关闭。
 // TS_COND_TRACE 旧接口按“是否存在”判断，关闭必须unset，设0仍会开启。
-// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R12 实验，并非启用 NoPred。
+// 总开关：0=原版 Current 路径；1=允许下面的固定/条件/R2..R14 实验，并非启用 NoPred。
 #ifndef JVET_BJUT_TS_FIXED_PREDICTOR
 #define JVET_BJUT_TS_FIXED_PREDICTOR                       1
 #endif
@@ -216,6 +216,47 @@
 // TS_R12_STATS=1 observes final Writer only; optional TS_R12_SHADOW_MODES (<=3).
 #ifndef JVET_BJUT_TS_R12_MODE
 #define JVET_BJUT_TS_R12_MODE                              0
+#endif
+// R13-KH-168-v1：只换 R2-2 的样本损失，原生 TS-RDOQ 搜索规则不变。
+// 0=不选择本轮；所有模式=0仍为Current。1=KeepHit Uniform，五邻域11111；
+// 2=KeepHit Spatial，同一损失、仅物理L/U权重2，其余1（22111）。
+// rho=21/2，整数尺度168；n<3仍Current，dense直接最小化，无R3/R6 guard。
+// 与所有旧算法默认/旧R10缓存互斥；TS_FIXED_PREDICTOR可显式覆盖默认。
+// TS_R13_STATS/TS_R13_TRACE是观察环境变量，默认关闭，不是算法宏。
+#ifndef JVET_BJUT_TS_R13_MODE
+#define JVET_BJUT_TS_R13_MODE                              0
+#endif
+#if JVET_BJUT_TS_R13_MODE < 0 || JVET_BJUT_TS_R13_MODE > 2
+#error Invalid TS R13 mode
+#endif
+#if JVET_BJUT_TS_R13_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R13 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R13_MODE && (JVET_BJUT_TS_R12_MODE || JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R13 and earlier TS defaults/cache are mutually exclusive
+#endif
+// R14-NF-168-v3: R13 KeepHit loss, TU-local near/far weight adaptation.
+// 0=off (Current if all other modes are off). Active public experiment numbers:
+// 1/4=NONE K2/K4 equal start; 7/10=NONE K2/K4 half start;
+// 13/16=NONE K2/K4 zero start; 19/20/21=fixed far weight 0,1/4,3/4;
+// 22/23=PAIR2 K2/K4 equal start; 24/25=PAIR2 K2/K4 half start;
+// 26/27=PAIR2 K2/K4 zero start. Retired TARGET2/DIR2 IDs are errors.
+// Stage A=1,4,22,23,19,20,21; Stage B=7,10,13,16,24,25,26,27.
+// Equal/half weights reproduce R13-1/R13-2 on identical target-path inputs.
+// Mode 19 keeps far candidates/support; it is NOT equivalent to Current.
+// Explicit TS_FIXED_PREDICTOR overrides this default. Observation only:
+// TS_R14_STATS/TS_R14_TRACE environment flags default OFF; no old-round shadow.
+#ifndef JVET_BJUT_TS_R14_MODE
+#define JVET_BJUT_TS_R14_MODE                              0
+#endif
+#if JVET_BJUT_TS_R14_MODE != 0 && JVET_BJUT_TS_R14_MODE != 1 && JVET_BJUT_TS_R14_MODE != 4 && JVET_BJUT_TS_R14_MODE != 7 && JVET_BJUT_TS_R14_MODE != 10 && JVET_BJUT_TS_R14_MODE != 13 && JVET_BJUT_TS_R14_MODE != 16 && JVET_BJUT_TS_R14_MODE != 19 && JVET_BJUT_TS_R14_MODE != 20 && JVET_BJUT_TS_R14_MODE != 21 && JVET_BJUT_TS_R14_MODE != 22 && JVET_BJUT_TS_R14_MODE != 23 && JVET_BJUT_TS_R14_MODE != 24 && JVET_BJUT_TS_R14_MODE != 25 && JVET_BJUT_TS_R14_MODE != 26 && JVET_BJUT_TS_R14_MODE != 27
+#error Invalid or retired TS R14 mode (R14-NF-168-v3)
+#endif
+#if JVET_BJUT_TS_R14_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R14 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R14_MODE && (JVET_BJUT_TS_R13_MODE || JVET_BJUT_TS_R12_MODE || JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_RATE_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R14 and earlier TS defaults/cache are mutually exclusive
 #endif
 // R12 等价复杂度优化，不是新实验模式：1=动作专用评分/相同动作短路/延迟外层CF；
 // 0=原 R12 完整计算路径，供逐字节回归。两者须得到完全相同码流。

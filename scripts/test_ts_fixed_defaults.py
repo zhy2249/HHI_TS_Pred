@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import batch_test as batch
-from ts_predictor_naming import R8_MODE_NUMBERS, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS
+from ts_predictor_naming import R8_MODE_NUMBERS, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS, R13_MODE_NUMBERS
 
 
 class FixedDefaultsTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class FixedDefaultsTests(unittest.TestCase):
         cls.r5 = ('r5_margin_first','r5_current_veto')
         cls.r6 = ('r6_dense_nopred','r6_reject_nopred','r6_trim_cost','r6_trim_saving','r6_sparse_max','r6_sparse_mean','r6_sparse_min')
         cls.rate = ('rate_raw','rate_guard')
-        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate, *R8_MODE_NUMBERS, *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS)
+        cls.modes = ('current','nopred','gradient','directional', *cls.conditional, *cls.r2, *cls.r3, *cls.r4, *cls.r5, *cls.r6, *cls.rate, *R8_MODE_NUMBERS, *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS, *R13_MODE_NUMBERS)
         for mode in (*cls.modes, 'off'):
             exe = Path(cls.tmp.name)/mode
             defines = ['-DJVET_BJUT_TS_FIXED_PREDICTOR='+('0' if mode=='off' else '1')]
@@ -45,6 +45,7 @@ class FixedDefaultsTests(unittest.TestCase):
             defines.append('-DJVET_BJUT_TS_R10_CACHE=0')
             defines.append('-DJVET_BJUT_TS_R11_MODE='+str(R11_MODE_NUMBERS.get(mode,0)))
             defines.append('-DJVET_BJUT_TS_R12_MODE='+str(R12_MODE_NUMBERS.get(mode,0)))
+            defines.append('-DJVET_BJUT_TS_R13_MODE='+str(R13_MODE_NUMBERS.get(mode,0)))
             subprocess.run(cls.base_cmd+defines+['-o',str(exe)],check=True,capture_output=True)
             cls.binaries[mode] = exe
 
@@ -58,6 +59,9 @@ class FixedDefaultsTests(unittest.TestCase):
         env.pop('TS_R10_CACHE',None)
         env.pop('TS_RATE_SHADOW',None)
         env.pop('TS_RATE_RDOQ_SHADOW',None)
+        for key in tuple(env):
+            if key.startswith('TS_R13_'):
+                env.pop(key)
         if override is not None:
             env['TS_FIXED_PREDICTOR'] = override
         return subprocess.run([str(self.binaries[mode])],env=env,capture_output=True,text=True)
@@ -144,6 +148,32 @@ class FixedDefaultsTests(unittest.TestCase):
             r=subprocess.run(self.base_cmd+[f'-DJVET_BJUT_TS_R12_EXACT_OPT={value}','-fsyntax-only'],
                              capture_output=True)
             self.assertNotEqual(r.returncode,0)
+
+    def test_r13_defaults_conflicts_and_observation(self):
+        cases=[['-DJVET_BJUT_TS_R13_MODE=-1'],['-DJVET_BJUT_TS_R13_MODE=3'],
+               ['-DJVET_BJUT_TS_R13_MODE=1','-DJVET_BJUT_TS_FIXED_PREDICTOR=0']]
+        for old in ('CONDITIONAL_MODE','FIXED_NOPRED','FIXED_GRADIENT','FIXED_DIRECTIONAL','R10_CACHE',
+                    *[f'R{i}_MODE' for i in range(2,13)],'RATE_MODE'):
+            cases.append(['-DJVET_BJUT_TS_R13_MODE=1',f'-DJVET_BJUT_TS_{old}=1'])
+        for flags in cases:
+            result=subprocess.run(self.base_cmd+flags+['-fsyntax-only'],capture_output=True)
+            self.assertNotEqual(result.returncode,0,flags)
+        env={k:v for k,v in os.environ.items() if not k.startswith('TS_')}
+        for name,number in R13_MODE_NUMBERS.items():
+            result=self.run_probe(name)
+            self.assertIn(f'TS R13 revision=R13-KH-168-v1; mode={number}; runtime={name};',result.stdout)
+            self.assertIn('weights='+('11111' if number==1 else '22111'),result.stdout)
+            self.assertIn('stats=0; trace=0; stats-default=off',result.stdout)
+            for options,ok in (({'TS_R13_STATS':'1'},True),({'TS_R13_TRACE':'1'},True),
+                ({'TS_R13_STATS':'2'},False),({'TS_R13_TRACE':'yes'},False),
+                ({'TS_R13_DETAIL_LIMIT':'1025'},False),({'TS_R13_DETAIL_LIMIT':'-1'},False),
+                ({'TS_R13_POC':'0'},True),({'TS_R13_POC':'-1'},False),({'TS_R13_POC':''},False),
+                ({'TS_R13_POC':'999999999999999999999999'},False),({'TS_R10_CACHE':'1'},False)):
+                result=subprocess.run([str(self.binaries[name])],env={**env,**options},capture_output=True,text=True)
+                self.assertEqual(result.returncode==0,ok,(name,options,result.stderr))
+        for name in ('current','r2_risk','r3_risk_guard','r6_reject_nopred','r12_ci_near1','off'):
+            result=subprocess.run([str(self.binaries[name])],env={**env,'TS_R13_STATS':'1'},capture_output=True)
+            self.assertEqual(result.returncode==0,name not in ('r12_ci_near1','off'))
 
     def test_r36_exact_and_actual_observer_banner(self):
         env={k:v for k,v in os.environ.items() if not k.startswith('TS_')}

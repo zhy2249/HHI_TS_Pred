@@ -274,6 +274,12 @@ target_link_libraries(TsR36QuantTest CommonLib)
 target_include_directories(TsR36QuantTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
 set_target_properties(TsR36QuantTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
+# Synthetic TU / local syntax only; this target never performs frame coding.
+add_executable(TsR13NativeTest EXCLUDE_FROM_ALL scripts/ts_r13_native_test.cpp)
+target_link_libraries(TsR13NativeTest EncoderLib DecoderLib)
+target_include_directories(TsR13NativeTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
+set_target_properties(TsR13NativeTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
 add_executable(TsR8QuantTest EXCLUDE_FROM_ALL scripts/ts_r8_quant_test.cpp)
 target_include_directories(TsR8QuantTest PRIVATE source/Lib)
 target_link_libraries(TsR8QuantTest CommonLib)
@@ -286,3 +292,9 @@ set_target_properties(TsR9QuantTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE
 if( NX2_EXTENSION_360_VIDEO )
   add_subdirectory( "source/App/utils/360ConvertApp" )
 endif()
+
+# Synthetic TU / local syntax only; this target never performs frame coding.
+add_executable(TsR14NativeTest EXCLUDE_FROM_ALL scripts/ts_r14_native_test.cpp)
+target_link_libraries(TsR14NativeTest EncoderLib DecoderLib)
+target_include_directories(TsR14NativeTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
+set_target_properties(TsR14NativeTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

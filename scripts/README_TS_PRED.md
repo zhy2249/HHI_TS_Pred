@@ -31,7 +31,8 @@ python3 scripts/ts_r14_activity.py /path/to/task.encode.log --output-dir runs/r1
 算法仍直接用宏选择，不加CMake算法开关。
 收件目录为[带MODE编号的15个文件夹](../experiments/ts_predictor_r14/README.md)。
 `TS_R14_STATS=1`输出最终Writer与RDOQ trial两张表；activity导出时严格分离，g_next不能当CABAC/BD收益。
-源码尚在本地工作树；只同步文档的提交不包含完整R13/R14生产实现。
+2026-10-23按用户明确要求归档R13/R14源码、批量/分析脚本和局部测试；此前`c2d5a76`仅含文档，
+服务器需拉取后续源码提交并重新构建。默认宏仍选择Current，运行实验须设置对应MODE或显式runtime。
 
 ## R13 KeepHit（R13-KH-168-v1）
 

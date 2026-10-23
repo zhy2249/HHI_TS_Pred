@@ -4483,6 +4483,9 @@ void CABACReader::residual_codingTS(TransformUnit &tu, CompID compID)
 void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *coeff, const int riceParam)
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  cctx.beginTsR14CG();
+  const bool r14Active=cctx.tsR14Active();
+  cctx.beginTsR13CGObservation();
   // Capture BEFORE any CG bins. Immediate pass-3 contexts would be too late.
   if (TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode()) ||
       (TsFixedPrediction::r11StatsEnabled() && TsFixedPrediction::r11ObservedPolicy(TsFixedPrediction::mode())))
@@ -4645,6 +4648,22 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
         sigBlkPos[numNonZero++] = blkPos;
       }
     }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    if(r14Active)
+    {
+      // Earlier positions have their REAL magnitudes now. Partial pass-1/2
+      // levels and future positions are never used as learning observations.
+      const auto decision=cctx.prepareTsR14(scanPos,coeff);
+      if(cutoffVal && tcoeff>0)
+      {
+        int left,above; cctx.neighTS(left,above,scanPos,coeff);
+        tcoeff=cctx.decDeriveModCoeff(left,above,tcoeff,decision.predictor,0);
+      }
+      // Also commits pure-bypass positions (without inverse remapping).
+      cctx.commitTsR14(decision,int(tcoeff));
+    }
+    else
+#endif
     if (cctx.bdpcm() == BdpcmMode::NONE && cutoffVal)
     {
       if (tcoeff > 0)
@@ -4674,6 +4693,9 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
     signPattern >>= 1;
     checkCoeffInRange(cctx, coeff[sigBlkPos[k]]);
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  cctx.finishTsR14SyntaxCG(lastScanPosPass1,lastScanPosPass2);
+#endif
 }
 
 //================================================================================

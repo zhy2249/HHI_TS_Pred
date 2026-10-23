@@ -5,9 +5,85 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <cerrno>
 
 namespace TsFixedPrediction
 {
+inline const char *r14Name(int m)
+{
+  switch(m)
+  {
+  case 1: return "r14_g2_none_equal";
+  case 4: return "r14_g4_none_equal";
+  case 7: return "r14_g2_none_half";
+  case 10: return "r14_g4_none_half";
+  case 13: return "r14_g2_none_zero";
+  case 16: return "r14_g4_none_zero";
+  case 19: return "r14_fixed_near_only";
+  case 20: return "r14_fixed_quarter";
+  case 21: return "r14_fixed_threequarter";
+  case 22: return "r14_g2_pair2_equal";
+  case 23: return "r14_g4_pair2_equal";
+  case 24: return "r14_g2_pair2_half";
+  case 25: return "r14_g4_pair2_half";
+  case 26: return "r14_g2_pair2_zero";
+  case 27: return "r14_g4_pair2_zero";
+  default: return nullptr;
+  }
+}
+inline int r14PublicMode(int policy)
+{ return policy>=100 && policy<=126 && r14Name(policy-99) ? policy-99 : 0; }
+inline bool r14(int policy) { return r14PublicMode(policy)!=0; }
+inline int r14Policy(const char *value)
+{
+  for(int m=1;m<=27;++m)
+    if(r14Name(m) && !std::strcmp(value,r14Name(m))) { return m+99; }
+  return 0;
+}
+struct R14Config
+{
+  int publicMode=0,k=2,initialState=0,fixedR=0;
+  bool pair=false,dynamic=false;
+};
+inline R14Config r14Config(int m)
+{
+  switch(m)
+  {
+  case 1: return {m,2,2,-1,false,true};
+  case 4: return {m,4,4,-1,false,true};
+  case 7: return {m,2,1,-1,false,true};
+  case 10: return {m,4,2,-1,false,true};
+  case 13: return {m,2,0,-1,false,true};
+  case 16: return {m,4,0,-1,false,true};
+  case 19: return {m,2,0,0,false,false};
+  case 20: return {m,4,1,1,false,false};
+  case 21: return {m,4,3,3,false,false};
+  case 22: return {m,2,5,-1,true,true};
+  case 23: return {m,4,9,-1,true,true};
+  case 24: return {m,2,2,-1,true,true};
+  case 25: return {m,4,4,-1,true,true};
+  case 26: return {m,2,0,-1,true,true};
+  case 27: return {m,4,0,-1,true,true};
+  default: THROW("Invalid or retired R14 public mode");
+  }
+}
+inline int r14Output(const R14Config &config,int state)
+{
+  if(!config.dynamic) { return config.fixedR; }
+  CHECK(state<0 || state>(config.pair?2*config.k+1:config.k),"Invalid R14 state");
+  return config.pair ? state>>1 : state;
+}
+inline int r13PublicMode(int policy) { return policy>=98 && policy<=99 ? policy-97 : 0; }
+inline bool r13(int policy) { return r13PublicMode(policy)!=0; }
+inline const char *r13Name(int m)
+{
+  return m==1 ? "r13_keep_hit_uniform" : m==2 ? "r13_keep_hit_spatial" : nullptr;
+}
+inline int r13Policy(const char *value)
+{
+  for(int m=1;m<=2;++m) { if(!std::strcmp(value,r13Name(m))) { return m+97; } }
+  return 0;
+}
 inline int r12PublicMode(int policy) { return policy>=86 && policy<=97 ? policy-85 : 0; }
 inline bool r12(int policy) { return r12PublicMode(policy)!=0; }
 inline const char *r12Name(int m)
@@ -147,7 +223,9 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R12_MODE ? r12Name(JVET_BJUT_TS_R12_MODE) :
+  return JVET_BJUT_TS_R14_MODE ? r14Name(JVET_BJUT_TS_R14_MODE) :
+         JVET_BJUT_TS_R13_MODE ? r13Name(JVET_BJUT_TS_R13_MODE) :
+         JVET_BJUT_TS_R12_MODE ? r12Name(JVET_BJUT_TS_R12_MODE) :
          JVET_BJUT_TS_R11_MODE ? r11Name(JVET_BJUT_TS_R11_MODE) :
          JVET_BJUT_TS_R10_MODE ? r10Name(JVET_BJUT_TS_R10_MODE) :
          JVET_BJUT_TS_R9_MODE ? r9Name(JVET_BJUT_TS_R9_MODE) :
@@ -205,7 +283,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v) && !r12Policy(v))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v) && !r12Policy(v) && !r13Policy(v) && !r14Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -260,8 +338,69 @@ inline int mode()
                           !std::strcmp(name(), "rate_guard") ? 33 :
                           r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) :
                           r10Policy(name()) ? r10Policy(name()) : r11Policy(name()) ? r11Policy(name()) :
-                          r12Policy(name()) ? r12Policy(name()) : 1;
+                          r12Policy(name()) ? r12Policy(name()) : r13Policy(name()) ? r13Policy(name()) :
+                          r14Policy(name()) ? r14Policy(name()) : 1;
   return value;
+}
+struct R14Observation
+{
+  bool stats=false,trace=false;
+  int detailLimit=64,poc=-1;
+};
+inline const R14Observation &r14Observation()
+{
+  static const R14Observation options=[]() {
+    R14Observation o;
+    const auto flag=[](const char *key) {
+      const char *v=std::getenv(key);
+      CHECK(v && std::strcmp(v,"0") && std::strcmp(v,"1"),"R14 observation flag must be 0 or 1");
+      return v && !std::strcmp(v,"1");
+    };
+    const auto number=[](const char *key,int fallback,long maximum) {
+      const char *v=std::getenv(key); if(!v) { return fallback; }
+      char *end=nullptr; errno=0; const long n=std::strtol(v,&end,10);
+      CHECK(errno || *v<'0' || *v>'9' || *end || n<0 || n>maximum,"Invalid R14 observation integer");
+      return int(n);
+    };
+    o.stats=flag("TS_R14_STATS"); o.trace=flag("TS_R14_TRACE");
+    o.detailLimit=number("TS_R14_DETAIL_LIMIT",64,1024);
+    o.poc=number("TS_R14_POC",-1,2147483647L);
+    CHECK((o.stats || o.trace) && !JVET_BJUT_TS_FIXED_PREDICTOR,"R14 observation requires master enabled");
+    CHECK((o.stats || o.trace) && !r14(mode()),"R14 observation supports R14 trajectories only");
+    return o;
+  }();
+  return options;
+}
+struct R13Observation
+{
+  bool stats=false,trace=false;
+  int detailLimit=64,poc=-1;
+};
+inline bool r13ObservedPolicy(int policy)
+{ return r13(policy) || policy==1 || policy==10 || policy==13 || policy==26; }
+inline const R13Observation &r13Observation()
+{
+  static const R13Observation options=[]() {
+    R13Observation o;
+    const auto flag=[](const char *key) {
+      const char *v=std::getenv(key);
+      CHECK(v && std::strcmp(v,"0") && std::strcmp(v,"1"),"R13 observation flag must be 0 or 1");
+      return v && !std::strcmp(v,"1");
+    };
+    const auto number=[](const char *key,int fallback,long maximum) {
+      const char *v=std::getenv(key); if(!v) { return fallback; }
+      char *end=nullptr; errno=0; const long n=std::strtol(v,&end,10);
+      CHECK(errno || *v<'0' || *v>'9' || *end || n<0 || n>maximum,"Invalid R13 observation integer");
+      return int(n);
+    };
+    o.stats=flag("TS_R13_STATS"); o.trace=flag("TS_R13_TRACE");
+    o.detailLimit=number("TS_R13_DETAIL_LIMIT",64,1024);
+    o.poc=number("TS_R13_POC",-1,2147483647L);
+    CHECK((o.stats || o.trace) && !JVET_BJUT_TS_FIXED_PREDICTOR,"R13 observation requires master enabled");
+    CHECK((o.stats || o.trace) && !r13ObservedPolicy(mode()),"R13 observation requires Current/R2-2/R3-1/R6-2/R13");
+    return o;
+  }();
+  return options;
 }
 struct R12Observation
 {
@@ -310,6 +449,10 @@ inline void announce()
   (void)name(); // Validate explicit requests even in master-OFF builds.
   const auto &r12Obs=r12Observation();
   (void)r12Obs; // Also validate options in master-OFF builds, without unused warnings.
+  const auto &r13Obs=r13Observation();
+  (void)r13Obs;
+  const auto &r14Obs=r14Observation();
+  (void)r14Obs;
   CHECK(r10CacheEnabled() && !r10(mode()) && r9PublicMode(mode())!=9,
         "R10 exact cache requires R9-9 or R10-1..7; override TS_R10_CACHE=0 for other algorithms");
   const bool wantShadow = std::getenv("TS_RATE_SHADOW") && std::strcmp(std::getenv("TS_RATE_SHADOW"), "0");
@@ -377,6 +520,22 @@ inline void announce()
     std::printf("TS R12 revision=R12-POS-01; mode=%d; runtime=%s; anchor=current; parent=R10-3; scope=YUV; V0<=5; weights=22111; no-cache; CG-entry-frozen-CF10; exact-opt=%d\n",r12PublicMode(mode()),name(),JVET_BJUT_TS_R12_EXACT_OPT);
   if(r12Obs.stats || r12Obs.trace)
     std::printf("TS R12 observation=final-Writer; revision=R12-POS-01; trajectory=%s; shadows=%d; detail-limit=%d; trace=%d; no-decision-feedback\n",name(),r12Obs.count,r12Obs.detailLimit,int(r12Obs.trace));
+  if(r13(mode()))
+    std::printf("TS R13 revision=R13-KH-168-v1; mode=%d; runtime=%s; parent=R2-2; anchor=current; scope=YUV; rho=21/2; score-scale=168; weights=%s; min-n=3; guard=none; quant-search=native; stats=%d; trace=%d; stats-default=off\n",
+      r13PublicMode(mode()),name(),r13PublicMode(mode())==1?"11111":"22111",int(r13Obs.stats),int(r13Obs.trace));
+  if(r14(mode()))
+  {
+    const R14Config c=r14Config(r14PublicMode(mode()));
+    std::printf("TS R14 revision=R14-NF-168-v3; mode=%d; runtime=%s; K=%d; update=%s; r0=%d; s0=%d; score-scale=168; target=TSRC-enabled-nonBDPCM; stats=%d; trace=%d; anchor=current; scope=YUV; TU-local; rho=21/2; grid=0..%d; min-n=3; feedback=integer-syntax; feedback-tie=cost-distance-larger-r; quant-search=native; stats-default=off\n",
+      c.publicMode,name(),c.k,c.dynamic?(c.pair?"PAIR2":"NONE"):"fixed",
+      r14Output(c,c.initialState),c.pair?c.initialState:-1,int(r14Obs.stats),int(r14Obs.trace),c.k);
+    if(r14Obs.stats || r14Obs.trace)
+      std::printf("TS R14 observation=final-Writer; revision=R14-NF-168-v3; trajectory=%s; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
+        name(),r14Obs.detailLimit,r14Obs.poc,int(r14Obs.trace));
+  }
+  if(r13Obs.stats || r13Obs.trace)
+    std::printf("TS R13 observation=final-Writer; revision=R13-KH-168-v1; trajectory=%s; shadow-modes=1,2; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
+      name(),r13Obs.detailLimit,r13Obs.poc,int(r13Obs.trace));
   if (r11StatsEnabled() && r11ObservedPolicy(mode()))
     std::printf("TS R11 observation=final-Writer; trajectory=%s; shadow-modes=1..8; no-decision-feedback\n",name());
 #endif
