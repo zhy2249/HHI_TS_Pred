@@ -59,6 +59,9 @@
 #include "CommonLib/dtrace_codingstruct.h"
 #include "CommonLib/dtrace_buffer.h"
 #include "CommonLib/ProfileTierLevel.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "CommonLib/TsR13FrameDiagnostic.h"
+#endif
 
 #include "DecoderLib/DecLib.h"
 
@@ -3858,7 +3861,17 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
       }
 #endif
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      const auto r13FrameStage=[&](const char *stage,bool clipPending=false) {
+        TsFixedPrediction::r13ObserveFrame(stage,*pic,
+          cs.sps->m_lmcsEnabled || m_encCfg->m_gopBasedTemporalFilterEnabled,clipPending);
+      };
+      r13FrameStage("before_dbf");
+#endif
       m_pcLoopFilter->deblockingFilterPic(cs);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      r13FrameStage("after_dbf");
+#endif
       if (cs.sps->m_ccSaoEnabledFlag)
       {
         m_pcSAO->getCcSaoBuf().copyFrom(cs.getRecoBuf());
@@ -3880,6 +3893,9 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
         m_unifiedNnlf->setPicprms(&pic->m_picprm);
         m_unifiedNnlf->chooseParameters(*pic);
         pcSlice->m_nnlfUnifiedParam = m_unifiedNnlf->getSliceprms();
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        r13FrameStage("after_nnlf");
+#endif
       }
 #endif
 
@@ -3917,6 +3933,10 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
         }
       }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      // SAO/BIF and CCSAO share a later clipping step; preserve the raw buffer.
+      r13FrameStage("after_sao_bif",true);
+#endif
       uint32_t uiNumSliceSegments = 1;
 
       if (pcSlice->m_sps->m_ccSaoEnabledFlag)
@@ -3934,6 +3954,9 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
         }
       }
       m_pcSAO->jointClipSaoBifCcSao(cs);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      r13FrameStage("after_ccsao_clip");
+#endif
 
       if (pcSlice->m_sps->m_saoEnabledFlag || pcSlice->m_sps->m_ccSaoEnabledFlag)
       {
@@ -4007,6 +4030,9 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
 #endif
             pic, numSliceSegments);
         }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+        r13FrameStage("after_alf");
+#endif
         DTRACE(g_trace_ctx, D_CRC, "ALF");
         DTRACE_CRC(g_trace_ctx, D_CRC, cs, cs.getRecoBuf());
 
@@ -4081,12 +4107,19 @@ void EncGOP::compressGOP(int pocLast, int numPicRcvd, PicList &rcListPic, std::l
         }
       }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      if(!m_encCfg->m_alf) { r13FrameStage("after_alf"); }
+      r13FrameStage("after_lfcccm");
+#endif
       DTRACE_UPDATE(g_trace_ctx, (std::make_pair("final", 1)));
       if (m_encCfg->m_compositeRefEnabled && getPrepareLTRef())
       {
         updateCompositeReference(pcSlice, rcListPic, pocCurr);
       }
       pic->copyAdaptedLumaClip(false);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      r13FrameStage("final_clip");
+#endif
     }
     else   // skip enc picture
     {

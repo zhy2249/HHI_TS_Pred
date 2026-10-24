@@ -46,6 +46,7 @@
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "TsRateReplay.h"
 #include "TsR9Quant.h"
+#include "TsR13RdoqStats.h"
 #endif
 #if JVET_BJUT_TS_R7_SHADOW
 #include "TsRateRdoqStats.h"
@@ -1276,6 +1277,12 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
   CoeffCodingContext cctx(tu, compID, tu.cs->slice->m_signDataHidingEnabledFlag, m_bdpcm);
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   const bool useR14=cctx.tsR14Active();
+  const auto &r13Obs=TsFixedPrediction::r13Observation();
+  const bool diagnoseR13=r13Obs.diagnostic && tu.cu->slice->m_poc<=r13Obs.diagnosticMaxPoc &&
+    (r13Obs.poc<0 || tu.cu->slice->m_poc==r13Obs.poc) &&
+    (r13Obs.diagnosticComponent<0 || int(compID)==r13Obs.diagnosticComponent);
+  std::unique_ptr<TsFixedPrediction::R13RdoqStats::Rows> r13ProbeRows;
+  if(diagnoseR13) { r13ProbeRows.reset(new TsFixedPrediction::R13RdoqStats::Rows); }
   // Estimator input, NOT necessarily actual final Writer context. No writeback.
   Ctx rateTrial;
   const bool useRateModel = TsFixedPrediction::needsTsRateContext(TsFixedPrediction::mode());
@@ -1309,6 +1316,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
     cctx.initSubblock(sbId);
 
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if(diagnoseR13) { r13ProbeRows->clear(); }
     if(useR14) { cctx.beginTsR14CG(); }
     if (trackRateModel) { cctx.freezeTsRateContext(rateTrial); }
 #endif
@@ -1416,6 +1424,96 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
                                     extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
                                     action.predictor,action.protect);
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      if(diagnoseR13)
+      {
+        using namespace TsFixedPrediction;
+        CHECK(action.protect || m_dLambda<=0,"Unsupported R13 local diagnostic state");
+        int history[5]; cctx.r13SupportTS(scanPos,dstCoeff,history);
+        int n=0; for(int v:history) { n+=v!=0; }
+        const int actualPredictor=action.predictor<0?std::max(history[0],history[1]):action.predictor;
+        // xGetICost multiplies fractional bins by m_dLambda, so one full bit
+        // costs m_dLambda*2^SCALE_BITS in the same distortion/J domain.
+        const double lambdaPerBit=m_dLambda*double(1<<SCALE_BITS);
+        const int predictions[3]={std::max(history[0],history[1]),
+          r13Predict(1,history,goRiceParam,maxLog2TrDynamicRange),
+          r13Predict(2,history,goRiceParam,maxLog2TrDynamicRange)};
+        const bool extraPossible=upAbsLevel!=roundAbsLevel && upAbsLevel!=minAbsLevel;
+        const bool actualExtra=extraPossible && allowUp;
+        const int savedLevels=m_testedLevels;
+        const auto distortion=[&](unsigned magnitude) {
+          const double error=double(levelDouble-(Intermediate_Int(magnitude)<<qBits));
+          return error*error*errorScale;
+        };
+        const double actualD=distortion(cLevel),actualJ=costCoeff[scanPos];
+        const int band=cctx.remRegBins>=8?10:cctx.remRegBins>=4?2:0;
+        for(int probe=0;probe<3;++probe)
+        {
+          const int p=predictions[probe];
+          const bool changed=!equivalentPredictors(p,actualPredictor);
+          const bool probeExtra=extraPossible && cctx.deriveModCoeff(rightPixel,belowPixel,upAbsLevel,false,p)==1;
+          unsigned nativeLevel=cLevel,fixedLevel=cLevel;
+          double nativeJ=actualJ,fixedJ=actualJ;
+          if(changed)
+          {
+            // Each probe starts from exactly the same history, context, budget,
+            // source residual and lambda. Neither result is committed. First
+            // vary ONLY p on the actual level list, then also reproduce the
+            // native p-dependent up-candidate rule to separate search effects.
+            for(int useNative=0;useNative<2;++useNative)
+            {
+              uint32_t levels[3]{};
+              if(useNative)
+              {
+                m_testedLevels=1; levels[0]=roundAbsLevel;
+                if(minAbsLevel!=roundAbsLevel) { levels[m_testedLevels++]=minAbsLevel; }
+                if(probeExtra) { levels[m_testedLevels++]=upAbsLevel; }
+              }
+              else
+              {
+                m_testedLevels=savedLevels;
+                std::copy(coeffLevels,coeffLevels+savedLevels,levels);
+              }
+              auto probeContext=cctx;
+              double j=0,zero=costCoeff0[scanPos],sig=0,errors[4]{}; int bins=0;
+              const unsigned level=xGetCodedLevelTSPred(j,zero,sig,levelDouble,qBits,errorScale,
+                levels,errors,&fracBitsSig,fracBitsPar,probeContext,fracBits,fracBitsSign,
+                fracBitsGr1,sign,rightPixel,belowPixel,goRiceParam,lastCoeff,extendedPrecision,
+                maxLog2TrDynamicRange,bins,p);
+              if(useNative) { nativeLevel=level; nativeJ=j; }
+              else { fixedLevel=level; fixedJ=j; }
+            }
+          }
+          m_testedLevels=savedLevels;
+          const double probeD=distortion(nativeLevel);
+          R13RdoqStats::Key key{{mode(),tu.cu->slice->m_poc,int(compID),int(width),int(height),
+            tu.cu->qp,int(tu.cu->predMode==MODE_INTRA),band,n,probe,int(goRiceParam),0}};
+          auto &v=(*r13ProbeRows)[key];
+          v[R13RdoqStats::POS]++; v[R13RdoqStats::NZ]+=cLevel!=0;
+          v[R13RdoqStats::PDIFF]+=changed; v[R13RdoqStats::ACTUAL_UP]+=actualExtra;
+          v[R13RdoqStats::PROBE_UP]+=probeExtra; v[R13RdoqStats::UP_DIFF]+=actualExtra!=probeExtra;
+          v[R13RdoqStats::QDIFF]+=nativeLevel!=cLevel; v[R13RdoqStats::QUP]+=nativeLevel>cLevel;
+          v[R13RdoqStats::QDOWN]+=nativeLevel<cLevel; v[R13RdoqStats::TO_ZERO]+=!nativeLevel && cLevel;
+          v[R13RdoqStats::FROM_ZERO]+=nativeLevel && !cLevel;
+          v[R13RdoqStats::FIXED_QDIFF]+=fixedLevel!=cLevel;
+          v[R13RdoqStats::SEARCH_QDIFF]+=nativeLevel!=fixedLevel;
+          v[R13RdoqStats::ACTUAL_HIT]+=cLevel && actualPredictor>1 && unsigned(actualPredictor)==cLevel;
+          v[R13RdoqStats::PROBE_HIT]+=nativeLevel && p>1 && unsigned(p)==nativeLevel;
+          v[R13RdoqStats::ACTUAL_NEAR_DOWN]+=actualPredictor>1 && int64_t(actualPredictor)+1==roundAbsLevel;
+          v[R13RdoqStats::ACTUAL_NEAR_UP]+=actualPredictor>1 && int64_t(actualPredictor)-1==roundAbsLevel;
+          v[R13RdoqStats::PROBE_NEAR_DOWN]+=p>1 && int64_t(p)+1==roundAbsLevel;
+          v[R13RdoqStats::PROBE_NEAR_UP]+=p>1 && int64_t(p)-1==roundAbsLevel;
+          v[R13RdoqStats::ACTUAL_D]+=actualD; v[R13RdoqStats::PROBE_D]+=probeD;
+          v[R13RdoqStats::ACTUAL_R]+=(actualJ-actualD)/lambdaPerBit;
+          v[R13RdoqStats::PROBE_R]+=(nativeJ-probeD)/lambdaPerBit;
+          v[R13RdoqStats::DELTA_D_OVER_LAMBDA]+=(probeD-actualD)/lambdaPerBit;
+          v[R13RdoqStats::DELTA_R]+=((nativeJ-probeD)-(actualJ-actualD))/lambdaPerBit;
+          v[R13RdoqStats::DELTA_J_OVER_LAMBDA]+=(nativeJ-actualJ)/lambdaPerBit;
+          v[R13RdoqStats::FIXED_DELTA_J_OVER_LAMBDA]+=(fixedJ-actualJ)/lambdaPerBit;
+          v[R13RdoqStats::LAMBDA_SUM]+=lambdaPerBit;
+        }
+      }
+#endif
 #if JVET_BJUT_TS_R7_SHADOW
       if (probeRateModel)
       {
@@ -1524,6 +1622,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 #if JVET_BJUT_TS_FIXED_PREDICTOR
     // Only finalized CG coefficients, including the all-zero RD alternative.
     // State lives in this trial's CoeffCodingContext and never escapes the TU.
+    if(diagnoseR13) { TsFixedPrediction::r13RdoqStats().addCG(*r13ProbeRows,!cctx.isSigGroup()); }
     if(useR14)
     {
       const int trialState=cctx.tsR14State();

@@ -373,11 +373,24 @@ inline const R14Observation &r14Observation()
 }
 struct R13Observation
 {
-  bool stats=false,trace=false;
-  int detailLimit=64,poc=-1;
+  bool stats=false,trace=false,diagnostic=false;
+  int detailLimit=64,poc=-1,diagnosticMaxPoc=31,diagnosticComponent=-1;
 };
 inline bool r13ObservedPolicy(int policy)
 { return r13(policy) || policy==1 || policy==10 || policy==13 || policy==26; }
+// Closed-loop component ablation for diagnosis, not a new R13 production mode.
+// Both Encoder and Decoder must use the same scope; no extra mode bit is sent.
+inline int r13DiagnosticScope()
+{
+  static const int scope=[]() {
+    const char *value=std::getenv("TS_R13_DIAG_SCOPE");
+    if(!value || !std::strcmp(value,"all")) { return 0; }
+    if(!std::strcmp(value,"luma")) { return 1; }
+    if(!std::strcmp(value,"chroma")) { return 2; }
+    THROW("TS_R13_DIAG_SCOPE must be all, luma or chroma");
+  }();
+  return scope;
+}
 inline const R13Observation &r13Observation()
 {
   static const R13Observation options=[]() {
@@ -394,10 +407,13 @@ inline const R13Observation &r13Observation()
       return int(n);
     };
     o.stats=flag("TS_R13_STATS"); o.trace=flag("TS_R13_TRACE");
+    o.diagnostic=flag("TS_R13_DIAG");
     o.detailLimit=number("TS_R13_DETAIL_LIMIT",64,1024);
     o.poc=number("TS_R13_POC",-1,2147483647L);
-    CHECK((o.stats || o.trace) && !JVET_BJUT_TS_FIXED_PREDICTOR,"R13 observation requires master enabled");
-    CHECK((o.stats || o.trace) && !r13ObservedPolicy(mode()),"R13 observation requires Current/R2-2/R3-1/R6-2/R13");
+    o.diagnosticMaxPoc=number("TS_R13_DIAG_MAX_POC",31,4095);
+    o.diagnosticComponent=number("TS_R13_DIAG_COMPONENT",-1,2);
+    CHECK((o.stats || o.trace || o.diagnostic) && !JVET_BJUT_TS_FIXED_PREDICTOR,"R13 observation requires master enabled");
+    CHECK((o.stats || o.trace || o.diagnostic) && !r13ObservedPolicy(mode()),"R13 observation requires Current/R2-2/R3-1/R6-2/R13");
     return o;
   }();
   return options;
@@ -451,6 +467,8 @@ inline void announce()
   (void)r12Obs; // Also validate options in master-OFF builds, without unused warnings.
   const auto &r13Obs=r13Observation();
   (void)r13Obs;
+  CHECK(r13DiagnosticScope() && (!JVET_BJUT_TS_FIXED_PREDICTOR || !r13(mode())),
+        "R13 component ablation requires an enabled R13 runtime");
   const auto &r14Obs=r14Observation();
   (void)r14Obs;
   CHECK(r10CacheEnabled() && !r10(mode()) && r9PublicMode(mode())!=9,
@@ -536,6 +554,12 @@ inline void announce()
   if(r13Obs.stats || r13Obs.trace)
     std::printf("TS R13 observation=final-Writer; revision=R13-KH-168-v1; trajectory=%s; shadow-modes=1,2; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
       name(),r13Obs.detailLimit,r13Obs.poc,int(r13Obs.trace));
+  if(r13Obs.diagnostic)
+    std::printf("TS R13 diagnosis=R13-DIAG-v1; trajectory=%s; final-Writer=fixed-q-same-CG-real-entry-context; shadow=current,uniform,spatial; max-poc=%d; poc=%d; component=%d; frac-scale=%d; no-decision-feedback\n",
+      name(),r13Obs.diagnosticMaxPoc,r13Obs.poc,r13Obs.diagnosticComponent,1<<SCALE_BITS);
+  if(r13(mode()) && r13DiagnosticScope())
+    std::printf("TS R13 ablation=R13-COMPONENT-v1; scope=%s; changes-coding=1; decoder-must-match=1; not-formal-R13-result\n",
+      r13DiagnosticScope()==1?"luma":"chroma");
   if (r11StatsEnabled() && r11ObservedPolicy(mode()))
     std::printf("TS R11 observation=final-Writer; trajectory=%s; shadow-modes=1..8; no-decision-feedback\n",name());
 #endif

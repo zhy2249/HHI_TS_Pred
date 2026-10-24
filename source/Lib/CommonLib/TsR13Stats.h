@@ -3,6 +3,7 @@
 #include "TsR13Prediction.h"
 #include <map>
 #include <mutex>
+#include <string>
 namespace TsFixedPrediction
 {
 struct R13Stats
@@ -69,4 +70,84 @@ struct R13Stats
   }
 };
 inline R13Stats &r13Stats() { static R13Stats s; return s; }
+
+// Separate opt-in diagnosis schema: final selected TSRC blocks only. Unlike
+// the historical support counters above, HIT/UNDER/OVER below compare p to the
+// actual final target magnitude. No field is ever read by coding decisions.
+struct R13Diagnostic
+{
+  using CGKey=std::array<int,10>;
+  using CoeffKey=std::array<int,12>;
+  enum CGField { CG_TU,CG_COUNT,CG_CODED,CG_COEFF,CG_NZ,
+    BITS_CURRENT,BITS_UNIFORM,BITS_SPATIAL,BINS_CURRENT,BINS_UNIFORM,BINS_SPATIAL,
+    S_VS_C_BETTER,S_VS_C_TIE,S_VS_C_WORSE,S_VS_C_GAIN,S_VS_C_LOSS,
+    S_VS_U_BETTER,S_VS_U_TIE,S_VS_U_WORSE,S_VS_U_GAIN,S_VS_U_LOSS,
+    BEST_CURRENT,BEST_UNIFORM,BEST_SPATIAL,CG_FIELDS };
+  enum CoeffField { POS,NZ,REGULAR_NZ,HIT,UNDER,OVER,DOWN1,UP1,ABS_ERROR,
+    P_EQ_CURRENT,P_EQ_UNIFORM,P_EQ_SPATIAL,MAP_CURRENT_DIFF,MAP_UNIFORM_DIFF,
+    MAP_ONE,MAP_TWO,MAP_HIGH,PROXY_COST,PROXY_CURRENT,PROXY_UNIFORM,
+    NEAR_SUPPORT,FAR_SUPPORT,EXACT_NEAR,EXACT_FAR,DOWN_NEAR,DOWN_FAR,UP_NEAR,UP_FAR,
+    TARGET_MAG_SUM,PRED_MAG_SUM,COEFF_FIELDS };
+  std::map<CGKey,std::array<int64_t,CG_FIELDS>> cg;
+  std::map<CoeffKey,std::array<int64_t,COEFF_FIELDS>> coefficients;
+  std::multimap<int64_t,std::string> examples;
+  std::mutex mutex;
+  void addCG(const CGKey &key,const std::array<int64_t,CG_FIELDS> &value)
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    auto &row=cg[key]; for(int i=0;i<CG_FIELDS;++i) { row[i]+=value[i]; }
+  }
+  void addCoeff(const CoeffKey &key,const std::array<int64_t,COEFF_FIELDS> &value)
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    auto &row=coefficients[key]; for(int i=0;i<COEFF_FIELDS;++i) { row[i]+=value[i]; }
+  }
+  bool wantsExample(int64_t loss)
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    return loss>0 && r13Observation().detailLimit>0 &&
+      (int(examples.size())<r13Observation().detailLimit || loss>examples.begin()->first);
+  }
+  void example(int64_t loss,const std::string &line)
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    if(loss<=0 || !r13Observation().detailLimit) { return; }
+    examples.emplace(loss,line);
+    while(int(examples.size())>r13Observation().detailLimit) { examples.erase(examples.begin()); }
+  }
+  template<class Table,size_t N>
+  static void dump(const char *prefix,const char *keys,const char *const (&fields)[N],const Table &table)
+  {
+    if(table.empty()) { return; }
+    std::fprintf(stderr,"%s_HEADER %s",prefix,keys);
+    for(const auto *field:fields) { std::fprintf(stderr,",%s",field); } std::fprintf(stderr,"\n");
+    for(const auto &entry:table)
+    {
+      std::fprintf(stderr,"%s ",prefix); bool first=true;
+      for(int k:entry.first) { std::fprintf(stderr,"%s%d",first?"":",",k); first=false; }
+      for(auto v:entry.second) { std::fprintf(stderr,",%lld",(long long)v); }
+      std::fprintf(stderr,"\n");
+    }
+  }
+  ~R13Diagnostic()
+  {
+    const char *const cgFields[]={"tu_count","cg_count","coded_cg_count","coeff_count","nonzero_count",
+      "current_fracbits","uniform_fracbits","spatial_fracbits","current_end_bins_sum","uniform_end_bins_sum","spatial_end_bins_sum",
+      "spatial_vs_current_better","spatial_vs_current_tie","spatial_vs_current_worse","spatial_vs_current_gain_fracbits","spatial_vs_current_loss_fracbits",
+      "spatial_vs_uniform_better","spatial_vs_uniform_tie","spatial_vs_uniform_worse","spatial_vs_uniform_gain_fracbits","spatial_vs_uniform_loss_fracbits",
+      "best_current_count","best_uniform_count","best_spatial_count"};
+    const char *const coeffFields[]={"coeff_count","nonzero_count","regular_nonzero_count","target_hit_count","target_under_count","target_over_count",
+      "target_p_eq_a_minus1_count","target_p_eq_a_plus1_count","target_abs_error_sum",
+      "p_current_equiv_count","p_uniform_equiv_count","p_spatial_equiv_count","actual_map_vs_current_count","actual_map_vs_uniform_count",
+      "actual_map1_count","actual_map2_count","actual_map_gt2_count","all_nz_full_regular_proxy_sum","current_all_nz_full_regular_proxy_sum","uniform_all_nz_full_regular_proxy_sum",
+      "near_support_sum","far_support_sum","exact_near_support","exact_far_support","down_near_support","down_far_support","up_near_support","up_far_support",
+      "target_abs_sum","predictor_abs_sum"};
+    static_assert(sizeof(cgFields)/sizeof(cgFields[0])==CG_FIELDS,"R13 diagnostic CG schema mismatch");
+    static_assert(sizeof(coeffFields)/sizeof(coeffFields[0])==COEFF_FIELDS,"R13 diagnostic coefficient schema mismatch");
+    dump("TS_R13_DIAG_CG","trajectory_policy,poc,component,width,height,cu_qp,intra,bdpcm,cg_count_in_tu,entry_budget_bucket",cgFields,cg);
+    dump("TS_R13_DIAG_COEFF","trajectory_policy,poc,component,width,height,cu_qp,intra,bdpcm,shadow_mode,cutoff,n,target_bucket",coeffFields,coefficients);
+    for(auto i=examples.rbegin();i!=examples.rend();++i) { std::fprintf(stderr,"TS_R13_DIAG_DETAIL %s\n",i->second.c_str()); }
+  }
+};
+inline R13Diagnostic &r13Diagnostic() { static R13Diagnostic s; return s; }
 }

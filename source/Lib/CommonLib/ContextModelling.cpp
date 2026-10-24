@@ -57,6 +57,7 @@
 #include "TsR14Stats.h"
 #include "TsR12Exact.h"
 #include "TsRateReplay.h"
+#include <sstream>
 #endif
 
 const int CoeffCodingContext::prefixCtx[] = { 0, 0, 0, 3, 6, 10, 15, 21, 28 };
@@ -146,6 +147,7 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
   m_tsRice = 1 + (tu.cu->slice->m_sps->m_spsRangeExtension.m_tsrcRicePresentFlag &&
                  tu.mtsIdx[component] == MtsType::SKIP ? tu.cu->slice->m_tsrcIndex : 0);
   m_tsPoc = tu.cu->slice->m_poc;
+  m_tsTuX=tu.blocks[component].x; m_tsTuY=tu.blocks[component].y;
   m_tsIntra = tu.cu->predMode == MODE_INTRA;
   if(TsFixedPrediction::r14(TsFixedPrediction::mode()))
   {
@@ -751,6 +753,124 @@ void CoeffCodingContext::finishTsR12CG(const TCoeff *coeff,bool trace,bool verif
     }
   }
   if(debug) { std::fprintf(stderr,"TS_R12_TRACE trajectory=%d c=%d w=%u h=%u qp=%d cg=%d bins=%d hash=%llu\n",mode(),int(m_compID),m_width,m_height,m_tsQp,m_subSetId,m_tsR12HistoryBins,(unsigned long long)hash); }
+}
+
+void CoeffCodingContext::observeTsR13Diagnostic(const TCoeff *coeff,const Ctx &entryContext)
+{
+  using namespace TsFixedPrediction;
+  const auto &o=r13Observation();
+  if(!o.diagnostic || m_tsPoc>o.diagnosticMaxPoc || (o.poc>=0 && o.poc!=m_tsPoc) ||
+     (o.diagnosticComponent>=0 && o.diagnosticComponent!=int(m_compID))) { return; }
+  constexpr int capacity=1<<MLS_CG_SIZE;
+  const int count=m_maxSubPos-m_minSubPos+1;
+  CHECK(count>capacity,"R13 diagnosis CG exceeds local cache");
+  int h[capacity][5],p[3][capacity],a[capacity],support[capacity]{};
+  int nonzero=0;
+  for(int i=0;i<count;++i)
+  {
+    const int scan=m_minSubPos+i;
+    r13SupportTS(scan,coeff,h[i]);
+    a[i]=std::abs(int(coeff[blockPos(scan)])); nonzero+=a[i]!=0;
+    for(int value:h[i]) { support[i]+=value!=0; }
+    p[0][i]=std::max(h[i][0],h[i][1]);
+    p[1][i]=r13Predict(1,h[i],m_tsRice,m_maxLog2TrDynamicRange);
+    p[2][i]=r13Predict(2,h[i],m_tsRice,m_maxLog2TrDynamicRange);
+  }
+  int endBins[3]; int64_t rates[3]; RateReplayPath paths[3];
+  for(int m=0;m<3;++m)
+  {
+    // A fresh deep context copy AND regular-bin budget for each branch.
+    // Branch state cannot reach the real Writer or another candidate.
+    Ctx context(entryContext); auto geometry=*this; endBins[m]=remRegBins;
+    FractionalSink sink{static_cast<CtxStore<BinProbModel_Std>&>(context)};
+    paths[m]=replayRateCG(geometry,coeff,[&](int scan) { return p[m][scan-m_minSubPos]; },endBins[m],m_tsRice,sink);
+    CHECK(sink.bits>uint64_t(std::numeric_limits<int64_t>::max()),"R13 diagnostic rate exceeds signed range");
+    rates[m]=int64_t(sink.bits);
+  }
+  auto &stats=r13Diagnostic();
+  const int bucket=remRegBins<4?0:remRegBins<16?1:remRegBins<64?2:3;
+  R13Diagnostic::CGKey key{{mode(),m_tsPoc,int(m_compID),int(m_width),int(m_height),m_tsQp,
+                            int(m_tsIntra),int(m_bdpcm),lastSubSet()+1,bucket}};
+  std::array<int64_t,R13Diagnostic::CG_FIELDS> cg{};
+  cg[R13Diagnostic::CG_TU]=m_subSetId==0; cg[R13Diagnostic::CG_COUNT]=1;
+  cg[R13Diagnostic::CG_CODED]=isSigGroup(); cg[R13Diagnostic::CG_COEFF]=count; cg[R13Diagnostic::CG_NZ]=nonzero;
+  for(int m=0;m<3;++m)
+  {
+    cg[R13Diagnostic::BITS_CURRENT+m]=rates[m]; cg[R13Diagnostic::BINS_CURRENT+m]=endBins[m];
+    cg[R13Diagnostic::BEST_CURRENT+m]=rates[m]==*std::min_element(rates,rates+3);
+  }
+  for(int reference=0;reference<2;++reference)
+  {
+    const int64_t delta=rates[2]-rates[reference];
+    const int start=reference==0?R13Diagnostic::S_VS_C_BETTER:R13Diagnostic::S_VS_U_BETTER;
+    cg[start+(delta<0?0:delta==0?1:2)]=1;
+    cg[start+3]=std::max<int64_t>(0,-delta); cg[start+4]=std::max<int64_t>(0,delta);
+  }
+  stats.addCG(key,cg);
+  for(int i=0;i<count;++i)
+  {
+    const int scan=m_minSubPos+i;
+    const int targetBucket=a[i]<=2?a[i]:a[i]<=4?3:a[i]<=8?4:5;
+    int cutoff[3],mapped[3];
+    for(int m=0;m<3;++m)
+    {
+      cutoff[m]=scan<=paths[m].pass2?10:scan<=paths[m].pass1?2:0;
+      mapped[m]=m_bdpcm==BdpcmMode::NONE && cutoff[m] ? remap(a[i],p[m][i]) : a[i];
+    }
+    for(int m=0;m<3;++m)
+    {
+      R13Diagnostic::CoeffKey ck{{mode(),m_tsPoc,int(m_compID),int(m_width),int(m_height),m_tsQp,
+                                 int(m_tsIntra),int(m_bdpcm),m,cutoff[m],support[i],targetBucket}};
+      std::array<int64_t,R13Diagnostic::COEFF_FIELDS> v{};
+      v[R13Diagnostic::POS]=1; v[R13Diagnostic::NZ]=a[i]!=0;
+      v[R13Diagnostic::REGULAR_NZ]=a[i]!=0 && m_bdpcm==BdpcmMode::NONE && cutoff[m]!=0;
+      v[R13Diagnostic::P_EQ_CURRENT]=equivalentPredictors(p[m][i],p[0][i]);
+      v[R13Diagnostic::P_EQ_UNIFORM]=equivalentPredictors(p[m][i],p[1][i]);
+      v[R13Diagnostic::P_EQ_SPATIAL]=equivalentPredictors(p[m][i],p[2][i]);
+      v[R13Diagnostic::MAP_CURRENT_DIFF]=mapped[m]!=mapped[0];
+      v[R13Diagnostic::MAP_UNIFORM_DIFF]=mapped[m]!=mapped[1];
+      if(a[i])
+      {
+        v[R13Diagnostic::HIT]=p[m][i]==a[i]; v[R13Diagnostic::UNDER]=p[m][i]<a[i]; v[R13Diagnostic::OVER]=p[m][i]>a[i];
+        v[R13Diagnostic::DOWN1]=p[m][i]==a[i]-1; v[R13Diagnostic::UP1]=int64_t(p[m][i])==int64_t(a[i])+1;
+        v[R13Diagnostic::ABS_ERROR]=std::abs(int64_t(p[m][i])-a[i]);
+        v[R13Diagnostic::MAP_ONE]=mapped[m]==1; v[R13Diagnostic::MAP_TWO]=mapped[m]==2; v[R13Diagnostic::MAP_HIGH]=mapped[m]>2;
+        // Deliberately a full-regular integer proxy on every nonzero sample;
+        // these sums are NOT branch CABAC costs and do not simulate bypass.
+        v[R13Diagnostic::PROXY_COST]=syntaxCost(remap(a[i],p[m][i]),m_tsRice,m_maxLog2TrDynamicRange);
+        v[R13Diagnostic::PROXY_CURRENT]=syntaxCost(remap(a[i],p[0][i]),m_tsRice,m_maxLog2TrDynamicRange);
+        v[R13Diagnostic::PROXY_UNIFORM]=syntaxCost(remap(a[i],p[1][i]),m_tsRice,m_maxLog2TrDynamicRange);
+        v[R13Diagnostic::TARGET_MAG_SUM]=a[i]; v[R13Diagnostic::PRED_MAG_SUM]=p[m][i];
+      }
+      // Support attribution here is conditional on a nonzero final target,
+      // matching HIT/UNDER/OVER. Zero targets retain their own population row.
+      for(int j=0;j<5;++j) if(a[i] && h[i][j])
+      {
+        v[j<2?R13Diagnostic::NEAR_SUPPORT:R13Diagnostic::FAR_SUPPORT]++;
+        if(p[m][i]>1)
+        {
+          v[j<2?R13Diagnostic::EXACT_NEAR:R13Diagnostic::EXACT_FAR]+=p[m][i]==h[i][j];
+          v[j<2?R13Diagnostic::DOWN_NEAR:R13Diagnostic::DOWN_FAR]+=int64_t(p[m][i])+1==h[i][j];
+          v[j<2?R13Diagnostic::UP_NEAR:R13Diagnostic::UP_FAR]+=int64_t(p[m][i])-1==h[i][j];
+        }
+      }
+      stats.addCoeff(ck,v);
+    }
+  }
+  const int64_t loss=rates[2]-rates[1];
+  if(stats.wantsExample(loss))
+  {
+    std::ostringstream line;
+    line<<"trajectory="<<mode()<<" poc="<<m_tsPoc<<" c="<<int(m_compID)<<" x="<<m_tsTuX<<" y="<<m_tsTuY
+        <<" w="<<m_width<<" h="<<m_height<<" qp="<<m_tsQp<<" cg="<<m_subSetId<<" entry_bins="<<remRegBins
+        <<" rate_c/u/s="<<rates[0]<<"/"<<rates[1]<<"/"<<rates[2]<<" loss_s_u_frac="<<loss<<" coeff(a/pc/pu/ps:H)=";
+    for(int i=0;i<count;++i)
+    {
+      line<<"["<<a[i]<<"/"<<p[0][i]<<"/"<<p[1][i]<<"/"<<p[2][i]<<":";
+      for(int j=0;j<5;++j) { line<<(j?",":"")<<h[i][j]; } line<<"]";
+    }
+    stats.example(loss,line.str());
+  }
 }
 
 void CoeffCodingContext::finishTsR13CG(const TCoeff *coeff,bool trace,bool verifyBudget,bool report)

@@ -6,6 +6,38 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R13-2 异常点诊断（2026-10-24，本地短测已完成）
+
+用户授权源码诊断和本地运行，针对Johnny QP27/32、KristenAndSara QP32，并检查Johnny37。
+Current仍为正式anchor，等权R13-1为权重机制对照。正式整体/逐QP数值没有改动或补点。
+六份服务器日志各300编码帧＋10遍解码，合计18,000次MD5检查通过，RD与台账一致；
+Johnny37逐QP BD611独立复算+0.074675%。本地多个前缀逐bits、hex PSNR、MD5复现对应服务器帧。
+
+实现默认关闭的三层观察：最终Writer真实CG入口context的固定q C/U/S模拟、全TS RDOQ搜索trial局部探针、
+各滤波阶段的分量及64×64网格SSE/hash。分开获选TS与落选search人口、固定候选与native候选、CG全零与否。
+另实现luma/chroma作用域编码干预，必须编解码一致，独立标识且不写入正式R13曲线；默认all保持原算法。
+batch指纹纳入显式诊断/scope，无新观察请求时保持旧R13成功标记兼容。
+
+完成新17组133帧＋冻结旧程序3组15帧，最长17帧，无本地完整300帧重跑，无重建视频输出。
+18项Python检查、7组native、全部148帧解码hash通过；native CG replay与原生fractional estimator完全一致。
+新观察开关五帧码流byte-exact；frame/tile SSE守恒，final SSE与hex PSNR对应。并发3→6，耗时不用于复杂度比较。
+
+- Johnny32首帧all=luma、chroma=Current（完整码流一致），确认Y路径导致滤波前UV变化，滤波总体缓解。
+  U/S前16个完整图像码流相同，首次分叉POC16却无最终TS，UV试验p/q也无改变，指向编码器搜索决策反馈；
+  具体首个分支未定位，不宣称CABAC状态泄漏。源码确认TS临时获胜、BT/TT成本及SBT历史能影响后续候选，相关开关已启用。
+- Johnny27 POC8 V在CCSAO＋joint clip阶段从优势转为劣势；各轨迹仍各自获益，空间版获益更少。
+  POC16无最终TS却比等权多2072bit；17帧平均V未复现全300帧负值，保留此限制。
+- K&S32首帧ALF/CCALF扩大U损失；17帧空间对等权+1784bit，平均Y/U转负，最终q的局部U/S remap差却仍仅首帧一个系数。
+  首帧局部RD支持空间，后续帧转向等权，不能用首帧搜索量巨大的总平均概括。
+- Johnny37首帧三分量均改善，未定位全段损失转折，未用端点位置否定+0.074675%的真实结果。
+
+结论：已定位若干损失路径与权重分叉发生层级，没有发现日志/配置/解码失配；不把这些证据称作完整300帧因果分解。
+下一步优先追踪Johnny32 POC16首个真实搜索分支，并做少量同配置搜索控制；继续保持decoder因果性，
+不直接把encoder-only RDOQ探针变成正式predictor selector，不立即新增大批阈值或完整CTC实验。
+
+报告：[R13异常点诊断](TS_Predictor_R13_Anomaly_Diagnosis_20261024.md)；
+数据：[正式点复核、本地逐帧/stage/Writer/RDOQ及验证记录](results/r13_diagnosis_20261024/README.md)。
+
 ## R14 完整CE多维分析（2026-10-24，无新数据）
 
 基于`6c6a2fb`登记的412实测/8缺失结果开展分析，实验2正确部分结果按共同覆盖比较，不补点。

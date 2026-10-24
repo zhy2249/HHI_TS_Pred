@@ -768,6 +768,8 @@ public:
     }
     if (TsFixedPrediction::r13(mode))
     {
+      const int scope=TsFixedPrediction::r13DiagnosticScope();
+      if((scope==1 && m_compID!=COMP_Y) || (scope==2 && m_compID==COMP_Y)) { return -1; }
       int h[5]; r13SupportTS(scanPos,coeff,h);
       return TsFixedPrediction::r13Predict(TsFixedPrediction::r13PublicMode(mode),h,m_tsRice,m_maxLog2TrDynamicRange);
     }
@@ -848,6 +850,7 @@ public:
   void finishTsR11CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR12CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
   void finishTsR13CG(const TCoeff *coeff, bool trace, bool verifyBudget, bool report);
+  void observeTsR13Diagnostic(const TCoeff *coeff,const Ctx &entryContext);
   void finishTsR14CG(const TCoeff *coeff, bool trace, bool report);
   int64_t tsPredictorState() const { return m_tsState; } // Read-only validation/trace access.
   int64_t tsPredictorRecentMargin() const { return m_tsRecentMargin; }
@@ -941,6 +944,7 @@ private:
   int m_tsR14ObsBefore=0,m_tsR14ObsAfter=0,m_tsR14ObsCG=-1,m_tsR14ObsDirection=0;
   int m_tsRice = 1;
   int m_tsPoc = 0;
+  int m_tsTuX = 0,m_tsTuY = 0; // Diagnostic coordinates only; never used by decisions.
   bool m_tsIntra = false;
   bool m_tsVirtualReady = false;
   int m_tsVirtualBins = 0;

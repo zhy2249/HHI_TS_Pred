@@ -1,0 +1,20 @@
+{
+  "reference": "runs/r13_diagnosis_20261024/diag_followup/johnny_q32_f17_r13_keep_hit_uniform/r13_1_keep_hit_uniform/LBeu_Johnny/LBeu_Johnny_QP32.bin",
+  "test": "runs/r13_diagnosis_20261024/diag_followup/johnny_q32_f17_r13_keep_hit_spatial/r13_2_keep_hit_spatial/LBeu_Johnny/LBeu_Johnny_QP32.bin",
+  "first_different_byte_zero_based": 15943,
+  "first_affected_nal": {
+    "index": 38,
+    "offset": 15937,
+    "end": 15955,
+    "type": 2,
+    "is_vcl": false
+  },
+  "complete_identical_prior_vcl_nals": 16,
+  "one_slice_per_picture": true,
+  "reference_sha256": "103ecf4012b6cf4f4fc28e09fcf18e0f5dc9aee3380a458d27ac22e00414e568",
+  "test_sha256": "f99ea23a926bd39fcd6fc975eb8da841b03fb354d0c402423d6613f179d594fe",
+  "header_definition": "NextSoftware2 custom 1/2-byte NAL header; source/Lib/EncoderLib/NALwrite.cpp:48 and DecoderLib/NALread.cpp:125",
+  "interpretation": "First 16 complete pictures including following suffix SEI are byte-identical. First differing NAL is prefix APS immediately before POC16 VCL.",
+  "complete_nal_prefix_bytes": 15937,
+  "common_byte_prefix_bytes": 15943
+}

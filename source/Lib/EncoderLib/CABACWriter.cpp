@@ -4104,6 +4104,10 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
                                              const int riceParam, bool ricePresentFlag)
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  // Final selected TS only; each hypothetical branch starts from this same
+  // actual CG entry state and is discarded before real syntax coding starts.
+  if(isEncoding() && TsFixedPrediction::r13Observation().diagnostic)
+    { cctx.observeTsR13Diagnostic(coeff,getCtx()); }
   cctx.beginTsR14CG();
   // A single coefficient-causal walk of immutable FINAL q. This is required
   // in BOTH the real Writer and fractional estimator; never gated by isEncoding.

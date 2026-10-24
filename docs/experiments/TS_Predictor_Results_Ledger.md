@@ -504,6 +504,12 @@ R13-1为`r13_keep_hit_uniform`，R13-2为`r13_keep_hit_spatial`，编号对应�
 Test均标记`pass`，56个RD元组与严格配对的`R13_1.csv`/`R13_2.csv`一致；Reference数值/状态与Current一致。
 Y/U/V为CE七序列分量BD-rate均值，C、E、CE为BD611，单位%；CE按七序列等权，不是类别各半。
 
+2026-10-24 补充来源核验：Johnny QP27/32、KristenAndSara QP32 的 Current/R13-2 六份服务器日志
+各含 300 编码帧和 10 遍解码，合计 18,000 次解码 MD5 检查通过；打印 RD 与本节对应点一致。
+Johnny QP37 的逐 QP BD611 独立工作簿复算为 +0.074675%，与既有登记一致。
+原始 RD、整体及逐 QP BD-rate 均未变更；[独立派生数据](results/r13_diagnosis_20261024/README.md)
+另存本地短帧码率/PSNR、hash 与诊断统计，短测不计算 BD-rate、不补入正式曲线。
+
 | 实验 | 运行名 | Y | U | V | C | E | CE | 数据状态 |
 |---|---|---:|---:|---:|---:|---:|---:|---|
 | R13-1 | r13_keep_hit_uniform | -0.061662 | +0.155589 | -0.369960 | -0.081347 | -0.061971 | -0.073043 | 28实测 |

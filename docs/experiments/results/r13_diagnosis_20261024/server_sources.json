@@ -1,0 +1,557 @@
+{
+  "created": "2026-10-24",
+  "source_kind": "uploaded_server_logs_and_registered_formal_results",
+  "logs": [
+    {
+      "sequence": "Johnny",
+      "nominal_qp": 27,
+      "role": "reference",
+      "path": "experiments/ts_predictor_r13/Johnny_27_base",
+      "sha256": "66ac14f4dad5e6483d6d7f1cb5380093d6dd038ace3d10ca2de20f4aa0000385",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 12,
+      "encoder_frame_last_line": 311,
+      "encoder_summary_lines": [
+        317
+      ],
+      "tool_configuration_lines": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "identity_lines": [],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    },
+    {
+      "sequence": "Johnny",
+      "nominal_qp": 27,
+      "role": "test",
+      "path": "experiments/ts_predictor_r13/Johnny_27_R13_2",
+      "sha256": "9120c792a8576581747b6b0f5873caeb16bb5d19ff105bd49223bf95c3e8597d",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 15,
+      "encoder_frame_last_line": 314,
+      "encoder_summary_lines": [
+        320
+      ],
+      "tool_configuration_lines": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "identity_lines": [
+        1,
+        2,
+        3,
+        324,
+        325,
+        326,
+        633,
+        634,
+        635,
+        942,
+        943,
+        944,
+        1251,
+        1252,
+        1253,
+        1560,
+        1561,
+        1562,
+        1869,
+        1870,
+        1871,
+        2178,
+        2179,
+        2180,
+        2487,
+        2488,
+        2489,
+        2796,
+        2797,
+        2798,
+        3105,
+        3106,
+        3107
+      ],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    },
+    {
+      "sequence": "Johnny",
+      "nominal_qp": 32,
+      "role": "reference",
+      "path": "experiments/ts_predictor_r13/Johnny_32_base",
+      "sha256": "15d36acd392dc0694e69087b4de1913d632ba19eb260dbae1bb034f82340e9ec",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 12,
+      "encoder_frame_last_line": 311,
+      "encoder_summary_lines": [
+        317
+      ],
+      "tool_configuration_lines": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "identity_lines": [],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    },
+    {
+      "sequence": "Johnny",
+      "nominal_qp": 32,
+      "role": "test",
+      "path": "experiments/ts_predictor_r13/Johnny_32_R13_2",
+      "sha256": "183c0ffda0f82d029f03f82a5c430da4cdf0c20d7577caff16f8d8190bc87ab3",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 15,
+      "encoder_frame_last_line": 314,
+      "encoder_summary_lines": [
+        320
+      ],
+      "tool_configuration_lines": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "identity_lines": [
+        1,
+        2,
+        3,
+        324,
+        325,
+        326,
+        633,
+        634,
+        635,
+        942,
+        943,
+        944,
+        1251,
+        1252,
+        1253,
+        1560,
+        1561,
+        1562,
+        1869,
+        1870,
+        1871,
+        2178,
+        2179,
+        2180,
+        2487,
+        2488,
+        2489,
+        2796,
+        2797,
+        2798,
+        3105,
+        3106,
+        3107
+      ],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    },
+    {
+      "sequence": "KristenAndSara",
+      "nominal_qp": 32,
+      "role": "reference",
+      "path": "experiments/ts_predictor_r13/KristenAndSara_32_base",
+      "sha256": "5e238b83ad9a68ed6507f7eff73680cd522f7f8457be4c998f75179f5d7fca7e",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 12,
+      "encoder_frame_last_line": 311,
+      "encoder_summary_lines": [
+        317
+      ],
+      "tool_configuration_lines": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "identity_lines": [],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    },
+    {
+      "sequence": "KristenAndSara",
+      "nominal_qp": 32,
+      "role": "test",
+      "path": "experiments/ts_predictor_r13/KristenAndSara_32_R13_2",
+      "sha256": "8197d679ad50f6413df0b8d3d649c6612d6d9573a83239e9bf24e877223bfd98",
+      "encoded_frame_records": 300,
+      "poc_min": 0,
+      "poc_max": 299,
+      "encoder_frame_first_line": 15,
+      "encoder_frame_last_line": 314,
+      "encoder_summary_lines": [
+        320
+      ],
+      "tool_configuration_lines": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "identity_lines": [
+        1,
+        2,
+        3,
+        324,
+        325,
+        326,
+        633,
+        634,
+        635,
+        942,
+        943,
+        944,
+        1251,
+        1252,
+        1253,
+        1560,
+        1561,
+        1562,
+        1869,
+        1870,
+        1871,
+        2178,
+        2179,
+        2180,
+        2487,
+        2488,
+        2489,
+        2796,
+        2797,
+        2798,
+        3105,
+        3106,
+        3107
+      ],
+      "decoder_frame_records": 3000,
+      "decoder_hash_errors": 0,
+      "decoder_passes_per_poc_min": 10,
+      "decoder_passes_per_poc_max": 10,
+      "ledger_summary_match": "match"
+    }
+  ],
+  "ledger_sources": [
+    {
+      "path": "docs/experiments/results/qp_bdrate.csv",
+      "sha256": "52ee7eba17a48509f8f1d6cca07756b89548d878be2b84962c0fa3621ed7e5c2",
+      "selected_record_count": 16,
+      "selected_records": [
+        {
+          "line": 491,
+          "experiment": "R13-1",
+          "sequence": "FourPeople",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B318:E318"
+        },
+        {
+          "line": 492,
+          "experiment": "R13-1",
+          "sequence": "FourPeople",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B319:E319"
+        },
+        {
+          "line": 494,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 22,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B321:E321"
+        },
+        {
+          "line": 495,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B322:E322"
+        },
+        {
+          "line": 496,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B323:E323"
+        },
+        {
+          "line": 497,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 37,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B324:E324"
+        },
+        {
+          "line": 499,
+          "experiment": "R13-1",
+          "sequence": "KristenAndSara",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B326:E326"
+        },
+        {
+          "line": 500,
+          "experiment": "R13-1",
+          "sequence": "KristenAndSara",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B327:E327"
+        },
+        {
+          "line": 519,
+          "experiment": "R13-2",
+          "sequence": "FourPeople",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B318:E318"
+        },
+        {
+          "line": 520,
+          "experiment": "R13-2",
+          "sequence": "FourPeople",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B319:E319"
+        },
+        {
+          "line": 522,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 22,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B321:E321"
+        },
+        {
+          "line": 523,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B322:E322"
+        },
+        {
+          "line": 524,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B323:E323"
+        },
+        {
+          "line": 525,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 37,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B324:E324"
+        },
+        {
+          "line": 527,
+          "experiment": "R13-2",
+          "sequence": "KristenAndSara",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B326:E326"
+        },
+        {
+          "line": 528,
+          "experiment": "R13-2",
+          "sequence": "KristenAndSara",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B327:E327"
+        }
+      ]
+    },
+    {
+      "path": "docs/experiments/results/rd_points.csv",
+      "sha256": "96c66791e1a086f8747108cccda898718e231681b108efbf51d18b26ecee5804",
+      "selected_record_count": 16,
+      "selected_records": [
+        {
+          "line": 3207,
+          "experiment": "R13-1",
+          "sequence": "FourPeople",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B318:E318"
+        },
+        {
+          "line": 3208,
+          "experiment": "R13-1",
+          "sequence": "FourPeople",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B319:E319"
+        },
+        {
+          "line": 3210,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 22,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B321:E321"
+        },
+        {
+          "line": 3211,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B322:E322"
+        },
+        {
+          "line": 3212,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B323:E323"
+        },
+        {
+          "line": 3213,
+          "experiment": "R13-1",
+          "sequence": "Johnny",
+          "qp": 37,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B324:E324"
+        },
+        {
+          "line": 3215,
+          "experiment": "R13-1",
+          "sequence": "KristenAndSara",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B326:E326"
+        },
+        {
+          "line": 3216,
+          "experiment": "R13-1",
+          "sequence": "KristenAndSara",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
+          "source_cell": "Test!B327:E327"
+        },
+        {
+          "line": 3235,
+          "experiment": "R13-2",
+          "sequence": "FourPeople",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B318:E318"
+        },
+        {
+          "line": 3236,
+          "experiment": "R13-2",
+          "sequence": "FourPeople",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B319:E319"
+        },
+        {
+          "line": 3238,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 22,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B321:E321"
+        },
+        {
+          "line": 3239,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B322:E322"
+        },
+        {
+          "line": 3240,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B323:E323"
+        },
+        {
+          "line": 3241,
+          "experiment": "R13-2",
+          "sequence": "Johnny",
+          "qp": 37,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B324:E324"
+        },
+        {
+          "line": 3243,
+          "experiment": "R13-2",
+          "sequence": "KristenAndSara",
+          "qp": 27,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B326:E326"
+        },
+        {
+          "line": 3244,
+          "experiment": "R13-2",
+          "sequence": "KristenAndSara",
+          "qp": 32,
+          "source_file": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
+          "source_cell": "Test!B327:E327"
+        }
+      ]
+    }
+  ],
+  "output_counts": {
+    "server_formal_anomaly_points.csv": 8,
+    "server_formal_control_points.csv": 8,
+    "server_formal_point_differences.csv": 8,
+    "server_300frame_windows.csv": 57,
+    "server_300frame_summary.csv": 3
+  },
+  "parser": "scripts/ts_r13_log_diagnosis.py",
+  "parser_sha256": "bc1d49166df88916a029d880596d1e62ba129fc06b5080e7184edc7906fc22b2"
+}

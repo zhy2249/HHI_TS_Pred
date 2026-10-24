@@ -13,6 +13,7 @@
 - [R11 八组 CE 及 R11-2 部分 B 明细（仅汇总）](results/r11.md)
 - [R12 十二组 CE 与七组部分 B 明细（仅汇总）](results/r12.md)
 - [R13 两组 CE 结果分析（2026-10-23）](TS_Predictor_R13_LB_CE_Results_20261023.md)
+- [R13-2 异常点诊断：Johnny 27/32/37、KristenAndSara 32](TS_Predictor_R13_Anomaly_Diagnosis_20261024.md) · [日志审计与本地短测派生数据](results/r13_diagnosis_20261024/README.md)
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)

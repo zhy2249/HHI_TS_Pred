@@ -51,9 +51,20 @@ _TS_OBSERVATION_ENV_KEYS = (
     *(f"TS_R{round_}_STATS" for round_ in (*range(2, 7), *range(8, 13))),
     *(f"TS_R{round_}_TRACE" for round_ in range(8, 13)),
 )
-_TS_R13_OBSERVATION_KEYS = ("TS_R13_STATS", "TS_R13_TRACE", "TS_R13_DETAIL_LIMIT", "TS_R13_POC")
+_TS_R13_LEGACY_OBSERVATION_KEYS = ("TS_R13_STATS", "TS_R13_TRACE", "TS_R13_DETAIL_LIMIT", "TS_R13_POC")
+_TS_R13_DIAGNOSTIC_KEYS = ("TS_R13_DIAG", "TS_R13_DIAG_MAX_POC", "TS_R13_DIAG_COMPONENT", "TS_R13_DIAG_SCOPE")
+_TS_R13_OBSERVATION_KEYS = (*_TS_R13_LEGACY_OBSERVATION_KEYS, *_TS_R13_DIAGNOSTIC_KEYS)
 _TS_R13_REVISION = "R13-KH-168-v1"
 _TS_R14_OBSERVATION_KEYS = ("TS_R14_STATS", "TS_R14_TRACE", "TS_R14_DETAIL_LIMIT", "TS_R14_POC")
+
+
+def _r13_observation_identity() -> dict:
+    # Preserve existing R13 markers when no new diagnostic is requested. Scope
+    # changes coding, so every explicit diagnostic/scope request invalidates it.
+    keys = _TS_R13_LEGACY_OBSERVATION_KEYS
+    if any(key in os.environ for key in _TS_R13_DIAGNOSTIC_KEYS):
+        keys = (*keys, *_TS_R13_DIAGNOSTIC_KEYS)
+    return {key: os.environ.get(key) for key in keys}
 
 
 def _observation_identity(mode: str | None) -> dict:
@@ -61,7 +72,7 @@ def _observation_identity(mode: str | None) -> dict:
     # R13 observer requests also matter on supported Current/R2/R3/R6 controls.
     keys = _TS_OBSERVATION_ENV_KEYS
     if mode in R13_MODE_NUMBERS or any(key in os.environ for key in _TS_R13_OBSERVATION_KEYS):
-        keys = (*keys, *_TS_R13_OBSERVATION_KEYS)
+        keys = (*keys, *_r13_observation_identity())
     if mode in R14_MODE_NUMBERS or any(key in os.environ for key in _TS_R14_OBSERVATION_KEYS):
         keys = (*keys, *_TS_R14_OBSERVATION_KEYS)
     return {key: os.environ.get(key) for key in keys}
@@ -610,7 +621,7 @@ def _r13_identity(job: TestJob) -> dict:
         "anchor": "current", "mechanism_control": "r2_risk",
         "rho": "21/2", "score_scale": 168,
         "weights": [1, 1, 1, 1, 1] if R13_MODE_NUMBERS[job.fixed_predictor] == 1 else [2, 2, 1, 1, 1],
-        "observation_env": {key: os.environ.get(key) for key in _TS_R13_OBSERVATION_KEYS},
+        "observation_env": _r13_observation_identity(),
         "encoder": executable(job.encoder),
         "decoder": executable(job.decoder) if job.decode_md5 else None,
         "local_source_snapshot": _local_source_snapshot(str(job.repo_root)),

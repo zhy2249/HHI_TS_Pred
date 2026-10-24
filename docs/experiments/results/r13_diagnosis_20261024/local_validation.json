@@ -1,0 +1,318 @@
+{
+  "base_commit": "bd0f36c6cb822fd7016d603aed87c7d6afa95a13",
+  "binary_sha256": {
+    "EncoderApp": "0941278c358a8518a1c7cb7493b27c6369e585f13140f4b4fce5ae3d3f8fe5cb",
+    "DecoderApp": "fb293837d6f21a76f33bce55db74dffdd9240f1546d02485a06e8c5944b1900d"
+  },
+  "source_hashes_at_build": {
+    "source/Lib/CommonLib/ContextModelling.cpp": "4a1f4cdd66ac59b2170eb0a8bba7cafa0bc9f11596aee08ed20d8e82c7da0188",
+    "source/Lib/CommonLib/ContextModelling.h": "75502ce65b025f26d7be8cec577b35db41778dbe5b9e401d9fceff48ea724955",
+    "source/Lib/CommonLib/QuantRDOQ.cpp": "32d748c893c7634e2fc57ce462153ef72392d46daf1dfc55dd663d94a2a2738a",
+    "source/Lib/CommonLib/TsFixedPrediction.h": "2e4d3c56d6a007fad8d5efbf2fc9648404c0e5d8b120bd107f70c07cb598719b",
+    "source/Lib/CommonLib/TsR13Stats.h": "f491b293eeb9ab7f0c188b1cea44a2c06905807e6d2c76d80ac3943a9e917853",
+    "source/Lib/CommonLib/TsR13RdoqStats.h": "da70818c4a9dc9a6e302e601841f30885d24fc7072cc0b55456a8a9e6085045a",
+    "source/Lib/CommonLib/TsR13FrameDiagnostic.h": "a4d12bb48c88ec8a4810a609890b91ae00acbe6f92dbe021c5b381be5655dfcc",
+    "source/Lib/EncoderLib/CABACWriter.cpp": "0cabc9f75f0f72652fc936f9f0396677e30557cdbeaa5ce32ad7d616cda126b2",
+    "source/Lib/EncoderLib/EncGOP.cpp": "a49c5bcbbf91097e6ca7de36699574ec16f19e2bed7e8c6c6f60da239b84b0c0",
+    "scripts/batch_test.py": "0219aae7178e46e9ffe2ff3734f43d5a34c2c3f2b79eafeda950a02d1960925e",
+    "scripts/ts_r13_diagnostic.py": "7f89b8b9d84c536458004ad85a7c0c7649e53f8ca3a09e6c732c7fad7059a759"
+  },
+  "core_sources_match_build_snapshot": {
+    "source/Lib/CommonLib/ContextModelling.cpp": true,
+    "source/Lib/CommonLib/ContextModelling.h": true,
+    "source/Lib/CommonLib/QuantRDOQ.cpp": true,
+    "source/Lib/CommonLib/TsFixedPrediction.h": true,
+    "source/Lib/CommonLib/TsR13Stats.h": true,
+    "source/Lib/CommonLib/TsR13RdoqStats.h": true,
+    "source/Lib/CommonLib/TsR13FrameDiagnostic.h": true,
+    "source/Lib/EncoderLib/CABACWriter.cpp": true,
+    "source/Lib/EncoderLib/EncGOP.cpp": true
+  },
+  "type_def_sha256": "667986517ca0ca6b6ccdf24cde52faa2cc783375dbff691f0a450349d4c588d4",
+  "compile_flags": [
+    "CXX_DEFINES = -DENABLE_CABAC_DUMP=0 -DENABLE_TRACING=0 -DTARGET_SIMD_X86",
+    "CXX_FLAGS = -O3 -DNDEBUG -flto -fno-fat-lto-objects -fPIC -msse4.1 -Wall -Wno-unused-function -Wno-sign-compare -fdiagnostics-show-option -Wno-ignored-attributes -Werror -std=gnu++17"
+  ],
+  "input_files": [
+    {
+      "path": "/home/zhy/videos/classE/Johnny_1280x720_60.yuv",
+      "bytes": 829440000,
+      "sha256": "69e56cc75d40ed9e88ce39dd7662d2cde4eab33989242894ca7dd46f24b04acb"
+    },
+    {
+      "path": "/home/zhy/videos/classE/KristenAndSara_1280x720_60.yuv",
+      "bytes": 829440000,
+      "sha256": "9ed8e1f36bf12e50912cc584e8dea241ce184ee739ed9045b2818973f18a9249"
+    }
+  ],
+  "native_cases": [
+    {
+      "runtime": "current",
+      "scope": "all",
+      "payload_sha256": "eb61b9439cc5176d8b93ac4d4592a23ece5ef240b614de1e30e4a4ce420f4dce",
+      "payload_bytes": 170995858,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "before_byte_identical": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 20652,
+          "mapping_vs_r2": 9597
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_uniform",
+      "scope": "all",
+      "payload_sha256": "64cb780a49bbbfcc63e395a4ec291e78d009da45f0370e90a0d757255335921a",
+      "payload_bytes": 170995855,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "before_byte_identical": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 879,
+          "mapping_vs_r2": 99
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_uniform",
+      "scope": "luma",
+      "payload_sha256": "a88ceb47b6b4119b0f0175a12b7a9b96d1039de48fcaa475e52d115389d35dad",
+      "payload_bytes": 170995858,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 15240,
+          "mapping_vs_r2": 7061
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_uniform",
+      "scope": "chroma",
+      "payload_sha256": "d4d960ce9b38261c72d4dc3083aaf3737e4bcaa0081b0fddf88b5b9e4d680525",
+      "payload_bytes": 170995855,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 6291,
+          "mapping_vs_r2": 2635
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_spatial",
+      "scope": "all",
+      "payload_sha256": "aabe5b79b7d1fd495a64d2d5c3385a80322dee1f0d6e9bc4c2b737b9d7039bfb",
+      "payload_bytes": 170995851,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "before_byte_identical": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 4272,
+          "mapping_vs_r2": 1064
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_spatial",
+      "scope": "luma",
+      "payload_sha256": "086207d6e88a6ddcc3bcbc51688d431b6f3db758a78b15b4b3fca782686d3da1",
+      "payload_bytes": 170995858,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 16280,
+          "mapping_vs_r2": 7341
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    },
+    {
+      "runtime": "r13_keep_hit_spatial",
+      "scope": "chroma",
+      "payload_sha256": "dc3c2c02e9343b57814a633c3e8f9b787922fd204839e9ae86f6fc9455776825",
+      "payload_bytes": 170995851,
+      "diagnostic_bitexact": true,
+      "native_writer_reader_q_context_budget_consistent": true,
+      "bdpcm_cross_policy_scope_identical": true,
+      "coverage": {
+        "syntax": {
+          "TU": 180,
+          "CG": 1718,
+          "causal": 27032,
+          "low_budget": 75,
+          "pure_bypass": 60,
+          "predictor_vs_r2": 8644,
+          "mapping_vs_r2": 3320
+        },
+        "quant": {
+          "TU": 240,
+          "zero": 19,
+          "cleared": 32,
+          "bdpcm_none": 180,
+          "bdpcm_hor": 30,
+          "bdpcm_ver": 30
+        }
+      }
+    }
+  ],
+  "native_replay_equals_native_fractional_estimator": true,
+  "observation_and_scope_checks": {
+    "spatial_all_vs_spatial_luma_bitexact": true,
+    "spatial_all_vs_spatial_luma_all_stage_tile_sse_hash_equal": true,
+    "current_vs_spatial_chroma_bitexact": true,
+    "current_vs_spatial_chroma_all_stage_tile_sse_hash_equal": true,
+    "new_diag_on_vs_old_diag_off_5frames_bitexact": true,
+    "new_diag_on_vs_old_diag_off_5frames_sha256": "737b1dd62ccbc7822c54f03c69386eef8c27ca3d01e2f75889efb8a394cf48b9",
+    "five_frame_exact_psnr_md5_bits_match": true
+  },
+  "completion": {
+    "completed_local": "2026-10-24 18:39:58+0800",
+    "diagnostic_runs": 17,
+    "diagnostic_encoded_frames": 133,
+    "old_probe_runs": 3,
+    "old_probe_frames": 15,
+    "all_encoder_decoder_pass": true,
+    "all_diagnostic_parsers_pass": true,
+    "all_frame_tile_sse_conserve": true,
+    "all_original_domain_invariant": true,
+    "frozen_binary_sha256_unchanged": {
+      "EncoderApp": "0941278c358a8518a1c7cb7493b27c6369e585f13140f4b4fce5ae3d3f8fe5cb",
+      "DecoderApp": "fb293837d6f21a76f33bce55db74dffdd9240f1546d02485a06e8c5944b1900d"
+    },
+    "no_more_tasks_authorized_or_started": true,
+    "batch_helper_current_sha256": "7e01c239d6e02b09790df690529848de0719bc3d7dfa5811d635f004b7930d46",
+    "batch_helper_launch_sha256": "0219aae7178e46e9ffe2ff3734f43d5a34c2c3f2b79eafeda950a02d1960925e",
+    "batch_helper_note": "Root reported post-launch identity backwards-compatibility edit; explicit DIAG keys used here retain identical fingerprints; compiled/frozen C++ binaries unchanged. Existing batch processes loaded prior code at process start.",
+    "audit": "all_completed_runs_audit.json",
+    "paired_summary": "diag_followup_pair_summaries.json",
+    "frame_validation": "stage_original_domain_validation.json",
+    "bitexact_validation": "diag_probe_summary.json",
+    "timing_note": "Diagnostic instrumentation and varying3/6-process pools; not a codec complexity comparison."
+  },
+  "server_prefix_checks": [
+    {
+      "case": "johnny_q27_f17_current",
+      "encoded_frames": 17,
+      "exact_prefix_mismatches": []
+    },
+    {
+      "case": "johnny_q27_f17_r13_keep_hit_spatial",
+      "encoded_frames": 17,
+      "exact_prefix_mismatches": []
+    },
+    {
+      "case": "kristenandsara_q32_f1_current",
+      "encoded_frames": 1,
+      "exact_prefix_mismatches": []
+    },
+    {
+      "case": "kristenandsara_q32_f1_r13_keep_hit_spatial",
+      "encoded_frames": 1,
+      "exact_prefix_mismatches": []
+    },
+    {
+      "case": "kristenandsara_q32_f17_r13_keep_hit_spatial",
+      "encoded_frames": 17,
+      "exact_prefix_mismatches": []
+    }
+  ],
+  "python_tests": 18,
+  "python_tests_status": "pass",
+  "documented_commands_dry_run": "pass",
+  "notes": [
+    "No original workbook, video, bitstream or large raw log is included.",
+    "Source build snapshot belongs to compiled core; batch resume compatibility helper was amended afterward, with diagnostic fingerprints unchanged.",
+    "No macro-OFF full rebuild was repeated in this diagnostic task; new core changes are under the existing master macro."
+  ]
+}

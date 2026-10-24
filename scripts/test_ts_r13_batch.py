@@ -74,7 +74,9 @@ class R13BatchTests(unittest.TestCase):
             self.assertEqual(batch._observation_identity('r3_risk_guard'), expected)
             self.assertEqual(batch._observation_identity('r12_ci_near1'), expected)
             self.assertEqual(set(batch._observation_identity('r13_keep_hit_uniform')),
-                             set(expected) | set(batch._TS_R13_OBSERVATION_KEYS))
+                             set(expected) | set(batch._TS_R13_LEGACY_OBSERVATION_KEYS))
+            self.assertEqual(batch._r13_observation_identity(),
+                             {key: None for key in batch._TS_R13_LEGACY_OBSERVATION_KEYS})
             os.environ['TS_R13_STATS'] = '0'
             self.assertEqual(batch._observation_identity('current')['TS_R13_STATS'], '0')
             self.assertIn('TS_R13_POC', batch._observation_identity('current'))
@@ -157,16 +159,19 @@ class R13BatchTests(unittest.TestCase):
                 self.assertEqual(batch._run_one(job)['encode_status'], 'ok')
                 self.assertEqual(batch._run_one(job)['encode_status'], 'skipped_exists')
                 for key, value in [('TS_R13_STATS', '1'), ('TS_R13_TRACE', '1'),
-                                   ('TS_R13_DETAIL_LIMIT', '3'), ('TS_R13_POC', '0')]:
+                                   ('TS_R13_DETAIL_LIMIT', '3'), ('TS_R13_POC', '0'),
+                                   ('TS_R13_DIAG', '1'), ('TS_R13_DIAG_MAX_POC', '16'),
+                                   ('TS_R13_DIAG_COMPONENT', '0'), ('TS_R13_DIAG_SCOPE', 'luma')]:
                     os.environ[key] = value
                     self.assertEqual(batch._run_one(job)['encode_status'], 'ok', key)
                     self.assertEqual(batch._run_one(job)['encode_status'], 'skipped_exists', key)
-                self.assertEqual(len(calls), 5)
+                self.assertEqual(len(calls), 9)
                 identity = json.loads(job.bitstream.with_suffix('.identity.json').read_text())
                 self.assertEqual(identity['revision'], 'R13-KH-168-v1')
                 self.assertEqual(identity['public_mode'], 1)
                 self.assertEqual(identity['weights'], [1] * 5)
                 self.assertEqual(identity['observation_env']['TS_R13_POC'], '0')
+                self.assertEqual(identity['observation_env']['TS_R13_DIAG_SCOPE'], 'luma')
                 self.assertEqual(identity['encoder']['sha256'], hashlib.sha256(executable.read_bytes()).hexdigest())
                 self.assertEqual(len(identity['configuration_sha256']), 1)
                 self.assertFalse(identity['local_source_snapshot']['binary_build_origin_verified'])
