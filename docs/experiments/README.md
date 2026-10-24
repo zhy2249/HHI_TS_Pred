@@ -44,7 +44,7 @@
 | 阶段 | 设计 / 实现 | 验证 / 结果 |
 |---|---|---|
 | 初始统计 | [实验设计](TS_Adaptive_Predictor_Experiment_Design.md) | [CE 结果](TS_Adaptive_Predictor_CE_Results.md) |
-| 固定 predictor | [编码实验](TS_Fixed_Predictor_Coding_Experiment.md)、[目标与后续设计](TS_Fixed_Predictor_Target_Analysis_and_Next_Experiment.md) | [LB CE](TS_Fixed_Predictor_LB_CE_Results.md)、[LB BCE / RA CD](TS_Fixed_Predictor_LB_BCE_RA_CD.md) |
+| 固定 predictor | [编码实验](TS_Fixed_Predictor_Coding_Experiment.md)、[目标与后续设计](TS_Fixed_Predictor_Target_Analysis_and_Next_Experiment.md) | [LB CE](TS_Fixed_Predictor_LB_CE_Results.md)、[LB BCE / RA CD](TS_Fixed_Predictor_LB_BCE_RA_CD_Results.md) |
 | 条件 / 历史选择 | [设计](TS_Conditional_Predictor_Experiment_Design.md)、[实现](TS_Conditional_Predictor_Implementation.md) | [验证](TS_Conditional_Predictor_Validation.md)、[初步结果](TS_Conditional_Predictor_Preliminary_Results_20260918.md) |
 | R2 | [前期方案](TS_Predictor_Revision2_Design.md)、[协议](TS_Predictor_R2_Experiment_Protocol.md)、[实现](TS_Predictor_R2_Implementation.md) | [验证](TS_Predictor_R2_Validation.md)、[CE 结果](TS_Predictor_R2_LB_CE_Results_20260919.md) |
 | R3 | [设计](TS_Predictor_R3_Experiment_Design.md)、[实现](TS_Predictor_R3_Implementation.md) | [验证](TS_Predictor_R3_Validation.md)、[CE 结果](TS_Predictor_R3_LB_CE_Results_20260920.md)、[R3 B / R4 结果](TS_Predictor_R3B_R4_Results_20260921.md)、[已有 LB/AI/RA 的 QP 分析](results/r3.md) |
