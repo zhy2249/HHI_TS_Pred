@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "case": "Johnny32, POC16, CTU36; EQ versus SP",
+  "raw_sources": [
+    {
+      "path": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "sha256": "3bad3c21cffbc6a91abea2e996227af1526d0d4e657da8e7a18458b47a7a3d25"
+    },
+    {
+      "path": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "sha256": "d165a6b80f7e97cd93ee9c2146f57bdf2d83916f6b6dc2a7b272c9639ef20b93"
+    }
+  ],
+  "trace_status": "Complete strict JSON; no formatter recovery or truncation permission",
+  "recorded_input_equality": true,
+  "recorded_input_scope": "Transform entry residual/prediction/CABAC-accessor hashes, QP, lambda and mode ancestry; not all encoder private caches",
+  "predicate_status": "Reconstructed from logged inputs plus EncCu::xEncodeInterResidual source; predicate was not directly instrumented and no control intervention was run",
+  "EQ": {
+    "target_node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_32_32_0_2#1/848_384_16_32_0_3#1/856_384_8_32_0_4#1",
+    "sse_key": 58,
+    "previous_best_cost": 4511073.449826311,
+    "previous_best_sbt": 4,
+    "saved_off_cost": 4979722.1820578445,
+    "saved_best_cost": 4511073.449826311,
+    "threshold_formula": "bestCost * (1.07 * (savedOffCost / savedBestCost))",
+    "derived_threshold": 5328302.734801893,
+    "current_sbt_off_cost": 5275447.471547937,
+    "derived_gate_skips": false,
+    "observed_key58_sbt_candidates": [
+      2,
+      4
+    ],
+    "ts_fractional_bits": 1891403,
+    "ts_dist": 79095,
+    "ts_q_hash": 1454644526469312942,
+    "ts_abs_sum": 15,
+    "child_selected_cost": 4050419.836897172,
+    "child_selected_dist": 50255,
+    "child_selected_frac_bits": 2372845,
+    "child_reco_y_hash": 9412328615254554219,
+    "parent_winner_mode": 7,
+    "parent_winner_cost": 8587104.2824001,
+    "parent_winner_db_offset": -112428.05791801165,
+    "parent_winner_comparison_cost": 8474676.224482087,
+    "parent_selected_cu_count": 3
+  },
+  "SP": {
+    "target_node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_32_32_0_2#1/848_384_16_32_0_3#1/856_384_8_32_0_4#1",
+    "sse_key": 58,
+    "previous_best_cost": 4511073.449826311,
+    "previous_best_sbt": 4,
+    "saved_off_cost": 4979722.1820578445,
+    "saved_best_cost": 4511073.449826311,
+    "threshold_formula": "bestCost * (1.07 * (savedOffCost / savedBestCost))",
+    "derived_threshold": 5328302.734801893,
+    "current_sbt_off_cost": 5365968.471547937,
+    "derived_gate_skips": true,
+    "observed_key58_sbt_candidates": [],
+    "ts_fractional_bits": 1981924,
+    "ts_dist": 79095,
+    "ts_q_hash": 1454644526469312942,
+    "ts_abs_sum": 15,
+    "child_selected_cost": 4511073.449826311,
+    "child_selected_dist": 74364,
+    "child_selected_frac_bits": 2028710,
+    "child_reco_y_hash": 7495220539125848606,
+    "parent_winner_mode": 5,
+    "parent_winner_cost": 8856801.5708617,
+    "parent_winner_db_offset": -139066.2972940726,
+    "parent_winner_comparison_cost": 8717735.273567628,
+    "parent_selected_cu_count": 6
+  },
+  "difference": {
+    "ts_fractional_bits": 90521,
+    "ts_estimated_bits": 2.762481689453125,
+    "sbt_off_cost": 90521.0,
+    "child_selected_cost": 460653.6129291393,
+    "child_selected_dist": 24109,
+    "child_selected_frac_bits": -344135
+  },
+  "source_contract": {
+    "gate": "EncCu::xEncodeInterResidual: bestCost captures bestCS->cost at entry; th=1.07, multiplied by m_sbtCostSave[0]/[1] when prevBestSbt!=0; skip when sbtOffCost > bestCost*th",
+    "saved_costs": "At end of residual search, m_sbtCostSave stores sbtOffCost/currBestCost only if bestCostBegin != bestCS->cost",
+    "db_offset": "The SBT gate uses raw bestCS->cost, without costDbOffset. Parent split comparison uses cost+costDbOffset when enc_db_opt=1",
+    "cache": "SaveLoadEncInfoSbt is keyed by CTU-relative x/y, width/height and quantized SSE; capacity10, no overwrite when full. This local key58 gate chain does not require the earlier key92/cache-capacity chain to explain it"
+  },
+  "interpretation_limits": [
+    "A completed child search node is not necessarily in the final CU tree; SP rejects this BT parent in favor of QT.",
+    "The first observed numerical/control difference occurs earlier; it is not asserted to be the cause of this later local gate crossing.",
+    "This establishes an observed selected-search difference with source-reconstructed gate inputs, not a completed gate-disable causal intervention.",
+    "Short 17-frame prefixes and local RD costs do not explain the full 300-frame BD-rate loss."
+  ],
+  "recommended_single_control": {
+    "status": "planned, not implemented or executed",
+    "scope": {
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_32_32_0_2#1/848_384_16_32_0_3#1/856_384_8_32_0_4#1",
+      "mode": 1,
+      "opts": 0,
+      "residual_pass": 0,
+      "sse_key": 58
+    },
+    "change": "Bypass only the sbtOffCost > bestCost*th pruning gate for this one candidate in both EQ and SP; keep all other tools/caches unchanged.",
+    "required_checks": "Record exact eligible/applied counts and predicate operands; decode both; check no earlier output divergence; inspect whether the candidate and parent-tree difference disappears, persists or migrates."
+  }
+}

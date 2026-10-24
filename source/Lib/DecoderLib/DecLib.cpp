@@ -39,6 +39,9 @@
 #include "DecLib.h"
 
 #include "CommonLib/AdaptiveLoopFilterEcm.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "CommonLib/TsR13DecodeObservation.h"
+#endif
 #include "CommonLib/AdaptiveLoopFilterVtm.h"
 #include "CommonLib/AlfParameters.h"
 #include "CommonLib/dtrace_next.h"
@@ -819,6 +822,9 @@ void DecLib::executeLoopFilters()
   m_pic->m_cs->slice->startProcessingTimer();
 
   CodingStructure &cs = *m_pic->m_cs;
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::LoopScope diagnosticScope(m_pic->m_poc);
+#endif
 
   if (cs.sps->m_lmcsEnabled && cs.picHeader->m_lmcsEnabledFlag)
   {
@@ -861,6 +867,9 @@ void DecLib::executeLoopFilters()
     PROFILER_TO_PREV_SCOPE(1, g_timeProfiler, P_LOOPFILTERS);
   }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("before_dbf",*m_pic);
+#endif
   if (cs.sps->m_alfEnabledFlag && cs.sps->m_alfImprovementsEnabledFlag)
   {
     m_alfEcm->copyAddInputsBeforeDBF(cs, m_cTrQuant);
@@ -878,6 +887,9 @@ void DecLib::executeLoopFilters()
 
   // deblocking filter
   m_deblockingFilter.deblockingFilterPic(cs);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_dbf",*m_pic);
+#endif
   PROFILER_TO_NEXT_SCOPE(1, g_timeProfiler, P_SAO);
   if (cs.sps->m_ccSaoEnabledFlag)
   {
@@ -898,6 +910,9 @@ void DecLib::executeLoopFilters()
     m_unifiedNnlf->setPicprms(&m_pic->m_picprm);
     m_unifiedNnlf->setSliceprms(cs.slice->m_nnlfUnifiedParam);
     m_unifiedNnlf->filter(*m_pic, false);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+    TsR13DecodeObservation::observe("after_nnlf",*m_pic);
+#endif
   }
 #endif
 
@@ -905,16 +920,29 @@ void DecLib::executeLoopFilters()
   {
     m_cSAO.SAOProcess(cs, cs.picture->getSAO());
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_sao_bif",*m_pic,true);
+  TsR13DecodeObservation::observe("after_sao_bif_clip_only",*m_pic,false,true);
+#endif
   if (cs.sps->m_ccSaoEnabledFlag)
   {
     m_cSAO.getCcSaoComParam() = cs.slice->m_ccSaoComParam;
     m_cSAO.CCSAOProcess(cs);
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_ccsao_before_clip",*m_pic,true);
+#endif
   m_cSAO.jointClipSaoBifCcSao(cs);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_ccsao_clip",*m_pic);
+#endif
   PROFILER_TO_PREV_SCOPE(1, g_timeProfiler, P_LOOPFILTERS);
 
   PelStorage cccmCorrection;
   m_cLoopFilterCccm.lfCccmSetFrameLevelInheritedParameters(cs);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::filterSummary(*m_pic);
+#endif
   if (cs.slice->m_lfCccmEnabledFlag)
   {
     m_cLoopFilterCccm.lfCccmInitIntraPred(&m_cIntraPred);
@@ -957,6 +985,9 @@ void DecLib::executeLoopFilters()
     PROFILER_TO_PREV_SCOPE(1, g_timeProfiler, P_LOOPFILTERS);
   }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_alf",*m_pic);
+#endif
   if (cs.slice->m_lfCccmEnabledFlag)
   {
     cs.getRecoBuf(COMP_Cb).reconstruct(cs.getRecoBuf(COMP_Cb), cccmCorrection.getBuf(COMP_Cb),
@@ -967,6 +998,9 @@ void DecLib::executeLoopFilters()
     DTRACE_CRC(g_trace_ctx, D_CRC, cs, cs.getRecoBuf());
   }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecodeObservation::observe("after_lfcccm",*m_pic);
+#endif
   for (int i = 0; i < cs.pps->m_numSubPics && m_targetSubPicIdx; i++)
   {
     // keep target subpic samples untouched, for other subpics mask their output sample value to 0
@@ -1046,6 +1080,15 @@ void DecLib::finishPictureLight(int &poc, PicList *&rPicList)
 
 void DecLib::finishPicture(int &poc, PicList *&rPicList, MsgLevel msgl, bool associatedWithNewClvs)
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  {
+    // DecApp and tryDecodePicture call copyAdaptedLumaClip between loop
+    // filtering and finishPicture. Its signalled Y range can be narrower
+    // than the internal-bit-depth range used by earlier filter stages.
+    TsR13DecodeObservation::LoopScope diagnosticScope(m_pic->m_poc);
+    TsR13DecodeObservation::observe("final_clip",*m_pic);
+  }
+#endif
 #if RExt__DECODER_DEBUG_TOOL_STATISTICS
   CodingStatistics::StatTool &s = CodingStatistics::GetStatisticTool(STATS__TOOL_TOTAL_FRAME);
   s.count++;

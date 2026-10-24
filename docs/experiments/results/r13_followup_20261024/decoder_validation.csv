@@ -1,0 +1,11 @@
+case,decoded_frames,off_decoded_frames,encoder_decoder_exact_stage_components
+j27_c0_p8,17,17,21
+j27_eq_p8,17,17,21
+j27_sp_p8,17,17,21
+j32_c0_p0,1,1,21
+j32_eq_p16,17,17,21
+j32_sp_p0,1,1,21
+j32_sp_p16,17,17,21
+ks32_c0_p0,1,1,21
+ks32_eq_p0,1,1,21
+ks32_sp_p0,1,1,21

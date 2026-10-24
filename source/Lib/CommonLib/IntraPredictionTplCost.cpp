@@ -43,6 +43,9 @@
 
 #include "dtrace_next.h"
 #include "Rom.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsR13CcpDiagnostic.h"
+#endif
 
 #include <memory.h>
 
@@ -192,6 +195,15 @@ void IntraPrediction::findDecoderDerivedCcpModel(CodingUnit &cu, CrossCompModels
       }
     }
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if(TsR13CcpDiagnostic::selected(cu))
+  {
+    int rw,rh,rx,ry,px,py;
+    m_cccmAreaInfo.getRefParams(rw,rh,rx,ry,px,py);
+    const CPelBuf ref=m_cccmAreaInfo.getRefPelBufFor(m_cccmLumaBuf[0]);
+    TsR13CcpDiagnostic::observe(cu,ref,rw,rh,rx,ry,px,py,ccModel0,ccModel1,candCost,candIndBest,costBest);
+  }
+#endif
 }
 
 int IntraPrediction::xDecDerivedFusionTemplateCost(const CodingUnit &cu, int candIdxOrig0, int candIdxOrig1, int cost0,

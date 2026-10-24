@@ -1,0 +1,897 @@
+{
+  "schema": 1,
+  "scope": "Encoder search trace; short-prefix diagnosis, no BD-rate",
+  "pairing": "poc/ctu/node_path/event/semantic geometry/mode, active-mode ancestry captured at child entry, local prepared-mode signature, SBT residual-call key/occurrence and per-key occurrence; node IDs and global ordinal ignored",
+  "post_divergence_caveat": "Matched keys after a branch difference do not establish equal private search state; unmatched keys retained explicitly",
+  "reference_rows": 286278,
+  "test_rows": 268534,
+  "reference_trace_complete": true,
+  "test_trace_complete": true,
+  "legacy_byte_field_recovery_rows": [
+    0,
+    0
+  ],
+  "truncation_caveat": "A truncated prefix can locate an observed first divergence but cannot prove absence of later changes or complete the retained-result chain",
+  "exact_common_prefix_events": 39299,
+  "first_event_difference": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "changes": {
+      "cost": [
+        14515228.802509656,
+        14632258.802509656
+      ],
+      "ctx_hash": [
+        18371244954161775503,
+        5791380155698324725
+      ],
+      "frac_bits": [
+        4007812,
+        4124842
+      ]
+    }
+  },
+  "first_transform_cost_or_q_difference": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "changes": {
+      "cost": [
+        14515228.802509656,
+        14632258.802509656
+      ],
+      "ctx_hash": [
+        18371244954161775503,
+        5791380155698324725
+      ],
+      "frac_bits": [
+        4007812,
+        4124842
+      ]
+    },
+    "matched_transform_entry_changes": {},
+    "within_exact_prefix": false
+  },
+  "first_transform_cost_or_q_difference_with_equal_logged_entry": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 39330,
+      "seq": 39300,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/832_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "transform_trial",
+      "component": 0,
+      "tu_x": 832,
+      "tu_y": 384,
+      "tu_w": 32,
+      "tu_h": 32,
+      "tr_group": 0,
+      "tr": 4,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        82,
+        1
+      ]
+    },
+    "changes": {
+      "cost": [
+        14515228.802509656,
+        14632258.802509656
+      ],
+      "ctx_hash": [
+        18371244954161775503,
+        5791380155698324725
+      ],
+      "frac_bits": [
+        4007812,
+        4124842
+      ]
+    },
+    "matched_transform_entry_changes": {},
+    "within_exact_prefix": false
+  },
+  "first_matched_control_difference": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 40362,
+      "seq": 40332,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/864_384_32_32_0_3#1",
+      "_occurrence": 3,
+      "event": "mode_result",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": 1,
+      "opts": 0,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        92,
+        1
+      ]
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 40362,
+      "seq": 40332,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/864_384_32_32_0_3#1",
+      "_occurrence": 3,
+      "event": "mode_result",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": 1,
+      "opts": 0,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        92,
+        1
+      ]
+    },
+    "changes": {
+      "accepted": [
+        0,
+        1
+      ],
+      "previous_best_cost": [
+        14270593.83730614,
+        14359151.83730614
+      ]
+    },
+    "matched_transform_entry_changes": null,
+    "within_exact_prefix": false
+  },
+  "first_matched_history_difference": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 40364,
+      "seq": 40334,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/864_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "sbt_write",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        92,
+        1
+      ]
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 40364,
+      "seq": 40334,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_64_32_0_2#1/864_384_32_32_0_3#1",
+      "_occurrence": 0,
+      "event": "sbt_write",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          6,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        1,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": [
+        [
+          "mode_prepare",
+          1,
+          0,
+          33,
+          1
+        ],
+        92,
+        1
+      ]
+    },
+    "changes": {
+      "local_best_cost": [
+        14270593.83730614,
+        14356979.72888846
+      ],
+      "sbt": [
+        0,
+        53
+      ],
+      "sbt_off_cost": [
+        14270593.83730614,
+        14359151.83730614
+      ],
+      "trs": [
+        4,
+        0
+      ]
+    },
+    "matched_transform_entry_changes": null,
+    "within_exact_prefix": false
+  },
+  "first_matched_completed_node_difference": {
+    "reference": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "_line": 79944,
+      "seq": 79914,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_32_32_0_2#1/848_384_16_32_0_3#1/856_384_8_32_0_4#1",
+      "_occurrence": 0,
+      "event": "cu_selected",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        3,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": null
+    },
+    "test": {
+      "_source": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "_line": 80540,
+      "seq": 80510,
+      "poc": 16,
+      "ctu": 36,
+      "node_path": "/768_384_128_128_0_0#1/832_384_64_64_0_1#1/832_384_32_32_0_2#1/848_384_16_32_0_3#1/856_384_8_32_0_4#1",
+      "_occurrence": 0,
+      "event": "cu_selected",
+      "component": null,
+      "tu_x": null,
+      "tu_y": null,
+      "tu_w": null,
+      "tu_h": null,
+      "tr_group": null,
+      "tr": null,
+      "mode": null,
+      "opts": null,
+      "_ancestry": [
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          5,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ],
+        [
+          "split_allowed",
+          7,
+          0,
+          -1,
+          1
+        ]
+      ],
+      "_active_mode": [
+        "mode_prepare",
+        3,
+        0,
+        33,
+        1
+      ],
+      "_residual_call": null
+    },
+    "changes": {
+      "cost": [
+        4050419.836897172,
+        4511073.449826311
+      ],
+      "dist": [
+        50255,
+        74364
+      ],
+      "frac_bits": [
+        2372845,
+        2028710
+      ],
+      "reco_y_hash": [
+        9412328615254554219,
+        7495220539125848606
+      ]
+    },
+    "unmatched_completed_nodes_before": [
+      0,
+      0
+    ],
+    "caveat": "Completed search node, not necessarily retained in final bitstream tree"
+  },
+  "paired_changed_events": 63699,
+  "unmatched_events": 176064,
+  "reference_event_counts": {
+    "ctu_begin": 1,
+    "ctu_reference": 8,
+    "cu_begin": 768,
+    "sbt_reset": 1,
+    "mode_allowed": 9216,
+    "mode_prepare": 3947,
+    "sbt_read": 5535,
+    "transform_entry": 82307,
+    "transform_trial": 82307,
+    "transform_group_gate": 65787,
+    "mode_result": 15806,
+    "mode_context_restore": 15892,
+    "sbt_write": 2133,
+    "split_allowed": 589,
+    "cu_selected": 768,
+    "cu_end": 768,
+    "split_cost_write": 335,
+    "tt_skip_eval": 109,
+    "ctu_end": 1
+  },
+  "test_event_counts": {
+    "ctu_begin": 1,
+    "ctu_reference": 8,
+    "cu_begin": 738,
+    "sbt_reset": 1,
+    "mode_allowed": 8856,
+    "mode_prepare": 3797,
+    "sbt_read": 5275,
+    "transform_entry": 76783,
+    "transform_trial": 76783,
+    "transform_group_gate": 61473,
+    "mode_result": 15144,
+    "mode_context_restore": 15231,
+    "sbt_write": 1964,
+    "split_allowed": 573,
+    "cu_selected": 738,
+    "cu_end": 738,
+    "split_cost_write": 320,
+    "tt_skip_eval": 110,
+    "ctu_end": 1
+  },
+  "sources": [
+    {
+      "path": "runs/r13_followup_20261024/search_complete/j32_eq/encode.log",
+      "sha256": "3bad3c21cffbc6a91abea2e996227af1526d0d4e657da8e7a18458b47a7a3d25"
+    },
+    {
+      "path": "runs/r13_followup_20261024/search_complete/j32_sp/encode.log",
+      "sha256": "d165a6b80f7e97cd93ee9c2146f57bdf2d83916f6b6dc2a7b272c9639ef20b93"
+    }
+  ]
+}

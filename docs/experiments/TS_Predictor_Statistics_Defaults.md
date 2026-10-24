@@ -1,6 +1,6 @@
 # TS 实验统计默认关闭
 
-更新：2026-10-23（新增R14接口；原默认值改动发生于2026-10-04）。本说明取代历史文档中的“R2～R6、R8/R9 默认开启统计”约定。
+更新：2026-10-24（新增R13异常解码/搜索观察；原默认值改动发生于2026-10-04）。本说明取代历史文档中的“R2～R6、R8/R9 默认开启统计”约定。
 只修改观察默认值，不修改算法、模式编号、predictor、必要历史状态或码流语法。
 
 ## 当前行为
@@ -11,6 +11,8 @@
 | R7 shadow | `JVET_BJUT_TS_R7_SHADOW` 编译宏＋`TS_RATE_SHADOW` 环境变量 | 均关闭 | 宏为1且环境设1 |
 | R7 RDOQ shadow | 同一编译宏＋`TS_RATE_RDOQ_SHADOW` | 关闭 | 宏为1且环境设1 |
 | 最初固定 q 分析 | `JVET_BJUT_TS_PRED_ANALYSIS`＋`TS_PRED_STATS` 输出路径 | 关闭 | 沿用专用分析流程 |
+| R13 异常解码观察 | `TS_R13_DECODE_DIAG`；可额外开 `TS_R13_DECODE_CCP` | 均关闭 | 显式设1，默认只允许到POC31 |
+| R13 异常搜索观察 | `TS_R13_SEARCH_TRACE` | 关闭 | 显式设1，并指定POC/CTU/记录上限 |
 
 上述 Rn_STATS **不是新增的 C++ 宏**，仍是已有运行时接口。
 不需要为了关统计将 `*_MODE` 或 `*_EXACT_OPT` 设为 0。
@@ -23,6 +25,10 @@ R13新增时即默认关闭；`TS_R13_TRACE`也默认0，`TS_R13_DETAIL_LIMIT`�
 `TS_R13_POC`未设置表示不限POC。实现位置为`TsFixedPrediction.h`参数解析与
 `ContextModelling.cpp` / `TsR13Stats.h`最终Writer观察，详见[R13实现](TS_Predictor_R13_Implementation.md)。
 该轮不改变旧模式的默认值；非R13任务未显式设置R13环境时保留此前续跑指纹。
+
+2026-10-24新增的解码/搜索接口是独立诊断，不需要开启旧STATS/TRACE或全RDOQ shadow。
+最终块观察、滤波拆分、CCP引用及编码器搜索事件见[R13解码续查](TS_Predictor_R13_Decoder_Followup_20261024.md)。
+其独立脚本记录观察身份、不复用正式批量任务成功marker；不以诊断运行耗时作为复杂度结果。
 
 R14同样默认关闭；`TS_R14_STATS`独立输出最终Writer与RDOQ trial两张表，不能混合人口。
 `TS_R14_TRACE=0`，DETAIL_LIMIT默认64/最大1024，POC未设置表示全部。

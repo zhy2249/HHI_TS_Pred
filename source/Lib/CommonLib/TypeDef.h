@@ -223,6 +223,9 @@
 // rho=21/2，整数尺度168；n<3仍Current，dense直接最小化，无R3/R6 guard。
 // 与所有旧算法默认/旧R10缓存互斥；TS_FIXED_PREDICTOR可显式覆盖默认。
 // TS_R13_STATS/TS_R13_TRACE是观察环境变量，默认关闭，不是算法宏。
+// R13异常诊断同样默认关闭：TS_R13_DECODE_DIAG记录解码后最终块/滤波阶段；
+// TS_R13_DECODE_CCP额外记录解码派生CCP；TS_R13_SEARCH_TRACE记录编码搜索。
+// 这些是只读观察环境变量，不选择新的R13算法，也不需要开启上述STATS/TRACE。
 #ifndef JVET_BJUT_TS_R13_MODE
 #define JVET_BJUT_TS_R13_MODE                              0
 #endif

@@ -1,0 +1,14 @@
+[
+  {
+    "case": "j32_eq",
+    "codec_bit_exact": true,
+    "checked_frames": 17,
+    "trace_status": "rejected_char_format_and_200000_row_limit"
+  },
+  {
+    "case": "j32_sp",
+    "codec_bit_exact": true,
+    "checked_frames": 17,
+    "trace_status": "rejected_char_format_and_200000_row_limit"
+  }
+]

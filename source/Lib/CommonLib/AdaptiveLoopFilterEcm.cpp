@@ -39,6 +39,9 @@
 #include "AlfFixedFilters.h"
 #include "CodingStructure.h"
 #include "Picture.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsR13DecodeObservation.h"
+#endif
 #include <array>
 #include <cmath>
 
@@ -224,6 +227,18 @@ void AdaptiveLoopFilterEcm::ALFProcess(CodingStructure &cs)
   uint32_t  lastSliceIdx = 0xFFFFFFFF;
 
   PelUnitBuf recYuv = cs.getRecoBuf();
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  // ALF and CCALF are interleaved by CTU/component. This private snapshot
+  // collects each ordinary-ALF output just before its real CCALF operation.
+  // It does not change the filtering order or create an alternative decode.
+  const bool observeAlf=TsR13DecodeObservation::loopActive();
+  PelStorage ordinaryAlfSnapshot;
+  if (observeAlf)
+  {
+    ordinaryAlfSnapshot.create(cs.area.chromaFormat,Area(0,0,cs.picture->lwidth(),cs.picture->lheight()));
+    ordinaryAlfSnapshot.copyFrom(recYuv);
+  }
+#endif
 
   // Setup the frame buffer for the reconstruction after SAO.
   m_tempBuf.copyFrom(recYuv);
@@ -476,6 +491,13 @@ void AdaptiveLoopFilterEcm::ALFProcess(CodingStructure &cs)
 
             m_ctuAlreadyProcessedFlag[compID][ctuIdx] = true;
           }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+          if (observeAlf)
+          {
+            const Area snapshotArea(xPos>>chromaScaleX,yPos>>chromaScaleY,width>>chromaScaleX,height>>chromaScaleY);
+            ordinaryAlfSnapshot.getBuf(compID).subBuf(snapshotArea.pos(),snapshotArea.size()).copyFrom(recYuv.get(compID).subBuf(snapshotArea.pos(),snapshotArea.size()));
+          }
+#endif
           if (sliceCcAlfFilterParam.ccAlfFilterEnabled[compIdx - 1])
           {
             const int filterIdx = m_ccAlfFilterControl[compIdx - 1][ctuIdx];
@@ -617,6 +639,13 @@ void AdaptiveLoopFilterEcm::ALFProcess(CodingStructure &cs)
 
             m_ctuAlreadyProcessedFlag[compID][ctuIdx] = true;
           }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+          if (observeAlf)
+          {
+            const Area snapshotArea(xPos>>chromaScaleX,yPos>>chromaScaleY,width>>chromaScaleX,height>>chromaScaleY);
+            ordinaryAlfSnapshot.getBuf(compID).subBuf(snapshotArea.pos(),snapshotArea.size()).copyFrom(recYuv.get(compID).subBuf(snapshotArea.pos(),snapshotArea.size()));
+          }
+#endif
           if (sliceCcAlfFilterParam.ccAlfFilterEnabled[compIdx - 1])
           {
             const int filterIdx = m_ccAlfFilterControl[compIdx - 1][ctuIdx];
@@ -635,6 +664,14 @@ void AdaptiveLoopFilterEcm::ALFProcess(CodingStructure &cs)
       ctuIdx++;
     }
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if (observeAlf)
+  {
+    // CCALF never writes luma; final luma is the ordinary-ALF result.
+    ordinaryAlfSnapshot.getBuf(COMP_Y).copyFrom(recYuv.get(COMP_Y));
+    TsR13DecodeObservation::observe("after_ordinary_alf",*cs.picture,ordinaryAlfSnapshot.getBuf(cs.area));
+  }
+#endif
 }
 
 void AdaptiveLoopFilterEcm::copyAddInputsBeforeDBF(const CodingStructure &cs, TrQuant &trQuant)

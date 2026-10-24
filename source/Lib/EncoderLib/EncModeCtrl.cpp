@@ -36,6 +36,7 @@
 */
 
 #include "EncModeCtrl.h"
+#include "TsR13SearchDiagnostic.h"
 
 #include "AQp.h"
 #include "RateCtrl.h"
@@ -1220,6 +1221,12 @@ bool EncModeCtrl::trySplit(const EncTestMode &encTestmode, const CodingStructure
   comprCUCtx->lastTestMode = comprCUCtx->currTestMode;
 
   bool valid = xTrySplitInternal(encTestmode, cs, partitioner);
+  if(R13SearchDiagnostic::active())
+  {
+    R13SearchDiagnostic::Fields f;
+    f.add("mode",int(encTestmode.type)).add("opts",int(encTestmode.opts)).add("mode_qp",encTestmode.qp).add("allowed",int(valid));
+    R13SearchDiagnostic::emit("split_allowed",f);
+  }
   if (valid)
   {
     comprCUCtx->currTestMode = encTestmode;
@@ -1426,9 +1433,18 @@ bool EncModeCtrl::xTrySplitInternal(const EncTestMode &encTestmode, const Coding
       return false;
     }
 
-    if (m_encCfg->m_ttFastSkip && xSkipTreeCandidate(split, cuECtx, m_slice->m_eSliceType))
+    if (m_encCfg->m_ttFastSkip)
     {
-      return false;
+      const bool r13Skip=xSkipTreeCandidate(split,cuECtx,m_slice->m_eSliceType);
+      if(R13SearchDiagnostic::active())
+      {
+        R13SearchDiagnostic::Fields f;
+        f.add("split",int(split)).add("tt_fast_skip",m_encCfg->m_ttFastSkip).number("threshold",m_encCfg->m_ttFastSkipThr)
+         .number("non_split_cost",cuECtx.bestNonSplitCost).number("horz_cost",cuECtx.bestCostHorzSplit)
+         .number("vert_cost",cuECtx.bestCostVertSplit).add("skip",int(r13Skip));
+        R13SearchDiagnostic::emit("tt_skip_eval",f);
+      }
+      if(r13Skip) return false;
     }
     break;
   case CU_TRIV_SPLIT:
@@ -1450,9 +1466,18 @@ bool EncModeCtrl::xTrySplitInternal(const EncTestMode &encTestmode, const Coding
       return false;
     }
 
-    if (m_encCfg->m_ttFastSkip && xSkipTreeCandidate(split, cuECtx, m_slice->m_eSliceType))
+    if (m_encCfg->m_ttFastSkip)
     {
-      return false;
+      const bool r13Skip=xSkipTreeCandidate(split,cuECtx,m_slice->m_eSliceType);
+      if(R13SearchDiagnostic::active())
+      {
+        R13SearchDiagnostic::Fields f;
+        f.add("split",int(split)).add("tt_fast_skip",m_encCfg->m_ttFastSkip).number("threshold",m_encCfg->m_ttFastSkipThr)
+         .number("non_split_cost",cuECtx.bestNonSplitCost).number("horz_cost",cuECtx.bestCostHorzSplit)
+         .number("vert_cost",cuECtx.bestCostVertSplit).add("skip",int(r13Skip));
+        R13SearchDiagnostic::emit("tt_skip_eval",f);
+      }
+      if(r13Skip) return false;
     }
     break;
   default:
@@ -1549,6 +1574,12 @@ bool EncModeCtrl::tryMode(const EncTestMode &encTestmode, const CodingStructure 
 
   comprCUCtx->lastTestMode = comprCUCtx->currTestMode;
   bool valid               = xTryModeInternal(encTestmode, cs, partitioner);
+  if(R13SearchDiagnostic::active())
+  {
+    R13SearchDiagnostic::Fields f;
+    f.add("mode",int(encTestmode.type)).add("opts",int(encTestmode.opts)).add("mode_qp",encTestmode.qp).add("allowed",int(valid));
+    R13SearchDiagnostic::emit("mode_allowed",f);
+  }
   if (valid)
   {
     comprCUCtx->currTestMode = encTestmode;
@@ -1987,6 +2018,16 @@ bool EncModeCtrl::useModeResult(const EncTestMode &encTestmode, CodingStructure 
     cuECtx.nonSkipWasTested |= !tempCS->cus.front()->skip;
   }
 
+  if(R13SearchDiagnostic::active() && isModeSplit(encTestmode))
+  {
+    R13SearchDiagnostic::Fields f;
+    f.add("mode",int(encTestmode.type)).number("trial_cost",tempCS->cost)
+     .number("previous_global_best",cuECtx.bestCS?cuECtx.bestCS->cost:MAX_DOUBLE)
+     .number("non_split_cost",cuECtx.bestNonSplitCost).number("horz_cost",cuECtx.bestCostHorzSplit)
+     .number("vert_cost",cuECtx.bestCostVertSplit).number("tri_horz_cost",cuECtx.bestCostTriHorzSplit)
+     .number("tri_vert_cost",cuECtx.bestCostTriVertSplit);
+    R13SearchDiagnostic::emit("split_cost_write",f);
+  }
   if (m_encCfg->m_Imv4PelFast && m_encCfg->m_ImvMode && encTestmode.type == ETM_INTER_ME)
   {
     const auto amvrSearchMode = encTestmode.getAmvrSearchMode();

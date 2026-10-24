@@ -36,6 +36,7 @@
 */
 
 #include "EncCu.h"
+#include "TsR13SearchDiagnostic.h"
 
 #include "EncLib.h"
 #include "Analyze.h"
@@ -203,6 +204,7 @@ void EncCu::init(EncLib *pcEncLib, EncModeCtrl *pcEncModeCtrl, const SPS &sps)
 void EncCu::compressCtu(CodingStructure &cs, const UnitArea &area, const unsigned ctuRsAddr,
                         const EnumArray<int, ChannelType> &prevQP, const EnumArray<int, ChannelType> &currQP)
 {
+  R13SearchDiagnostic::CtuScope r13CtuTrace(cs,area,ctuRsAddr,m_CABACEstimator->getCtx());
   m_modeCtrl->initCTUEncoding(*cs.slice);
 
   cs.slice->m_mapPltCost[0].clear();
@@ -441,7 +443,17 @@ bool EncCu::xCheckBestMode(CodingStructure *&tempCS, CodingStructure *&bestCS, P
     DTRACE_BEST_MODE(tempCS, bestCS, m_pcRdCost->getLambda(), encDbOpt);
 #endif
 
-    if (m_modeCtrl->useModeResult(encTestMode, tempCS, partitioner, encDbOpt))
+    const bool r13ModeWon=m_modeCtrl->useModeResult(encTestMode, tempCS, partitioner, encDbOpt);
+    if(R13SearchDiagnostic::active())
+    {
+      R13SearchDiagnostic::Fields f; R13SearchDiagnostic::structureFields(f,*tempCS);
+      f.add("mode",int(encTestMode.type)).add("opts",int(encTestMode.opts)).add("mode_qp",encTestMode.qp)
+       .number("previous_best_cost",bestCS->cost).number("previous_best_db_offset",bestCS->costDbOffset)
+       .add("enc_db_opt",int(encDbOpt)).add("accepted",int(r13ModeWon))
+       .add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()));
+      R13SearchDiagnostic::emit("mode_result",f);
+    }
+    if (r13ModeWon)
     {
       std::swap(tempCS, bestCS);
       // store temp best CI for next CU coding
@@ -452,12 +464,21 @@ bool EncCu::xCheckBestMode(CodingStructure *&tempCS, CodingStructure *&bestCS, P
 
   // reset context states
   m_CABACEstimator->getCtx() = m_CurrCtx->start;
+  if(R13SearchDiagnostic::active())
+  { R13SearchDiagnostic::Fields f; f.add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx())); R13SearchDiagnostic::emit("mode_context_restore",f); }
 
   return bestChanged;
 }
 
 void EncCu::prepare(CodingStructure *&tempCS, Partitioner &partitioner, EncTestMode &currTestMode)
 {
+  if(R13SearchDiagnostic::active())
+  {
+    R13SearchDiagnostic::Fields f;
+    f.add("mode",int(currTestMode.type)).add("opts",int(currTestMode.opts)).add("mode_qp",currTestMode.qp)
+     .add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()));
+    R13SearchDiagnostic::emit("mode_prepare",f);
+  }
   Slice     &slice = *tempCS->slice;
   const PPS &pps   = *tempCS->pps;
 
@@ -507,6 +528,7 @@ void EncCu::xCompressCU(CodingStructure *&tempCS, CodingStructure *&bestCS, Part
 {
   PROFILER_SCOPE(1, g_timeProfiler, P_COMPRESS_CU);
   CHECK(maxCostAllowed < 0, "Wrong value of maxCostAllowed!");
+  R13SearchDiagnostic::CuScope r13CuTrace(*tempCS,partitioner,m_CABACEstimator->getCtx());
 
   Slice         &slice   = *tempCS->slice;
   const PPS     &pps     = *tempCS->pps;
@@ -561,6 +583,8 @@ void EncCu::xCompressCU(CodingStructure *&tempCS, CodingStructure *&bestCS, Part
     auto slsSbt    = dynamic_cast<SaveLoadEncInfoSbt *>(m_modeCtrl);
     int  maxSLSize = sps.m_useSBT ? tempCS->slice->m_sps->getMaxTbSize() : MTS_INTER_MAX_CU_SIZE;
     slsSbt->resetSaveloadSbt(maxSLSize);
+    if(R13SearchDiagnostic::active())
+    { R13SearchDiagnostic::Fields f; f.add("max_size",maxSLSize); R13SearchDiagnostic::emit("sbt_reset",f); }
   }
   m_sbtCostSave[0] = m_sbtCostSave[1] = MAX_DOUBLE;
 
@@ -644,6 +668,8 @@ void EncCu::xCompressCU(CodingStructure *&tempCS, CodingStructure *&bestCS, Part
     // although some coding modes were planned to be tried in RDO, no coding mode actually finished encoding due to
     // early termination thus tempCS->cost and bestCS->cost are both MAX_DOUBLE; in this case, skip the following
     // process for normal case
+    if(R13SearchDiagnostic::active())
+    { R13SearchDiagnostic::Fields f; f.add("no_finished_mode",1); R13SearchDiagnostic::emit("cu_selected",f); }
     m_modeCtrl->finishCULevel(partitioner);
     return;
   }
@@ -677,6 +703,13 @@ void EncCu::xCompressCU(CodingStructure *&tempCS, CodingStructure *&bestCS, Part
     CU::saveModelsInHEIP(cu);
   }
 
+  if(R13SearchDiagnostic::active())
+  {
+    R13SearchDiagnostic::Fields f; R13SearchDiagnostic::structureFields(f,*bestCS);
+    f.add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()))
+     .add("reco_y_hash",R13SearchDiagnostic::bufferHash(bestCS->getRecoBuf(currCsArea).Y()));
+    R13SearchDiagnostic::emit("cu_selected",f);
+  }
   bestCS->picture->getPredBuf(currCsArea).copyFrom(bestCS->getPredBuf(currCsArea));
   bestCS->picture->getRecoBuf(currCsArea).copyFrom(bestCS->getRecoBuf(currCsArea));
   m_modeCtrl->finishCULevel(partitioner);
@@ -4095,6 +4128,13 @@ bool EncCu::xEncodeInterResidual(CodingStructure *&tempCS, CodingStructure *&bes
 
       histBestSbt = compositeSbtTrs.sbt;
       histBestTrs = compositeSbtTrs.trs;
+      if(R13SearchDiagnostic::active())
+      {
+        R13SearchDiagnostic::Fields f;
+        f.add("sse_key",uint32_t(curPuSse>>slShift)).add("hist_sbt",int(histBestSbt)).add("hist_trs",int(histBestTrs))
+         .add("skip_sbt_all",int(m_pcInterSearch->getSkipSbtAll()));
+        R13SearchDiagnostic::emit("sbt_read",f);
+      }
       if (m_pcInterSearch->getSkipSbtAll() && CU::isSbtMode(histBestSbt))   // special case, skip SBT when loading SBT
       {
         histBestSbt = 0;   // try DCT2
@@ -4285,7 +4325,15 @@ bool EncCu::xEncodeInterResidual(CodingStructure *&tempCS, CodingStructure *&bes
 
   if (histBestSbt == MAX_UCHAR && doPreAnalyzeResi && numRDOTried > 1)
   {
-    slsSbt->saveBestSbt(pcu->cs->area, (uint32_t)(curPuSse >> slShift), currBestSbt, currBestTrs);
+    const bool r13SbtStored=slsSbt->saveBestSbt(pcu->cs->area, (uint32_t)(curPuSse >> slShift), currBestSbt, currBestTrs);
+    if(R13SearchDiagnostic::active())
+    {
+      R13SearchDiagnostic::Fields f;
+      f.add("sse_key",uint32_t(curPuSse>>slShift)).add("sbt",int(currBestSbt)).add("trs",int(currBestTrs))
+       .add("stored",int(r13SbtStored)).add("best_changed",int(bestChanged)).add("rdo_tried",numRDOTried)
+       .number("local_best_cost",currBestCost).number("sbt_off_cost",sbtOffCost);
+      R13SearchDiagnostic::emit("sbt_write",f);
+    }
   }
   tempCS->cost = currBestCost;
   if (ETM_INTER_ME == encTestMode.type)

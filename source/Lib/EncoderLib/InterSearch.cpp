@@ -37,6 +37,7 @@
 
 #include "InterSearch.h"
 #include "TsR8Search.h"
+#include "TsR13SearchDiagnostic.h"
 
 #include "CommonLib/CommonDef.h"
 #include "CommonLib/Rom.h"
@@ -7604,6 +7605,17 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
       {
         if (trGroup)
         {
+          if(R13SearchDiagnostic::active())
+          {
+            R13SearchDiagnostic::Fields f;
+            f.add("component",int(compID)).add("tu_x",compArea.x).add("tu_y",compArea.y)
+             .add("tu_w",compArea.width).add("tu_h",compArea.height).add("tr_group",trGroup)
+             .add("best_cbf",int(TU::getCbfAtDepth(bestTU,compID,currDepth))).add("best_tr",int(bestTU.mtsIdx[compID]))
+             .add("ts_fast",int(m_encCfg->m_useTransformSkipFast))
+             .add("break_cbf",int(!TU::getCbfAtDepth(bestTU,compID,currDepth)))
+             .add("break_ts",int(TU::getCbfAtDepth(bestTU,compID,currDepth) && m_encCfg->m_useTransformSkipFast && bestTU.mtsIdx[compID]==MtsType::SKIP));
+            R13SearchDiagnostic::emit("transform_group_gate",f);
+          }
           if (!TU::getCbfAtDepth(bestTU, compID, currDepth))
           {
             break;
@@ -7619,6 +7631,13 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
           const bool isFirstTr = (!trGroup && tr == tl.trTypes.front());
           if (trTested && tr != MtsType::SKIP && !TU::getCbfAtDepth(bestTU, compID, currDepth))
           {
+            if(R13SearchDiagnostic::active())
+            {
+              R13SearchDiagnostic::Fields f;
+              f.add("component",int(compID)).add("tu_x",compArea.x).add("tu_y",compArea.y)
+               .add("tu_w",compArea.width).add("tu_h",compArea.height).add("tr_group",trGroup).add("tr",int(tr));
+              R13SearchDiagnostic::emit("transform_skip_cbf",f);
+            }
             continue;
           }
           TCoeff currAbsSum = 0;
@@ -7646,6 +7665,18 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
 
             //----- quantization -----
             m_CABACEstimator->getCtx() = ctxStart;
+            if(R13SearchDiagnostic::active())
+            {
+              R13SearchDiagnostic::Fields f;
+              f.add("component",int(compID)).add("tu_x",compArea.x).add("tu_y",compArea.y)
+               .add("tu_w",compArea.width).add("tu_h",compArea.height).add("tr_group",trGroup).add("tr",int(tr))
+               .add("cu_qp",tu.cu->qp).add("chroma_adj",tu.getChromaAdj()).number("quant_lambda",m_pcTrQuant->getLambda())
+               .number("rd_lambda",m_pcRdCost->getLambda()).add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()))
+               .add("input_resi_hash",R13SearchDiagnostic::bufferHash(csFull->getOrgResiBuf(compArea)))
+               .add("pred_hash",R13SearchDiagnostic::bufferHash(cs.getPredBuf(compArea)))
+               .add("no_residual",int(tu.noResidual));
+              R13SearchDiagnostic::emit("transform_entry",f);
+            }
             currAbsSum                = 0;
             m_pcTrQuant->quantNxN(tu, compID, cQP, currAbsSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
 
@@ -7833,6 +7864,19 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
           evaluate();
 #endif
           if (isFirstTr && puiZeroDist) { *puiZeroDist += nonCoeffDist; }
+          if(R13SearchDiagnostic::active())
+          {
+            R13SearchDiagnostic::Fields f;
+            f.add("component",int(compID)).add("tu_x",compArea.x).add("tu_y",compArea.y)
+             .add("tu_w",compArea.width).add("tu_h",compArea.height).add("tr_group",trGroup).add("tr",int(tr))
+             .number("cost",currCompCost).add("dist",currCompDist).add("frac_bits",currCompFracBits)
+             .number("zero_cost",nonCoeffCost).number("previous_best_cost",minCost[compID])
+             .add("accepted",int(currCompCost<minCost[compID])).add("abs_sum",currAbsSum)
+             .add("cbf",int(TU::getCbfAtDepth(tu,compID,currDepth)))
+             .add("q_hash",R13SearchDiagnostic::bufferHash(tu.getCoeffs(compID)))
+             .add("ctx_hash",R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()));
+            R13SearchDiagnostic::emit("transform_trial",f);
+          }
           //----- compare costs -----
           if (currCompCost < minCost[compID])
           {

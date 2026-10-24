@@ -1,0 +1,29 @@
+{
+  "schema": "R13-followup-validation-v1",
+  "decoder_primary_cases": 10,
+  "decoder_primary_on_frames": 90,
+  "decoder_primary_off_frames": 90,
+  "common_encoder_decoder_stage_components": 210,
+  "ccp_cases": 2,
+  "ccp_on_off_md5_checks": 4,
+  "no_original_on_off_md5_checks": 2,
+  "limit_rejection_expected": true,
+  "preliminary_encoder_cases": 2,
+  "preliminary_encoder_frames": 34,
+  "preliminary_trace_status": "rejected_char_format_and_limit",
+  "preliminary_codec_bit_exact": true,
+  "strict_encoder_cases": 2,
+  "strict_encoder_frames": 34,
+  "strict_encoder_byte_exact": true,
+  "strict_search_events": [
+    286278,
+    268534
+  ],
+  "python_diagnostic_tests": 15,
+  "search_parser_and_native_field_format_tests": 9,
+  "full_300_frame_local_encoding": false,
+  "reconstruction_video_written": false,
+  "formal_BD_rate_changed": false,
+  "macro_off_full_rebuild_this_turn": false,
+  "scope": "No new predictor or encoder search rule; read-only observations. New traced encodes match previously frozen same-mode 17-frame streams; decoder observer on/off both verified."
+}

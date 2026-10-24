@@ -1,0 +1,341 @@
+{
+  "schema": 1,
+  "scope": "first decoder-derived CCP CU in Johnny QP32 POC0 CTU24",
+  "reference": {
+    "schema": 1,
+    "kind": "ccp",
+    "revision": "R13-DEC-CCP-v1",
+    "poc": 0,
+    "ctu": 24,
+    "x": 256,
+    "y": 128,
+    "w": 16,
+    "h": 32,
+    "ref_x": 250,
+    "ref_y": 122,
+    "ref_w": 38,
+    "ref_h": 70,
+    "left": 6,
+    "top": 6,
+    "ref_domain": "downsampled_luma_minus_offset",
+    "top_hash": 5382585526148413967,
+    "left_hash": 13669025990102794213,
+    "below_left_hash": 17134462965146744103,
+    "below_left_east_hash": 5377423396455525142,
+    "below_left_east_samples": 32,
+    "below_left_east_x": 256,
+    "below_left_east_y": 160,
+    "block_hash": 13434571612875038725,
+    "block_top_hash": 4190675302880075519,
+    "block_left_hash": 16679483323976328243,
+    "block_right_hash": 11176864117939946761,
+    "block_bottom_hash": 14481883077610978298,
+    "nonfused_best_index": 4,
+    "nonfused_best_cost": 194,
+    "candidate_costs": [
+      459,
+      340,
+      300,
+      217,
+      194,
+      499
+    ],
+    "selected_models": [
+      {
+        "valid": 1,
+        "dual": 1,
+        "filter": 1,
+        "luma_threshold": -125,
+        "luma_offset": 872,
+        "ref_size_x": 0,
+        "ref_size_y": 0,
+        "cb": [
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              16284,
+              876,
+              -4878,
+              7641,
+              -1509,
+              34849,
+              63268
+            ]
+          },
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              -21526,
+              1487,
+              -5529,
+              40488,
+              12609,
+              -12051,
+              66193
+            ]
+          }
+        ],
+        "cr": [
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              -12405,
+              1245,
+              6156,
+              -7133,
+              7978,
+              -24209,
+              79524
+            ]
+          },
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              30809,
+              -8620,
+              4434,
+              -46987,
+              -12185,
+              6485,
+              67515
+            ]
+          }
+        ]
+      },
+      {
+        "valid": 1,
+        "dual": 0,
+        "filter": 0,
+        "luma_threshold": 0,
+        "luma_offset": 0,
+        "ref_size_x": 0,
+        "ref_size_y": 0,
+        "cb": [
+          {
+            "type": 0,
+            "bd": 0,
+            "mid": 0,
+            "params": [
+              44,
+              371,
+              8
+            ]
+          }
+        ],
+        "cr": [
+          {
+            "type": 0,
+            "bd": 0,
+            "mid": 0,
+            "params": [
+              -56,
+              711,
+              8
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "test": {
+    "schema": 1,
+    "kind": "ccp",
+    "revision": "R13-DEC-CCP-v1",
+    "poc": 0,
+    "ctu": 24,
+    "x": 256,
+    "y": 128,
+    "w": 16,
+    "h": 32,
+    "ref_x": 250,
+    "ref_y": 122,
+    "ref_w": 38,
+    "ref_h": 70,
+    "left": 6,
+    "top": 6,
+    "ref_domain": "downsampled_luma_minus_offset",
+    "top_hash": 5382585526148413967,
+    "left_hash": 13669025990102794213,
+    "below_left_hash": 17134462965146744103,
+    "below_left_east_hash": 8741093077924595969,
+    "below_left_east_samples": 32,
+    "below_left_east_x": 256,
+    "below_left_east_y": 160,
+    "block_hash": 13434571612875038725,
+    "block_top_hash": 4190675302880075519,
+    "block_left_hash": 16679483323976328243,
+    "block_right_hash": 11176864117939946761,
+    "block_bottom_hash": 14481883077610978298,
+    "nonfused_best_index": 4,
+    "nonfused_best_cost": 188,
+    "candidate_costs": [
+      459,
+      338,
+      298,
+      212,
+      188,
+      499
+    ],
+    "selected_models": [
+      {
+        "valid": 1,
+        "dual": 1,
+        "filter": 1,
+        "luma_threshold": -125,
+        "luma_offset": 872,
+        "ref_size_x": 0,
+        "ref_size_y": 0,
+        "cb": [
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              16290,
+              936,
+              -4790,
+              7543,
+              -1666,
+              34729,
+              63231
+            ]
+          },
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              -22112,
+              1712,
+              -5407,
+              42068,
+              12615,
+              -11987,
+              66142
+            ]
+          }
+        ],
+        "cr": [
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              -12393,
+              1209,
+              6160,
+              -7145,
+              8026,
+              -24200,
+              79534
+            ]
+          },
+          {
+            "type": 1,
+            "bd": 10,
+            "mid": 512,
+            "params": [
+              31307,
+              -8637,
+              4398,
+              -48522,
+              -12322,
+              6428,
+              67561
+            ]
+          }
+        ]
+      },
+      {
+        "valid": 1,
+        "dual": 0,
+        "filter": 0,
+        "luma_threshold": 0,
+        "luma_offset": 0,
+        "ref_size_x": 0,
+        "ref_size_y": 0,
+        "cb": [
+          {
+            "type": 0,
+            "bd": 0,
+            "mid": 0,
+            "params": [
+              44,
+              371,
+              8
+            ]
+          }
+        ],
+        "cr": [
+          {
+            "type": 0,
+            "bd": 0,
+            "mid": 0,
+            "params": [
+              -56,
+              711,
+              8
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "differing_fields": [
+    "below_left_east_hash",
+    "nonfused_best_cost",
+    "candidate_costs",
+    "selected_models"
+  ],
+  "source_logs": [
+    {
+      "case": "j32_c0_p0_ccp",
+      "path": "runs/r13_followup_20261024/ccp/j32_c0_p0_ccp/decode.log",
+      "line": 164,
+      "sha256": "2f4ea01a5fab9ceecc3eb2eb6e62427d97b3d663a502e09c95a784680210ccbe",
+      "summary": {
+        "schema": 1,
+        "kind": "ccp_summary",
+        "rows": 1,
+        "omitted": 0,
+        "truncated": 0
+      }
+    },
+    {
+      "case": "j32_sp_p0_ccp",
+      "path": "runs/r13_followup_20261024/ccp/j32_sp_p0_ccp/decode.log",
+      "line": 168,
+      "sha256": "68675a7efb6152414af3edd5d21df6ec757d1973ce9b44320e285141fff9dde8",
+      "summary": {
+        "schema": 1,
+        "kind": "ccp_summary",
+        "rows": 1,
+        "omitted": 0,
+        "truncated": 0
+      }
+    }
+  ],
+  "equal_cclm_fusion_secondary": true,
+  "primary_cccm_parameter_changes": 28,
+  "observed_reference_edge_chroma_coordinates": [
+    256,
+    160,
+    1,
+    32
+  ],
+  "edge_luma_centres": [
+    512,
+    320,
+    1,
+    64
+  ],
+  "limitation": "Hash observations establish first chroma prediction difference; no block-SSE measurements. The edge overlaps first changed Y TS CU (512,336,16x16), but later changed Y blocks may also overlap the edge. Luma filter footprint extends around these centres according to chroma sample location."
+}

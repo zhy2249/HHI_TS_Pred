@@ -1,0 +1,301 @@
+[
+  {
+    "reference_case": "j32_eq_p16",
+    "test_case": "j32_sp_p16",
+    "counts": {
+      "CU": {
+        "reference": 610,
+        "test": 608,
+        "paired": 528,
+        "equal": 470,
+        "test_only": 80,
+        "different": 220,
+        "reference_only": 82
+      },
+      "TU": {
+        "reference": 2043,
+        "test": 2016,
+        "paired": 1752,
+        "equal": 1572,
+        "test_only": 264,
+        "different": 735,
+        "reference_only": 291
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "equal": 133,
+        "different": 47
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "equal": 1808,
+        "different": 1792
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 60,
+        "equal": 120
+      }
+    }
+  },
+  {
+    "reference_case": "j32_c0_p0",
+    "test_case": "j32_sp_p0",
+    "counts": {
+      "CU": {
+        "reference": 3677,
+        "test": 3696,
+        "paired": 2138,
+        "equal": 1482,
+        "different": 3753,
+        "test_only": 1558,
+        "reference_only": 1539
+      },
+      "TU": {
+        "reference": 4169,
+        "test": 4174,
+        "paired": 2498,
+        "equal": 1461,
+        "different": 4384,
+        "test_only": 1676,
+        "reference_only": 1671
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "equal": 72,
+        "different": 108
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "different": 2990,
+        "equal": 610
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 180
+      }
+    }
+  },
+  {
+    "reference_case": "j27_c0_p8",
+    "test_case": "j27_sp_p8",
+    "counts": {
+      "CU": {
+        "reference": 864,
+        "test": 801,
+        "paired": 205,
+        "equal": 2,
+        "different": 1458,
+        "reference_only": 659,
+        "test_only": 596
+      },
+      "TU": {
+        "reference": 3180,
+        "test": 2760,
+        "paired": 642,
+        "different": 5293,
+        "reference_only": 2538,
+        "test_only": 2118,
+        "equal": 5
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 178,
+        "equal": 2
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "different": 3580,
+        "equal": 20
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 180
+      }
+    }
+  },
+  {
+    "reference_case": "j27_eq_p8",
+    "test_case": "j27_sp_p8",
+    "counts": {
+      "CU": {
+        "reference": 859,
+        "test": 801,
+        "paired": 187,
+        "equal": 5,
+        "different": 1468,
+        "reference_only": 672,
+        "test_only": 614
+      },
+      "TU": {
+        "reference": 2856,
+        "test": 2760,
+        "paired": 552,
+        "different": 5064,
+        "reference_only": 2304,
+        "test_only": 2208
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 180
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "different": 3600
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 121,
+        "equal": 59
+      }
+    }
+  },
+  {
+    "reference_case": "ks32_c0_p0",
+    "test_case": "ks32_sp_p0",
+    "counts": {
+      "CU": {
+        "reference": 4281,
+        "test": 4271,
+        "paired": 1791,
+        "equal": 610,
+        "different": 6151,
+        "reference_only": 2490,
+        "test_only": 2480
+      },
+      "TU": {
+        "reference": 4808,
+        "test": 4803,
+        "paired": 2040,
+        "equal": 313,
+        "different": 7258,
+        "reference_only": 2768,
+        "test_only": 2763
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "equal": 18,
+        "different": 162
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "different": 3470,
+        "equal": 130
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 180
+      }
+    }
+  },
+  {
+    "reference_case": "ks32_eq_p0",
+    "test_case": "ks32_sp_p0",
+    "counts": {
+      "CU": {
+        "reference": 4223,
+        "test": 4271,
+        "paired": 3317,
+        "equal": 2871,
+        "reference_only": 906,
+        "different": 2306,
+        "test_only": 954
+      },
+      "TU": {
+        "reference": 4749,
+        "test": 4803,
+        "paired": 3749,
+        "equal": 3065,
+        "reference_only": 1000,
+        "different": 2738,
+        "test_only": 1054
+      },
+      "CTU": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "equal": 105,
+        "different": 75
+      },
+      "frame": {
+        "reference": 30,
+        "test": 30,
+        "paired": 30,
+        "different": 30
+      },
+      "tile": {
+        "reference": 3600,
+        "test": 3600,
+        "paired": 3600,
+        "different": 2674,
+        "equal": 926
+      },
+      "filter": {
+        "reference": 180,
+        "test": 180,
+        "paired": 180,
+        "different": 180
+      }
+    }
+  }
+]

@@ -41,6 +41,9 @@
 #include "CommonLib/IntraPrediction.h"
 #include "CommonLib/Picture.h"
 #include "CommonLib/UnitTools.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsR13DecoderDiagnostic.h"
+#endif
 
 #include "CommonLib/dtrace_buffer.h"
 
@@ -159,11 +162,17 @@ void DecCu::decompressCtu(CodingStructure &cs, const UnitArea &ctuArea)
         break;
       }
 
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      TsR13DecoderDiagnostic::observeCu(currCU,m_pcReshape->m_ctuFlag);
+#endif
       m_pcInterPred->xFillIBCBuffer(currCU);
 
       DTRACE_BLOCK_REC(cs.picture->getRecoBuf(currCU), currCU, currCU.predMode);
     }
   }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  TsR13DecoderDiagnostic::observeCtu(cs,ctuArea);
+#endif
 #if K0149_BLOCK_STATISTICS
   getAndStoreBlockStatistics(cs, ctuArea);
 #endif
