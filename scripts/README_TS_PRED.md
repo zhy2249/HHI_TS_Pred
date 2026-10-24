@@ -13,6 +13,18 @@ R6/R8/R9/R10 正式 wrapper 与 R8 preflight 不再默认开启，R11/R12 保持
 
 ## R14 近/远权重学习（R14-NF-168-v3）
 
+已登记CE结果的只读分析（完整14组及2的正确部分结果，不启动编码）：
+
+```bash
+python3 scripts/ts_r14_results_analysis.py --output-dir runs/r14_analysis_20261024
+python3 scripts/plot_ts_r14_results.py
+```
+
+数值入口输出序列分布、直接方法间BD、相对Current百分点差、序列bootstrap/留一及实验2同覆盖QP对比；
+需NumPy，绘图另需Matplotlib。绘图默认更新实验文档中的两张SVG。
+[当前分析与限制](../docs/experiments/TS_Predictor_R14_LB_CE_Analysis_20261024.md)。
+旧`ts_r14_partial_analysis.py`只对应早期缺QP22且排除2的历史快照，不用于更新后数据。
+
 [实现、15模式与局部验收](../docs/experiments/TS_Predictor_R14_Implementation.md)。
 TypeDef.h用总开关1、`JVET_BJUT_TS_R14_MODE`选择默认，旧算法模式全部0；runtime继续覆盖宏默认。
 统计/trace默认关闭，与必要的逐系数学习独立。当前MODE连续1..15、0关闭；

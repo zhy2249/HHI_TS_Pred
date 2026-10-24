@@ -16,6 +16,7 @@
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
+- [R14 当前CE多维分析：动态增量、初态、QP、分量与稳定性](TS_Predictor_R14_LB_CE_Analysis_20261024.md) · [配对与分布派生表](results/r14_analysis_20261024/README.md)
 - [统一实验记录（过程、分析与决策）](TS_Predictor_Experiment_Log.md)
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)
@@ -55,7 +56,7 @@
 | R11 | [用户原始计划](../external_inputs/R11_Experiment_Plan.md)、[八组实现与运行](TS_Predictor_R11_Implementation.md) | [验收记录](TS_Predictor_R11_Validation.md)、[八组LB CE及2的部分B明细](results/r11.md)、[结果台账](TS_Predictor_Results_Ledger.md)；RA/AI未登记 |
 | R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组CE/七组部分B明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；无完整B/BCE，RA/AI未登记 |
 | R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md)、[实现与验证](TS_Predictor_R13_Implementation.md) | [两组完整CE分析](TS_Predictor_R13_LB_CE_Results_20261023.md)、[CE及1的部分B明细](results/r13.md)；B仅RitualDance完整，无完整B/BCE或可靠计时结论 |
-| R14 | [v3：12组动态＋3组固定对照，NONE／PAIR2](TS_Predictor_R14_Experiment_Design.md)、[本地源码接入与分阶段计划](TS_Predictor_R14_Engineering_Plan.md)、[连续1～15及旧号对照](TS_Predictor_R14_Implementation.md) | [当前整体及QP明细](results/r14.md)、[早期部分结果分析（历史）](TS_Predictor_R14_Partial_Analysis_20261024.md)；412实测/8缺失，除2外14组完整；2的新20点纳入、整体留空；无服务器状态计数 |
+| R14 | [v3：12组动态＋3组固定对照，NONE／PAIR2](TS_Predictor_R14_Experiment_Design.md)、[本地源码接入与分阶段计划](TS_Predictor_R14_Engineering_Plan.md)、[连续1～15及旧号对照](TS_Predictor_R14_Implementation.md) | [当前CE多维分析](TS_Predictor_R14_LB_CE_Analysis_20261024.md)、[整体及QP明细](results/r14.md)、[早期部分结果分析（历史）](TS_Predictor_R14_Partial_Analysis_20261024.md)；412实测/8缺失，除2外14组完整；2正确部分结果纳入；10最佳但未稳定优于R3/R6，无服务器状态计数 |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 

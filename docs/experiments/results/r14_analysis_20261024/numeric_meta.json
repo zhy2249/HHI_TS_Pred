@@ -1,0 +1,26 @@
+{
+  "seed": 20261024,
+  "bootstrap_resamples": 200000,
+  "source_hashes": {
+    "sequence_bdrate.csv": "3e791a3deed39be97d5631aa1b2c54a17fc484790254b66ca76bef5cf07cb8cb",
+    "group_summary.csv": "3aeb96b3406a64c4b5a712753f12568d0e3241634fea4236c116f3b0ec776851",
+    "qp_bdrate.csv": "52ee7eba17a48509f8f1d6cca07756b89548d878be2b84962c0fa3621ed7e5c2",
+    "qp_group_summary.csv": "747fae85e4e23308a83957048577cca9198e8cef065d8e311265a2b218c7c6ea",
+    "rd_points.csv": "96c66791e1a086f8747108cccda898718e231681b108efbf51d18b26ecee5804"
+  },
+  "sequence_order": [
+    "BasketballDrill",
+    "BQMall",
+    "PartyScene",
+    "RaceHorsesC",
+    "FourPeople",
+    "Johnny",
+    "KristenAndSara"
+  ],
+  "full_curve_policy": "LB CE; all four actual measured points; no imputation",
+  "qp_policy": "Target QP only; remaining three points Current; common coverage comparisons",
+  "difference_unit": "relative-Current BD differences in percentage points, not direct BD",
+  "direct_unit": "Reintegrated pair BD-rate in percent; reference column defines anchor",
+  "bootstrap_limit": "Seven fixed CTC sequences; unstratified; not multiplicity-adjusted; exploratory content sensitivity, not repeated-run noise",
+  "max_direct_vba_gap_pp": 3.5993430458347575e-13
+}
