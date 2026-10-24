@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export read-only workbook data to a queryable, results-only TS ledger.
+"""Export read-only workbook/explicit CSV data to a results-only TS ledger.
 
 No encoding, workbook writes, Excel macro execution, or inferred measurements.
 Only the explicitly recorded historical missing points may use Current data.
@@ -18,6 +18,7 @@ import statistics
 
 from ts_fixed_analyze import QPS, bd_rate, self_test, sheet_values, workbook_bdrate
 from ts_fixed_workbook_analysis import CLASSES
+from ts_predictor_naming import R14_MODE_NUMBERS
 
 KEY = re.compile(r'^(.+)\.Q(\d+)\.ecm\.(lb|ra|ai|lp)$')
 METRICS = ('rate_kbps', 'psnr_y_db', 'psnr_u_db', 'psnr_v_db')
@@ -37,10 +38,12 @@ R12_MODES = ('r12_ci_near1', 'r12_r3_near1', 'r12_current_near1', 'r12_loo_unsta
              'r12_c_distance_fulltrim', 'r12_validation_distance', 'r12_validation_distance_tie',
              'r12_c_distance_softtrim', 'r12_c_and_validation_distance')  # R12-POS-01 public numbering.
 R13_MODES = ('r13_keep_hit_uniform', 'r13_keep_hit_spatial')  # R13-KH-168-v1 public numbering.
+R14_MODES = tuple(sorted(R14_MODE_NUMBERS, key=R14_MODE_NUMBERS.get))  # compact-15-v1.
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
-          'invalid_anchor': '参考点未通过，不计算'}
+          'invalid_anchor': '参考点未通过，不计算',
+          'excluded_unreliable': '用户确认不准确，仅留原值，不计算'}
 
 
 def catalog(root):
@@ -87,6 +90,12 @@ def catalog(root):
         add('r12', f'R12-{i}', mode, f'experiments/ts_predictor_r12/R12_{i}_JVET-hhi.xlsm')
     for i, mode in enumerate(R13_MODES, 1):
         add('r13', f'R13-{i}', mode, f'experiments/ts_predictor_r13/R13_{i}_JVET-hhi.xlsm')
+    for i, mode in enumerate(R14_MODES, 1):
+        add('r14', f'R14-{i}', mode, f'experiments/ts_predictor_r14/{i}.csv')
+        specs[-1]['source_format'] = 'csv'
+        specs[-1]['numbering_revision'] = 'compact-15-v1'
+        if i == 2:
+            specs[-1]['excluded_reason'] = '用户确认 R14-2 当前结果不准确；保留原值，排除效果分析及 BD-rate。'
     return specs
 
 
@@ -107,6 +116,8 @@ def imputation_allowed(experiment, config, seq, qp):
 
 def csv_sources(spec, path):
     """Shared result folders contain other experiments: pair by exact ID."""
+    if spec.get('source_format') == 'csv':
+        return []  # This CSV is the explicit primary source, not a workbook supplement.
     if spec['round'] == 'r13':
         # Server exports use R13_1.csv, not 1.csv; accept only the exact name.
         source = path.parent / (spec['experiment'].replace('-', '_') + '.csv')
@@ -141,6 +152,37 @@ def read_sheet(path, sheet):
     return values, locations, statuses
 
 
+def read_primary_csv(path):
+    """Read one explicitly registered flat export; retain original physical lines.
+
+    Columns B:E contain RD values and J the exporter status. Empty template rows
+    remain missing. No workbook or CSV in the shared directory is inferred.
+    """
+    values, locations, statuses = {}, {}, {}
+    with path.open(encoding='utf-8-sig', newline='') as handle:
+        reader = csv.reader(handle)
+        for row in reader:
+            if not row or not KEY.fullmatch(row[0]):
+                continue
+            key = row[0]
+            if key in locations:
+                raise ValueError(f'Duplicate CSV row: {path}:{key}')
+            line = reader.line_num
+            locations[key] = f'CSV!B{line}:E{line}'
+            statuses[key] = row[9].strip() if len(row) > 9 else ''
+            fields = row[1:5]
+            if not any(v.strip() for v in fields):
+                continue
+            try:
+                data = [float(v) for v in fields]
+            except ValueError as error:
+                raise ValueError(f'Invalid RD tuple: {path}:{key}: {fields}') from error
+            if len(data) != 4 or not all(math.isfinite(v) for v in data) or data[0] <= 0:
+                raise ValueError(f'Invalid RD tuple: {path}:{key}: {fields}')
+            values[key] = data
+    return values, locations, statuses
+
+
 def point_values(experiment, config, seq, qp, actual, anchor):
     if actual is not None:
         return actual, 'measured'
@@ -149,17 +191,22 @@ def point_values(experiment, config, seq, qp, actual, anchor):
     return [''] * 4, 'missing'
 
 
-def sequence_result(rows):
+def sequence_result(rows, excluded_reason=''):
     """A missing point never becomes zero BD-rate or a three-point fit."""
     if sorted(r['qp'] for r in rows) != list(QPS):
         raise ValueError('Expected one row for each of QP22/27/32/37')
-    result = dict(measured_points=sum(r['status'] == 'measured' for r in rows),
+    # measured_points counts received numeric tuples, including explicitly
+    # excluded ones. Inclusion in any BD calculation is controlled by status.
+    result = dict(measured_points=sum(r['status'] in ('measured', 'excluded_unreliable') for r in rows),
                   imputed_points=sum(r['status'] == 'anchor_imputed' for r in rows),
                   missing_points=sum(r['status'] == 'missing' for r in rows),
                   **dict.fromkeys(BD, ''), calculation_error='')
     for c in 'yuv':
         result[f'{c}_overlap_low_db'] = result[f'{c}_overlap_high_db'] = ''
     result['max_vba_gap_pp'] = ''
+    if excluded_reason or any(r['status'] == 'excluded_unreliable' for r in rows):
+        return dict(result, status='excluded_unreliable',
+                    calculation_error=excluded_reason or 'Unreliable result excluded from BD-rate')
     if any(r['anchor_record_status'] != 'pass' for r in rows):
         return dict(result, status='invalid_anchor')
     if result['missing_points']:
@@ -205,8 +252,15 @@ def build(root):
     for spec in specs:
         path = root / spec['path']
         remember(path)
-        actual, locations, test_status = read_sheet(path, 'Test')
-        reference, _, reference_status = read_sheet(path, 'Reference')
+        primary_csv = spec.get('source_format') == 'csv'
+        if primary_csv:
+            actual, locations, test_status = read_primary_csv(path)
+            # CSV exports have no embedded Reference. Use only the declared
+            # Current workbook, and do not claim an independent reference check.
+            reference, reference_status = anchor, anchor_status
+        else:
+            actual, locations, test_status = read_sheet(path, 'Test')
+            reference, _, reference_status = read_sheet(path, 'Reference')
         scope = {(s, 'lb') for s, cls in CLASSES.items() if cls in spec['expected_lb']}
         for key in actual:
             if test_status[key] != 'pass':
@@ -245,15 +299,18 @@ def build(root):
                 if key not in anchor or reference.get(key) != anchor[key] or reference_status.get(key) != anchor_status[key]:
                     raise ValueError(f'Missing/non-Current Reference: {path}:{key}')
                 test, status = point_values(spec['experiment'], config, seq, qp, actual.get(key), anchor[key])
+                if status == 'measured' and spec.get('excluded_reason'):
+                    status = 'excluded_unreliable'
                 raw.append(dict(meta, qp=qp, **dict(zip(('anchor_' + k for k in METRICS), anchor[key])),
                                 **dict(zip(('test_' + k for k in METRICS), test)), status=status,
                                 source_file=spec['path'], source_cell=locations.get(key, ''),
                                 anchor_file=anchor_name, anchor_cell=anchor_locations[key],
                                 anchor_record_status=anchor_status[key], test_record_status=test_status.get(key, ''),
-                                value_source='Current Reference' if status == 'anchor_imputed' else ('Test' if status == 'measured' else ''),
+                                value_source='Current Reference' if status == 'anchor_imputed' else (
+                                    ('CSV' if primary_csv else 'Test') if status in ('measured', 'excluded_unreliable') else ''),
                                 csv_rd_checked=key in checked if status == 'measured' else False))
             all_points.extend(raw)
-            sequences.append(dict(meta, **sequence_result(raw)))
+            sequences.append(dict(meta, **sequence_result(raw, spec.get('excluded_reason', ''))))
     # Aggregate only the declared class set. An incomplete curve yields an
     # explicitly labelled available-subset mean, never a full-class average.
     summaries = []
@@ -272,7 +329,8 @@ def build(root):
                     measured_points=sum(r['measured_points'] for r in selected),
                     imputed_points=sum(r['imputed_points'] for r in selected),
                     missing_points=sum(r['missing_points'] for r in selected),
-                    scope_status='full' if len(valid) == expected else 'available_subset',
+                    scope_status='excluded_unreliable' if spec.get('excluded_reason') else (
+                        'full' if len(valid) == expected else 'available_subset'),
                     **{c: statistics.mean(r[c] for r in valid) if valid else '' for c in BD}))
     for rel, digest in hashes.items():
         if hashlib.sha256((root / rel).read_bytes()).hexdigest() != digest:
@@ -284,9 +342,12 @@ def build(root):
                  invalid_anchor_points=[dict(experiment=r['experiment'], configuration=r['configuration'],
                      sequence=r['sequence'], qp=r['qp'], record_status=r['anchor_record_status'])
                      for r in all_points if r['anchor_record_status'] != 'pass'],
-                 max_vba_gap_pp=max(r['max_vba_gap_pp'] for r in sequences if r['max_vba_gap_pp'] != ''),
+                 max_vba_gap_pp=max((r['max_vba_gap_pp'] for r in sequences if r['max_vba_gap_pp'] != ''), default=0.0),
                  sources_unchanged=True, remote_build_config_frames_decode_hash_verified=False,
-                 sources=[dict(path=k, sha256=v) for k, v in sorted(hashes.items())], csv_checks=csv_checks)
+                 sources=[dict(path=k, sha256=v) for k, v in sorted(hashes.items())], csv_checks=csv_checks,
+                 primary_csv_sources=[dict(experiment=s['experiment'], source=s['path'],
+                     numbering_revision=s['numbering_revision'], independent_reference_crosscheck=False,
+                     excluded_reason=s.get('excluded_reason', '')) for s in specs if s.get('source_format') == 'csv'])
     return specs, all_points, sequences, summaries, audit
 
 
@@ -313,7 +374,10 @@ def documents(specs, points, sequences, summaries, audit, updated):
              'CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零。补点逐点标记且保留原工作簿定位。',
              '各组的 incomplete 曲线不计算 BD-rate；组级可用子集均值明确标记，不冒充完整 CE/BCE。',
              '若参考点状态不是 pass，保留其原始数值和状态，但对应序列不计算 BD-rate。',
-             '这里只核验表内数值、Current Reference 和可用配套 CSV；不认证服务器宏、帧范围或解码 hash。', '',
+             '用户明确排除的结果标记 excluded_unreliable，原数值留存但不参与任何 BD-rate 或效果均值。',
+             '逐序列/类别 CSV 的 measured_points 为收到的数值点数，包含该类排除点；是否纳入以 status/scope_status 为准。',
+             'CSV 主来源按 catalog 精确指定文件，行号保留为 CSV!B行:E行；不会据此声称存在独立的工作簿 Reference 核对。',
+             '这里只核验表内数值、指定 Current Reference 和可用配套 CSV；不认证服务器宏、帧范围或解码 hash。', '',
              '## 查询文件', '',
              '- [逐 QP 数据 CSV](rd_points.csv)：含实验、配置、序列、QP、两组 RD 值、来源单元格和补点状态。',
              '- [逐序列 BD-rate CSV](sequence_bdrate.csv)：含分量、加权 BD、实测/补点/缺失数量及积分区间。',
@@ -330,12 +394,20 @@ def documents(specs, points, sequences, summaries, audit, updated):
         lines.append('')
         for spec in gs:
             name = spec['experiment']
-            lines += [f'## {name}', '', f'模式：`{spec["mode"]}`。源表：`{spec["path"]}`，Test；参考为 Current Reference。', '']
+            source_description = (f'模式：`{spec["mode"]}`。源表：`{spec["path"]}`，Test；参考为 Current Reference。'
+                                  if spec.get('source_format') != 'csv' else
+                                  f'模式：`{spec["mode"]}`。编号版本：`{spec["numbering_revision"]}`。'
+                                  f'原始 CSV：`{spec["path"]}`；参考为 `scripts/JVET-hhi.xlsm` 的 Current Reference。'
+                                  'CSV 不含独立参考曲线；原始行号和文件 SHA256 见派生 CSV / sources.json。')
+            lines += [f'## {name}', '', source_description, '']
+            if spec.get('excluded_reason'):
+                lines += [spec['excluded_reason'] + ' 下表计数仅表示已收到原始点，不表示可用实测。', '']
             configs = sorted({r['configuration'] for r in sequences if r['experiment'] == name})
             for config in configs:
                 seqs = [r for r in sequences if r['experiment'] == name and r['configuration'] == config]
                 lines += [f'### {config}：逐序列 BD-rate（%）', '']
-                lines += markdown_table(['序列', 'Class', 'Y', 'U', 'V', '6:1:1', '实测/补点/缺失', '状态'],
+                lines += markdown_table(['序列', 'Class', 'Y', 'U', 'V', '6:1:1',
+                    '原始点/补点/缺失' if spec.get('excluded_reason') else '实测/补点/缺失', '状态'],
                     [[f'[{r["sequence"]}](#{name.lower()}-{config.lower()}-{r["sequence"].lower()})',
                       r['class_name'], *[fmt(r[k], signed=True) for k in BD],
                       f'{r["measured_points"]}/{r["imputed_points"]}/{r["missing_points"]}', STATUS[r['status']]] for r in seqs])
@@ -355,6 +427,10 @@ def documents(specs, points, sequences, summaries, audit, updated):
         links.append([f'[{group.upper()}]({group}.md)', len(gs), sum(r['status'] == 'measured' for r in pp),
                       sum(r['status'] == 'anchor_imputed' for r in pp), sum(r['status'] == 'missing' for r in pp)])
     index += markdown_table(['轮次', '方法数', '实测点', 'anchor 补点', '缺失点'], links)
+    excluded_counts = Counter(r['experiment'] for r in points if r['status'] == 'excluded_unreliable')
+    if excluded_counts:
+        index += ['另保留用户排除的原始数值点（不计入上表实测点）：' +
+                  '，'.join(f'{name}：{count} 点' for name, count in sorted(excluded_counts.items())) + '。', '']
     index += ['## 维护与复现', '', '在仓库根目录运行（只读源表，生成本目录派生文件）：', '',
               '```bash', 'python3 scripts/ts_results_ledger.py',
               f'python3 scripts/ts_results_ledger.py --date {updated} --check', '```', '',

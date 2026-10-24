@@ -5,8 +5,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
-from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, R13_MODES, catalog, csv_sources, csv_text, imputation_allowed,
-                               point_values, read_sheet, sequence_result)
+from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, R13_MODES, R14_MODES,
+                               build, catalog, csv_sources, csv_text, imputation_allowed,
+                               point_values, read_primary_csv, read_sheet, sequence_result)
 
 
 def curve(scale=1):
@@ -21,6 +22,98 @@ def curve(scale=1):
 
 
 class ResultsLedgerTests(unittest.TestCase):
+    def test_r14_primary_csv_registration_and_exclusion(self):
+        from ts_predictor_naming import R14_MODE_NUMBERS
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            specs = [s for s in catalog(root) if s['round'] == 'r14']
+        self.assertEqual([s['experiment'] for s in specs], [f'R14-{i}' for i in range(1, 16)])
+        self.assertEqual([s['mode'] for s in specs], list(R14_MODES))
+        self.assertEqual([R14_MODE_NUMBERS[s['mode']] for s in specs], list(range(1, 16)))
+        self.assertEqual([s['path'] for s in specs],
+                         [f'experiments/ts_predictor_r14/{i}.csv' for i in range(1, 16)])
+        self.assertEqual([s['experiment'] for s in specs if s.get('excluded_reason')], ['R14-2'])
+        for spec in specs:
+            self.assertEqual(spec['source_format'], 'csv')
+            self.assertEqual(spec['numbering_revision'], 'compact-15-v1')
+            self.assertEqual(csv_sources(spec, Path(spec['path'])), [])
+            for qp in QPS:
+                self.assertFalse(imputation_allowed(spec['experiment'], 'lb', 'PartyScene', qp))
+
+    def test_primary_csv_preserves_physical_line_status_and_missing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / '1.csv'
+            path.write_text('name,rate,y,u,v\n\nPartyScene.Q22.ecm.lb\n'
+                            'PartyScene.Q27.ecm.lb,100,30,31,32,,,,,pass,2026-10-24\n', encoding='utf-8-sig')
+            values, locations, statuses = read_primary_csv(path)
+        self.assertEqual(values, {'PartyScene.Q27.ecm.lb': [100., 30., 31., 32.]})
+        self.assertEqual(locations['PartyScene.Q27.ecm.lb'], 'CSV!B4:E4')
+        self.assertEqual(locations['PartyScene.Q22.ecm.lb'], 'CSV!B3:E3')
+        self.assertEqual(statuses, {'PartyScene.Q22.ecm.lb': '', 'PartyScene.Q27.ecm.lb': 'pass'})
+
+    def test_primary_csv_rejects_partial_nonfinite_and_duplicate(self):
+        bad_inputs = ('PartyScene.Q27.ecm.lb,100,30\n',
+                      'PartyScene.Q27.ecm.lb,100,30,,32\n',
+                      'PartyScene.Q27.ecm.lb,nan,30,31,32\n',
+                      'PartyScene.Q27.ecm.lb,100,30,inf,32\n',
+                      'PartyScene.Q27.ecm.lb,0,30,31,32\n',
+                      'PartyScene.Q27.ecm.lb\nPartyScene.Q27.ecm.lb,100,30,31,32\n')
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / '1.csv'
+            for text in bad_inputs:
+                with self.subTest(text=text):
+                    path.write_text(text)
+                    with self.assertRaises(ValueError):
+                        read_primary_csv(path)
+
+    def test_unreliable_points_never_get_bd_even_complete(self):
+        rows = curve(.9)
+        rows[0]['status'] = 'excluded_unreliable'
+        result = sequence_result(rows)
+        self.assertEqual(result['status'], 'excluded_unreliable')
+        self.assertEqual(result['measured_points'], 4)
+        self.assertTrue(all(result[k] == '' for k in BD))
+        self.assertEqual(rows[0]['test_rate_kbps'], 720)
+
+    def test_csv_build_keeps_excluded_values_and_never_infers_neighbor_source(self):
+        from ts_fixed_workbook_analysis import CLASSES
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'scripts').mkdir()
+            (root / 'scripts/JVET-hhi.xlsm').write_bytes(b'anchor fixture')
+            path = root / '2.csv'
+            path.write_text('PartyScene.Q27.ecm.lb,123,30,31,32,,,,,pass\n')
+            (root / '1.csv').write_text('PartyScene.Q22.ecm.lb,999,40,41,42,,,,,pass\n')
+            anchor = {}
+            for seq, cls in CLASSES.items():
+                if cls == 'C':
+                    for row in curve():
+                        anchor[f'{seq}.Q{row["qp"]}.ecm.lb'] = [row['anchor_' + k] for k in METRICS]
+            reference = (anchor, {k: 'Reference!B1:E1' for k in anchor}, {k: 'pass' for k in anchor})
+            specs = [dict(round='r14', experiment='R14-2', mode=R14_MODES[1], path='2.csv',
+                          source_format='csv', expected_lb='C', numbering_revision='compact-15-v1',
+                          excluded_reason='Known unreliable uploaded result')]
+            with patch('ts_results_ledger.catalog', return_value=specs), \
+                    patch('ts_results_ledger.read_sheet', return_value=reference) as reader:
+                _, points, sequences, summaries, audit = build(root)
+            reader.assert_called_once_with(root / 'scripts/JVET-hhi.xlsm', 'Reference')
+        received = [r for r in points if r['status'] == 'excluded_unreliable']
+        self.assertEqual(len(received), 1)
+        self.assertEqual(received[0]['test_rate_kbps'], 123)
+        self.assertEqual(received[0]['value_source'], 'CSV')
+        self.assertEqual(received[0]['source_cell'], 'CSV!B1:E1')
+        self.assertFalse(received[0]['csv_rd_checked'])
+        self.assertEqual(sum(r['status'] == 'missing' for r in points), 15)
+        self.assertTrue(all(r['status'] == 'excluded_unreliable' for r in sequences))
+        self.assertTrue(all(r['scope_status'] == 'excluded_unreliable' for r in summaries))
+        self.assertTrue(all(r[k] == '' for r in sequences + summaries for k in BD))
+        self.assertEqual(audit['csv_checks'], [])
+        self.assertEqual({s['path'] for s in audit['sources']}, {'scripts/JVET-hhi.xlsm', '2.csv'})
+
     def test_r13_registration_preserves_public_numbering(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

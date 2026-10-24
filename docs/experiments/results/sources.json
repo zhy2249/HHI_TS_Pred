@@ -1,19 +1,21 @@
 {
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "method": "PCHIP per component, then (6Y+U+V)/8; equal sequence means",
-  "experiments": 98,
-  "sequence_records": 806,
-  "point_records": 3224,
+  "experiments": 113,
+  "sequence_records": 916,
+  "point_records": 3664,
   "point_status": {
-    "measured": 3168,
+    "measured": 3446,
     "anchor_imputed": 16,
-    "missing": 40
+    "missing": 184,
+    "excluded_unreliable": 18
   },
   "sequence_status": {
-    "complete": 757,
+    "complete": 758,
     "imputed": 15,
-    "incomplete": 33,
-    "invalid_anchor": 1
+    "incomplete": 135,
+    "invalid_anchor": 1,
+    "excluded_unreliable": 7
   },
   "invalid_anchor_points": [
     {
@@ -282,7 +284,7 @@
     },
     {
       "path": "experiments/ts_predictor_r13/R13_1_JVET-hhi.xlsm",
-      "sha256": "8e4a95a3bc647def5fa9d4d425623e6af51e96b2f91711bcc56c5c6ee828f570"
+      "sha256": "8f4eb8f04e5312113afe74560824f9681caa0d99be3c683c1feae97831517b5a"
     },
     {
       "path": "experiments/ts_predictor_r13/R13_2.csv",
@@ -291,6 +293,66 @@
     {
       "path": "experiments/ts_predictor_r13/R13_2_JVET-hhi.xlsm",
       "sha256": "c0650a773ba7ccb5725612d940b17ff9341f0178f236e5fd993d8024b968d528"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/1.csv",
+      "sha256": "b0158253e20320fbe71bfdc433c435c308d3cd582c3f69dc57bc93a94c9a163a"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/10.csv",
+      "sha256": "31ed7d393a1ca9ff1053ce63aeb56ace90b7687c8939de100ed08fb441a0fa4e"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/11.csv",
+      "sha256": "7482836e8438d9f2a28cf1d4e89e61cbc3d1404c11c93c90f8dbfdd64ab0af24"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/12.csv",
+      "sha256": "7f92cd92919458daa30658d49246d64b3eacdc3008ecec793c31214bd219bd12"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/13.csv",
+      "sha256": "024c8bff3977b0018f8924372b6691419ade647ceee076b69f9abd7359acdbe8"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/14.csv",
+      "sha256": "1631a113ca96812396974071a55dc1b84f1c6461469c625b1aae329c5bf86c4a"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/15.csv",
+      "sha256": "2a1c86753e573b283b9499ab4ba4deceabc11831a0d6ffd98e6509c5ea9d9d7f"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/2.csv",
+      "sha256": "5437fb0e450889be13d638c3e4ec0d1abcb3779f01438058371295ad2019a5b4"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/3.csv",
+      "sha256": "b819396719fd74b05ebd99440cc198eda5bd72a08365ca7c5f7555c1398782b9"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/4.csv",
+      "sha256": "19a4985336361ae1033bed1423d864a6ed0f018d6cf916eac1a057879a68f58b"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/5.csv",
+      "sha256": "248f1fbe605a00b8dce198bedeb999af97f081c15335a50ac8575a76e0d3e284"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/6.csv",
+      "sha256": "0fa308e9493e47efd852639ab74803035aef271eb1c49bc3b9af05c637218ec8"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/7.csv",
+      "sha256": "468665110ef9ab60e63b89c108c3980bc4a0381d9001225a0b9dc5db6706bead"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/8.csv",
+      "sha256": "b10694bd52e7203c5527639357268cb19429bad7679f17161ed99959d4a0240a"
+    },
+    {
+      "path": "experiments/ts_predictor_r14/9.csv",
+      "sha256": "c26f928bb6358589a01f9744663b47255a481feb31fa456bc7ccb6d8077a0272"
     },
     {
       "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/JVET-hhi.xlsm",
@@ -1316,6 +1378,113 @@
       "experiment": "R13-2",
       "source": "experiments/ts_predictor_r13/R13_2.csv",
       "matched_points": 28
+    }
+  ],
+  "primary_csv_sources": [
+    {
+      "experiment": "R14-1",
+      "source": "experiments/ts_predictor_r14/1.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-2",
+      "source": "experiments/ts_predictor_r14/2.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": "用户确认 R14-2 当前结果不准确；保留原值，排除效果分析及 BD-rate。"
+    },
+    {
+      "experiment": "R14-3",
+      "source": "experiments/ts_predictor_r14/3.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-4",
+      "source": "experiments/ts_predictor_r14/4.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-5",
+      "source": "experiments/ts_predictor_r14/5.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-6",
+      "source": "experiments/ts_predictor_r14/6.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-7",
+      "source": "experiments/ts_predictor_r14/7.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-8",
+      "source": "experiments/ts_predictor_r14/8.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-9",
+      "source": "experiments/ts_predictor_r14/9.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-10",
+      "source": "experiments/ts_predictor_r14/10.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-11",
+      "source": "experiments/ts_predictor_r14/11.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-12",
+      "source": "experiments/ts_predictor_r14/12.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-13",
+      "source": "experiments/ts_predictor_r14/13.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-14",
+      "source": "experiments/ts_predictor_r14/14.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
+    },
+    {
+      "experiment": "R14-15",
+      "source": "experiments/ts_predictor_r14/15.csv",
+      "numbering_revision": "compact-15-v1",
+      "independent_reference_crosscheck": false,
+      "excluded_reason": ""
     }
   ]
 }

@@ -1,6 +1,6 @@
 # 实验结果明细
 
-更新时间：2026-10-23。仅数据登记，不含实验分析。
+更新时间：2026-10-24。仅数据登记，不含实验分析。
 
 [返回总结果台账](../TS_Predictor_Results_Ledger.md)
 
@@ -11,7 +11,10 @@ BD-rate 属于四点曲线，不是单个 QP 的指标。负数为节省；不�
 CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零。补点逐点标记且保留原工作簿定位。
 各组的 incomplete 曲线不计算 BD-rate；组级可用子集均值明确标记，不冒充完整 CE/BCE。
 若参考点状态不是 pass，保留其原始数值和状态，但对应序列不计算 BD-rate。
-这里只核验表内数值、Current Reference 和可用配套 CSV；不认证服务器宏、帧范围或解码 hash。
+用户明确排除的结果标记 excluded_unreliable，原数值留存但不参与任何 BD-rate 或效果均值。
+逐序列/类别 CSV 的 measured_points 为收到的数值点数，包含该类排除点；是否纳入以 status/scope_status 为准。
+CSV 主来源按 catalog 精确指定文件，行号保留为 CSV!B行:E行；不会据此声称存在独立的工作簿 Reference 核对。
+这里只核验表内数值、指定 Current Reference 和可用配套 CSV；不认证服务器宏、帧范围或解码 hash。
 
 ## 查询文件
 
@@ -37,7 +40,10 @@ CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零�
 | [R10](r10.md) | 6 | 186 | 2 | 0 |
 | [R11](r11.md) | 8 | 243 | 0 | 1 |
 | [R12](r12.md) | 12 | 439 | 0 | 37 |
-| [R13](r13.md) | 2 | 56 | 0 | 0 |
+| [R13](r13.md) | 2 | 72 | 0 | 4 |
+| [R14](r14.md) | 15 | 262 | 0 | 140 |
+
+另保留用户排除的原始数值点（不计入上表实测点）：R14-2：18 点。
 
 ## 维护与复现
 
@@ -45,7 +51,7 @@ CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零�
 
 ```bash
 python3 scripts/ts_results_ledger.py
-python3 scripts/ts_results_ledger.py --date 2026-10-23 --check
+python3 scripts/ts_results_ledger.py --date 2026-10-24 --check
 ```
 
 新增实验在脚本 catalog 中登记身份和源表路径；历史补点白名单不自动扩展。
