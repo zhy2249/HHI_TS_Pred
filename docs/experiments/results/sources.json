@@ -1486,5 +1486,26 @@
       "independent_reference_crosscheck": false,
       "excluded_reason": ""
     }
-  ]
+  ],
+  "qp_analysis": {
+    "rounds": [
+      "r3",
+      "r6",
+      "r13",
+      "r14"
+    ],
+    "experiments": 28,
+    "sequence_qp_records": 948,
+    "group_qp_records": 420,
+    "status": {
+      "calculated": 778,
+      "invalid_anchor": 4,
+      "missing": 135,
+      "anchor_imputed": 3,
+      "excluded_unreliable": 28
+    },
+    "method": "Replace target measured RD tuple only; other three QPs use Current; component PCHIP then 6:1:1",
+    "target_imputed_is_not_measured": true,
+    "max_vba_gap_pp": 4.14741158083487e-13
+  }
 }

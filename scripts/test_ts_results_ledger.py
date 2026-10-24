@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 import unittest
 import tempfile
 from pathlib import Path
@@ -6,8 +7,9 @@ from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
 from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, R13_MODES, R14_MODES,
-                               build, catalog, csv_sources, csv_text, imputation_allowed,
-                               point_values, read_primary_csv, read_sheet, sequence_result)
+                               QP_ANALYSIS_ROUNDS, build, build_qp_analysis, catalog, csv_sources,
+                               csv_text, imputation_allowed, point_values, qp_markdown, qp_result,
+                               read_primary_csv, read_sheet, sequence_result)
 
 
 def curve(scale=1):
@@ -15,10 +17,121 @@ def curve(scale=1):
     for qp, i in zip(QPS, (3, 2, 1, 0)):
         anchor = [100 * 2**i, 30 + 2*i, 32 + i, 33 + 3*i]
         test = [anchor[0] * scale, *anchor[1:]]
-        rows.append(dict(qp=qp, status='measured', anchor_record_status='pass',
+        rows.append(dict(qp=qp, status='measured', anchor_record_status='pass', test_record_status='pass',
                          **dict(zip(('anchor_' + k for k in METRICS), anchor)),
                          **dict(zip(('test_' + k for k in METRICS), test))))
     return rows
+
+
+class QPResultsTests(unittest.TestCase):
+    def test_identity_all_four_qps(self):
+        for qp in QPS:
+            result = qp_result(curve(), qp)
+            self.assertEqual(result['status'], 'calculated')
+            for key in BD:
+                self.assertAlmostEqual(result[key], 0, places=12)
+            self.assertLess(result['max_vba_gap_pp'], 1e-8)
+
+    def test_only_target_tuple_enters_curve_and_does_not_mutate_input(self):
+        from ts_fixed_analyze import bd_rate
+        rows = curve(.91)
+        target = rows[1]
+        target['test_psnr_u_db'] += .04
+        target['test_psnr_v_db'] -= .03
+        original = deepcopy(rows)
+        expected = []
+        for component in 'yuv':
+            anchor = [(r[f'anchor_psnr_{component}_db'], r['anchor_rate_kbps']) for r in rows]
+            mixed = anchor[:]
+            mixed[1] = (target[f'test_psnr_{component}_db'], target['test_rate_kbps'])
+            expected.append(bd_rate(anchor, mixed)[0])
+        result = qp_result(rows, 27)
+        self.assertEqual(rows, original)
+        for i, key in enumerate(BD[:3]):
+            self.assertAlmostEqual(result[key], expected[i], places=12)
+        self.assertAlmostEqual(result['bd_611_pct'], (6*expected[0]+expected[1]+expected[2])/8, places=12)
+        for row in rows:
+            if row['qp'] != 27:
+                row['status'] = 'missing'
+                row['test_record_status'] = 'fail'
+                for metric in METRICS:
+                    row['test_' + metric] = ''
+        self.assertEqual(qp_result(rows, 27), result)
+
+    def test_missing_imputed_excluded_and_failed_target_stay_blank(self):
+        for status in ('missing', 'anchor_imputed', 'excluded_unreliable'):
+            with self.subTest(status=status):
+                rows = curve(.9)
+                rows[0]['status'] = status
+                result = qp_result(rows, 22)
+                self.assertEqual(result['status'], status)
+                self.assertTrue(all(result[k] == '' for k in BD))
+        rows = curve(.9)
+        rows[0]['test_record_status'] = 'fail(md5 mismatch)'
+        self.assertEqual(qp_result(rows, 22)['status'], 'invalid_target')
+        self.assertEqual(qp_result(rows, 27)['status'], 'calculated')
+        for qp in QPS:
+            result = qp_result(curve(.9), qp, 'Entire uploaded experiment excluded')
+            self.assertEqual(result['status'], 'excluded_unreliable')
+            self.assertTrue(all(result[k] == '' for k in BD))
+
+    def test_one_bad_reference_disqualifies_all_targets(self):
+        rows = curve(.9)
+        rows[-1]['anchor_record_status'] = 'fail(md5 mismatch)'
+        for qp in QPS:
+            result = qp_result(rows, qp)
+            self.assertEqual(result['status'], 'invalid_anchor')
+            self.assertTrue(all(result[k] == '' for k in BD))
+        rows = curve(.9)
+        rows[0]['anchor_psnr_u_db'] = rows[1]['anchor_psnr_u_db']
+        self.assertEqual(qp_result(rows, 32)['status'], 'invalid_anchor')
+
+    def test_invalid_mixed_curve_and_unique_qps(self):
+        rows = curve(.9)
+        rows[1]['test_psnr_y_db'] = rows[0]['anchor_psnr_y_db']
+        self.assertEqual(qp_result(rows, 27)['status'], 'invalid')
+        self.assertEqual(qp_result(rows, 32)['status'], 'calculated')
+        for malformed in (rows[:3], rows[:3] + rows[:1]):
+            with self.assertRaises(ValueError):
+                qp_result(malformed, 27)
+        with self.assertRaises(ValueError):
+            qp_result(rows, 30)
+
+    def test_selected_rounds_and_group_coverage_per_qp(self):
+        def detailed(sequence, class_name):
+            return [dict(r, round='r14', experiment='R14-1', mode='example', configuration='LB',
+                         sequence=sequence, class_name=class_name, source_file='test.csv',
+                         source_cell=f'CSV!B{i}:E{i}', anchor_file='anchor.xlsm',
+                         anchor_cell=f'Reference!B{i}:E{i}') for i, r in enumerate(curve(.98), 1)]
+        first, second = detailed('BQMall', 'C'), detailed('BasketballDrill', 'C')
+        first[0]['status'] = 'anchor_imputed'
+        spec = dict(round='r14', experiment='R14-1', qp_analysis=True)
+        records, groups = build_qp_analysis([spec], first + second)
+        self.assertEqual(len(records), 8)
+        self.assertEqual(len(groups), 4)
+        self.assertEqual(groups[0]['expected_sequences'], 4)
+        self.assertEqual(groups[0]['valid_sequences'], 1)
+        self.assertEqual(groups[0]['valid_sequence_names'], 'BasketballDrill')
+        self.assertEqual(groups[0]['scope_status'], 'available_subset')
+        self.assertEqual(groups[1]['valid_sequences'], 2)
+        valid = [r for r in records if r['qp'] == 22 and r['status'] == 'calculated']
+        self.assertEqual(groups[0]['bd_611_pct'], valid[0]['bd_611_pct'])
+        self.assertEqual(len(json.loads(records[0]['anchor_sources'])), 4)
+        self.assertIn('BQMall:anchor_imputed', groups[0]['unavailable_sequences'])
+        text = '\n'.join(qp_markdown('R14-1', 'LB', records, groups))
+        self.assertIn('| BQMall | Y |  |', text)  # Blank missing target, not zero or em dash.
+        self.assertEqual(build_qp_analysis([dict(spec, qp_analysis=False)], first + second), ([], []))
+
+    def test_catalog_qp_scope_is_explicit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            path = root / 'experiments/ts_predictor_r8'
+            path.mkdir(parents=True)
+            for i in range(1, 25):
+                (path / f'R8_{i}_JVET-hhi.xlsm').touch()
+            selected = [s for s in catalog(root) if s.get('qp_analysis')]
+        self.assertEqual({s['round'] for s in selected}, set(QP_ANALYSIS_ROUNDS))
+        self.assertEqual(len(selected), 28)
 
 
 class ResultsLedgerTests(unittest.TestCase):

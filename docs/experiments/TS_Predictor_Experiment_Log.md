@@ -6,6 +6,31 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R13 / R14 / R3 / R6 的 QP 汇总登记（2026-10-24）
+
+按用户最新要求及更新后的 codec-experiments skill，将逐QP BD-rate作为正式结果中的QP分析登记。
+每个QP分别将该点完整实测RD元组替换入Current四点曲线，其余三个点均为Current；
+分别计算Y/U/V PCHIP后6:1:1加权，再按实际有效序列等权汇总。不把四列相加作为整体BD。
+本轮仅汇总、不做算法优劣分析或新实验设计；没有修改编码器或执行编解码。
+
+覆盖R13两组、R14十五组、R3四组、R6七组，共28种方法、30个方法/配置组合：
+已有LB范围全部登记，并保留R3-1的AI BCE及RA BC。213个原始输入指纹与上次登记完全一致。
+948个序列/QP位置中778项可算，4项参考无效，135项目标缺失，3项仅有历史anchor补点，
+另R14-2整组28栏排除（18原值不可靠、10缺失）。目标无实测时留空，不登记为0；
+R3-1 RA BasketballDrive有失败参考点，四栏均留空。每个QP汇总标注有效数量和具体序列集合。
+
+扩展 `scripts/ts_results_ledger.py` 的catalog选择及QP生成逻辑，新增 `qp_bdrate.csv`、
+`qp_group_summary.csv`，并在四轮明细中登记每个序列与各类别的Y/U/V/6:1:1四QP结果。
+原 `rd_points.csv`、`sequence_bdrate.csv`、`group_summary.csv` 逐字节保持不变；
+没有新增整体曲线补点，不修改原始工作簿或CSV。新增逻辑保持其它实验轮次的计算与记录不变。
+38项台账脚本测试通过；使用工作簿公式独立重算全部948项和420条QP汇总，键、状态资格、空值位置一致，
+数值最大差约4.15e-13个百分点。原整体BD与新QP结果分别保留，不将完整性相互替代。
+
+数据入口：[总台账QP汇总](TS_Predictor_Results_Ledger.md#qp-analysis)、
+[R13明细](results/r13.md)、[R14明细](results/r14.md)、[R3明细](results/r3.md)、[R6明细](results/r6.md)。
+复现：`python3 scripts/ts_results_ledger.py --date 2026-10-24 --check`。
+独立数值核验输出仅在 `runs/qp_independent_20261024/`；上传范围为登记脚本、派生查询数据和相关文档。
+
 ## R14 部分结果与状态作用核验（2026-10-24）
 
 只分析、登记和只读核验源码，未修改算法、未执行序列编解码。按当前连续1～15对应原始CSV，

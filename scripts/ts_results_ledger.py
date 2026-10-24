@@ -39,11 +39,14 @@ R12_MODES = ('r12_ci_near1', 'r12_r3_near1', 'r12_current_near1', 'r12_loo_unsta
              'r12_c_distance_softtrim', 'r12_c_and_validation_distance')  # R12-POS-01 public numbering.
 R13_MODES = ('r13_keep_hit_uniform', 'r13_keep_hit_spatial')  # R13-KH-168-v1 public numbering.
 R14_MODES = tuple(sorted(R14_MODE_NUMBERS, key=R14_MODE_NUMBERS.get))  # compact-15-v1.
+QP_ANALYSIS_ROUNDS = ('r3', 'r6', 'r13', 'r14')  # Explicitly requested result scope.
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
           'invalid_anchor': '参考点未通过，不计算',
           'excluded_unreliable': '用户确认不准确，仅留原值，不计算'}
+QP_STATUS = dict(STATUS, calculated='已计算', invalid_target='目标点未通过，不计算',
+                 anchor_imputed='未实测（历史anchor补点）')
 
 
 def catalog(root):
@@ -53,6 +56,8 @@ def catalog(root):
     def add(group, experiment, mode, path, expected='CE', extra_csv=()):
         specs.append(dict(round=group, experiment=experiment, mode=mode,
                           path=path, expected_lb=expected, extra_csv=extra_csv))
+        if group in QP_ANALYSIS_ROUNDS:
+            specs[-1]['qp_analysis'] = True
 
     for name in ('nopred', 'gradient', 'directional'):
         add('fixed', 'Fixed-' + {'nopred': 'NoPred', 'gradient': 'Gradient', 'directional': 'Directional'}[name],
@@ -229,6 +234,102 @@ def sequence_result(rows, excluded_reason=''):
                 status='imputed' if result['imputed_points'] else 'complete')
 
 
+def qp_result(rows, target_qp, excluded_reason=''):
+    """Replace only one measured target tuple; the other three are always anchor.
+
+    This does not turn historical imputation into a measured target or modify the
+    original whole-experiment curve. Every reference point must be valid.
+    """
+    if sorted(r['qp'] for r in rows) != list(QPS) or target_qp not in QPS:
+        raise ValueError('QP analysis requires exactly one row per configured QP')
+    rows = sorted(rows, key=lambda r: r['qp'])
+    target = next(r for r in rows if r['qp'] == target_qp)
+    result = dict(qp=target_qp, target_status=target['status'],
+                  target_record_status=target.get('test_record_status', ''),
+                  **dict.fromkeys(BD, ''), calculation_error='', max_vba_gap_pp='')
+    for c in 'yuv':
+        result[f'{c}_overlap_low_db'] = result[f'{c}_overlap_high_db'] = ''
+    if excluded_reason or target['status'] == 'excluded_unreliable':
+        return dict(result, status='excluded_unreliable',
+                    calculation_error=excluded_reason or 'Unreliable target excluded')
+    if any(r['anchor_record_status'] != 'pass' for r in rows):
+        return dict(result, status='invalid_anchor', calculation_error='A reference point is not pass')
+    try:
+        for c in 'yuv':
+            anchor = [(r[f'anchor_psnr_{c}_db'], r['anchor_rate_kbps']) for r in rows]
+            bd_rate(anchor, anchor)  # Check all four anchor tuples even if target is missing.
+    except (AssertionError, ValueError, ZeroDivisionError, TypeError) as error:
+        return dict(result, status='invalid_anchor',
+                    calculation_error=str(error) or 'Invalid four-point anchor')
+    if target['status'] in ('missing', 'anchor_imputed'):
+        return dict(result, status=target['status'],
+                    calculation_error='Target has no reliable measured experiment tuple')
+    if target['status'] != 'measured' or target.get('test_record_status') != 'pass':
+        return dict(result, status='invalid_target', calculation_error='Target is not a passing measured point')
+    vals, bounds, gap = [], {}, 0.0
+    try:
+        for c in 'yuv':
+            anchor = [(r[f'anchor_psnr_{c}_db'], r['anchor_rate_kbps']) for r in rows]
+            mixed = [(r[f'{"test" if r["qp"] == target_qp else "anchor"}_psnr_{c}_db'],
+                      r[f'{"test" if r["qp"] == target_qp else "anchor"}_rate_kbps']) for r in rows]
+            value, low, high = bd_rate(anchor, mixed)
+            gap = max(gap, abs(value - workbook_bdrate(anchor, mixed)))
+            vals.append(value)
+            bounds.update({f'{c}_overlap_low_db': low, f'{c}_overlap_high_db': high})
+    except (AssertionError, ValueError, ZeroDivisionError, TypeError) as error:
+        return dict(result, status='invalid',
+                    calculation_error=str(error) or 'Invalid mixed monotonic/overlap curve')
+    if gap > 1e-8:
+        raise ValueError(f'QP workbook formula cross-check failed: {gap}')
+    vals.append((6 * vals[0] + vals[1] + vals[2]) / 8)
+    return dict(result, status='calculated', **dict(zip(BD, vals)), **bounds, max_vba_gap_pp=gap)
+
+
+def build_qp_analysis(specs, points):
+    """Build only catalog-selected rounds, keeping original result rows untouched."""
+    selected_specs = [s for s in specs if s.get('qp_analysis')]
+    qp_rows, summaries = [], []
+    meta_keys = ('round', 'experiment', 'mode', 'configuration', 'sequence', 'class_name')
+    for spec in selected_specs:
+        groups = {}
+        for point in points:
+            if point['experiment'] == spec['experiment']:
+                groups.setdefault((point['configuration'], point['sequence']), []).append(point)
+        for _, rows in sorted(groups.items(), key=lambda item: (item[0][0], item[1][0]['class_name'], item[0][1])):
+            by_qp = {r['qp']: r for r in rows}
+            source_map = json.dumps([dict(qp=r['qp'], file=r['anchor_file'], cell=r['anchor_cell'],
+                                         record_status=r['anchor_record_status'])
+                                     for r in sorted(rows, key=lambda r: r['qp'])],
+                                    ensure_ascii=False, separators=(',', ':'))
+            for qp in QPS:
+                target = by_qp[qp]
+                qp_rows.append(dict({k: target[k] for k in meta_keys},
+                    **qp_result(rows, qp, spec.get('excluded_reason', '')),
+                    source_file=target['source_file'], source_cell=target['source_cell'],
+                    anchor_file=target['anchor_file'], anchor_sources=source_map,
+                    construction='Target QP measured tuple; all other QPs use Current Reference'))
+    for spec in selected_specs:
+        for config in sorted({r['configuration'] for r in qp_rows if r['experiment'] == spec['experiment']}):
+            pool = [r for r in qp_rows if r['experiment'] == spec['experiment'] and r['configuration'] == config]
+            available = {r['class_name'] for r in pool}
+            for group in ('B', 'C', 'D', 'E', 'CE', 'BC', 'BCE', 'CD'):
+                if not set(group) <= available:
+                    continue
+                expected = sum(c in group for c in CLASSES.values())
+                for qp in QPS:
+                    rows = [r for r in pool if r['class_name'] in group and r['qp'] == qp]
+                    valid = [r for r in rows if r['status'] == 'calculated']
+                    summaries.append(dict(round=spec['round'], experiment=spec['experiment'], configuration=config,
+                        group=group, qp=qp, expected_sequences=expected, recorded_sequences=len(rows),
+                        valid_sequences=len(valid), valid_sequence_names=';'.join(r['sequence'] for r in valid),
+                        scope_status='excluded_unreliable' if spec.get('excluded_reason') else (
+                            'full' if len(valid) == expected else 'available_subset'),
+                        **{c: statistics.mean(r[c] for r in valid) if valid else '' for c in BD},
+                        unavailable_sequences=';'.join(f'{r["sequence"]}:{r["status"]}' for r in rows
+                                                       if r['status'] != 'calculated')))
+    return qp_rows, summaries
+
+
 def csv_text(rows):
     out = io.StringIO(newline='')
     writer = csv.DictWriter(out, list(rows[0]), lineterminator='\n')
@@ -362,17 +463,61 @@ def markdown_table(headers, rows):
             *['| ' + ' | '.join(map(str, row)) + ' |' for row in rows], '']
 
 
+def qp_markdown(name, config, qp_rows, qp_summaries):
+    """QP column labels stay simple; unavailable numeric cells remain blank."""
+    rows = [r for r in qp_rows if r['experiment'] == name and r['configuration'] == config]
+    if not rows:
+        return []
+    selected = [r for r in qp_summaries if r['experiment'] == name and r['configuration'] == config]
+    lines = [f'### {config}：QP 分析（%）', '',
+             '每列仅将该QP的完整实验RD点替换到Current四点曲线，其余三个点均为Current；'
+             'Y/U/V分别PCHIP后6:1:1加权，不将四列相加解释为整体BD-rate。',
+             '缺失、历史anchor补点、用户排除或无效参考不计算，对应数值单元格留空。'
+             '各QP按有效序列等权；有效数不足时为可用子集，具体集合与来源见QP CSV。', '']
+    cells = []
+    for group in dict.fromkeys(r['group'] for r in selected):
+        by_qp = {r['qp']: r for r in selected if r['group'] == group}
+        for metric, label in zip(BD, ('Y', 'U', 'V', '6:1:1')):
+            cells.append([group, label, *[fmt(by_qp[q][metric], signed=True)
+                                         if by_qp[q][metric] != '' else '' for q in QPS]])
+        cells.append([group, '有效/应有序列数', *[f'{by_qp[q]["valid_sequences"]}/{by_qp[q]["expected_sequences"]}'
+                                                for q in QPS]])
+    lines += markdown_table(['范围', '分量', *[f'QP{q}' for q in QPS]], cells)
+    cells = []
+    for sequence in dict.fromkeys(r['sequence'] for r in rows):
+        by_qp = {r['qp']: r for r in rows if r['sequence'] == sequence}
+        for metric, label in zip(BD, ('Y', 'U', 'V', '6:1:1')):
+            cells.append([sequence, label, *[fmt(by_qp[q][metric], signed=True)
+                                            if by_qp[q][metric] != '' else '' for q in QPS]])
+        cells.append([sequence, '状态', *[QP_STATUS[by_qp[q]['status']] for q in QPS]])
+    lines += markdown_table(['序列', '分量', *[f'QP{q}' for q in QPS]], cells)
+    return lines
+
+
 def documents(specs, points, sequences, summaries, audit, updated):
+    qp_rows, qp_summaries = build_qp_analysis(specs, points)
+    if qp_rows:
+        audit = dict(audit, qp_analysis=dict(
+            rounds=[r for r in QP_ANALYSIS_ROUNDS if any(s['round'] == r and s.get('qp_analysis') for s in specs)],
+            experiments=sum(bool(s.get('qp_analysis')) for s in specs),
+            sequence_qp_records=len(qp_rows), group_qp_records=len(qp_summaries),
+            status=dict(Counter(r['status'] for r in qp_rows)),
+            method='Replace target measured RD tuple only; other three QPs use Current; component PCHIP then 6:1:1',
+            target_imputed_is_not_measured=True,
+            max_vba_gap_pp=max((r['max_vba_gap_pp'] for r in qp_rows if r['max_vba_gap_pp'] != ''), default=0.0)))
     files = {'rd_points.csv': csv_text(points), 'sequence_bdrate.csv': csv_text(sequences),
              'group_summary.csv': csv_text(summaries),
              'sources.json': json.dumps(dict(updated=updated, **audit), indent=2, ensure_ascii=False) + '\n'}
+    if qp_rows:
+        files.update({'qp_bdrate.csv': csv_text(qp_rows), 'qp_group_summary.csv': csv_text(qp_summaries)})
     index = ['# 实验结果明细', '', f'更新时间：{updated}。仅数据登记，不含实验分析。', '',
              '[返回总结果台账](../TS_Predictor_Results_Ledger.md)', '',
              '每个实验按配置、序列列出 QP22/27/32/37 的总码率（kbps）、Y/U/V PSNR（dB），',
              '并并列 Current 参考点；每条序列单独列出 Y/U/V BD-rate 及 6:1:1 加权 BD-rate（%）。',
-             'BD-rate 属于四点曲线，不是单个 QP 的指标。负数为节省；不先加权 PSNR。', '',
+             '整体 BD-rate 使用完整实验四点曲线。QP分析每列只替换对应实验点，其余三个点使用Current。'
+             '两者分开登记，QP列不可相加还原整体BD-rate；负数为节省，不先加权PSNR。', '',
              'CSV 的空字段和 Markdown 的“—”均为缺失/不可计算，不是零。补点逐点标记且保留原工作簿定位。',
-             '各组的 incomplete 曲线不计算 BD-rate；组级可用子集均值明确标记，不冒充完整 CE/BCE。',
+             '各组的 incomplete 整体实验曲线不计算整体 BD-rate；组级可用子集均值明确标记，不冒充完整 CE/BCE。',
              '若参考点状态不是 pass，保留其原始数值和状态，但对应序列不计算 BD-rate。',
              '用户明确排除的结果标记 excluded_unreliable，原数值留存但不参与任何 BD-rate 或效果均值。',
              '逐序列/类别 CSV 的 measured_points 为收到的数值点数，包含该类排除点；是否纳入以 status/scope_status 为准。',
@@ -382,6 +527,8 @@ def documents(specs, points, sequences, summaries, audit, updated):
              '- [逐 QP 数据 CSV](rd_points.csv)：含实验、配置、序列、QP、两组 RD 值、来源单元格和补点状态。',
              '- [逐序列 BD-rate CSV](sequence_bdrate.csv)：含分量、加权 BD、实测/补点/缺失数量及积分区间。',
              '- [类别汇总 CSV](group_summary.csv)：按序列等权，含有效序列数及完整/子集标记。',
+             *(['- [QP 分析 CSV](qp_bdrate.csv)：逐实验/配置/序列/QP的分量及6:1:1 BD-rate、状态、积分区间与来源。',
+                '- [QP 类别汇总 CSV](qp_group_summary.csv)：每个QP单独统计有效序列、集合与均值；缺点不补零。'] if qp_rows else []),
              '- [来源与核验记录](sources.json)：源文件 SHA256、配套 CSV 核对及 VBA 数值交叉检查。', '',
              '## 按实验轮次', '']
     links = []
@@ -411,6 +558,7 @@ def documents(specs, points, sequences, summaries, audit, updated):
                     [[f'[{r["sequence"]}](#{name.lower()}-{config.lower()}-{r["sequence"].lower()})',
                       r['class_name'], *[fmt(r[k], signed=True) for k in BD],
                       f'{r["measured_points"]}/{r["imputed_points"]}/{r["missing_points"]}', STATUS[r['status']]] for r in seqs])
+                lines += qp_markdown(name, config, qp_rows, qp_summaries)
                 for seq in seqs:
                     lines += [f'<a id="{name.lower()}-{config.lower()}-{seq["sequence"].lower()}"></a>', '',
                               f'#### {config} / {seq["sequence"]}', '']
@@ -431,6 +579,11 @@ def documents(specs, points, sequences, summaries, audit, updated):
     if excluded_counts:
         index += ['另保留用户排除的原始数值点（不计入上表实测点）：' +
                   '，'.join(f'{name}：{count} 点' for name, count in sorted(excluded_counts.items())) + '。', '']
+    if qp_rows:
+        index += ['QP分析当前登记：' + '、'.join(r.upper() for r in QP_ANALYSIS_ROUNDS
+                    if any(s['round'] == r and s.get('qp_analysis') for s in specs)) + '。'
+                  '其目标必须为可靠实测；历史anchor补点目标留空，原整体曲线的补点与完整性状态不变。',
+                  'QP分析Markdown的空白数值栏与CSV空字段均表示不可计算，原因列保留；不代表0%。', '']
     index += ['## 维护与复现', '', '在仓库根目录运行（只读源表，生成本目录派生文件）：', '',
               '```bash', 'python3 scripts/ts_results_ledger.py',
               f'python3 scripts/ts_results_ledger.py --date {updated} --check', '```', '',
