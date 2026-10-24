@@ -1,4 +1,5 @@
 import json
+import hashlib
 from copy import deepcopy
 import unittest
 import tempfile
@@ -7,7 +8,7 @@ from unittest.mock import patch
 
 from ts_fixed_analyze import QPS
 from ts_results_ledger import (BD, METRICS, R9_MODES, R10_MODES, R11_MODES, R12_MODES, R13_MODES, R14_MODES,
-                               QP_ANALYSIS_ROUNDS, build, build_qp_analysis, catalog, csv_sources,
+                               QP_ANALYSIS_ROUNDS, REJECTED_CSV_SOURCES, build, build_qp_analysis, catalog, csv_sources,
                                csv_text, imputation_allowed, point_values, qp_markdown, qp_result,
                                read_primary_csv, read_sheet, sequence_result)
 
@@ -135,7 +136,7 @@ class QPResultsTests(unittest.TestCase):
 
 
 class ResultsLedgerTests(unittest.TestCase):
-    def test_r14_primary_csv_registration_and_exclusion(self):
+    def test_r14_primary_csv_registration_and_corrected_result(self):
         from ts_predictor_naming import R14_MODE_NUMBERS
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -149,13 +150,34 @@ class ResultsLedgerTests(unittest.TestCase):
         self.assertEqual([R14_MODE_NUMBERS[s['mode']] for s in specs], list(range(1, 16)))
         self.assertEqual([s['path'] for s in specs],
                          [f'experiments/ts_predictor_r14/{i}.csv' for i in range(1, 16)])
-        self.assertEqual([s['experiment'] for s in specs if s.get('excluded_reason')], ['R14-2'])
+        self.assertFalse(any(s.get('excluded_reason') for s in specs))
         for spec in specs:
             self.assertEqual(spec['source_format'], 'csv')
             self.assertEqual(spec['numbering_revision'], 'compact-15-v1')
             self.assertEqual(csv_sources(spec, Path(spec['path'])), [])
             for qp in QPS:
                 self.assertFalse(imputation_allowed(spec['experiment'], 'lb', 'PartyScene', qp))
+
+    def test_r14_exclusion_follows_rejected_source_not_mode_number(self):
+        old_content = b'Known rejected R14-2 upload'
+        rejected_sha = hashlib.sha256(old_content).hexdigest()
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            r8 = root / 'experiments/ts_predictor_r8'
+            r8.mkdir(parents=True)
+            for i in range(1, 25):
+                (r8 / f'R8_{i}_JVET-hhi.xlsm').touch()
+            source = root / 'experiments/ts_predictor_r14/2.csv'
+            source.parent.mkdir(parents=True)
+            with patch.dict(REJECTED_CSV_SOURCES, {'R14-2': {rejected_sha: 'Rejected historical upload'}}):
+                source.write_bytes(old_content)
+                old = next(s for s in catalog(root) if s['experiment'] == 'R14-2')
+                self.assertEqual(old['excluded_reason'], 'Rejected historical upload')
+                source.write_bytes(b'Corrected partial R14-2 upload')
+                corrected = next(s for s in catalog(root) if s['experiment'] == 'R14-2')
+                self.assertNotIn('excluded_reason', corrected)
+                for qp in QPS:
+                    self.assertFalse(imputation_allowed('R14-2', 'lb', 'PartyScene', qp))
 
     def test_primary_csv_preserves_physical_line_status_and_missing(self):
         with tempfile.TemporaryDirectory() as folder:

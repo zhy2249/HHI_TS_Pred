@@ -40,6 +40,14 @@ R12_MODES = ('r12_ci_near1', 'r12_r3_near1', 'r12_current_near1', 'r12_loo_unsta
 R13_MODES = ('r13_keep_hit_uniform', 'r13_keep_hit_spatial')  # R13-KH-168-v1 public numbering.
 R14_MODES = tuple(sorted(R14_MODE_NUMBERS, key=R14_MODE_NUMBERS.get))  # compact-15-v1.
 QP_ANALYSIS_ROUNDS = ('r3', 'r6', 'r13', 'r14')  # Explicitly requested result scope.
+# R14-2's replacement upload was confirmed correct by the user on 2026-10-24.
+# Exclude only the previously rejected file, not every future R14-2 result.
+REJECTED_CSV_SOURCES = {
+    'R14-2': {
+        '5437fb0e450889be13d638c3e4ec0d1abcb3779f01438058371295ad2019a5b4':
+            '用户此前确认本版 R14-2 结果不准确；仅保留原值，不用于 BD-rate。'
+    }
+}
 STATUS = {'measured': '实测', 'anchor_imputed': 'anchor 补点',
           'missing': '缺失', 'complete': '完整实测',
           'imputed': '含补点', 'incomplete': '不完整，不计算', 'invalid': '无有效公共曲线',
@@ -99,8 +107,12 @@ def catalog(root):
         add('r14', f'R14-{i}', mode, f'experiments/ts_predictor_r14/{i}.csv')
         specs[-1]['source_format'] = 'csv'
         specs[-1]['numbering_revision'] = 'compact-15-v1'
-        if i == 2:
-            specs[-1]['excluded_reason'] = '用户确认 R14-2 当前结果不准确；保留原值，排除效果分析及 BD-rate。'
+        rejected = REJECTED_CSV_SOURCES.get(specs[-1]['experiment'], {})
+        source = root / specs[-1]['path']
+        if rejected and source.is_file():
+            reason = rejected.get(hashlib.sha256(source.read_bytes()).hexdigest())
+            if reason:
+                specs[-1]['excluded_reason'] = reason
     return specs
 
 

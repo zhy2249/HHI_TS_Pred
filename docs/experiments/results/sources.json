@@ -5,17 +5,15 @@
   "sequence_records": 916,
   "point_records": 3664,
   "point_status": {
-    "measured": 3446,
+    "measured": 3596,
     "anchor_imputed": 16,
-    "missing": 184,
-    "excluded_unreliable": 18
+    "missing": 52
   },
   "sequence_status": {
-    "complete": 758,
+    "complete": 856,
     "imputed": 15,
-    "incomplete": 135,
-    "invalid_anchor": 1,
-    "excluded_unreliable": 7
+    "incomplete": 44,
+    "invalid_anchor": 1
   },
   "invalid_anchor_points": [
     {
@@ -296,63 +294,63 @@
     },
     {
       "path": "experiments/ts_predictor_r14/1.csv",
-      "sha256": "b0158253e20320fbe71bfdc433c435c308d3cd582c3f69dc57bc93a94c9a163a"
+      "sha256": "4dde8b8f41d0a3a65d36fc92078df5654a80424254d07172b8763498216eb8ea"
     },
     {
       "path": "experiments/ts_predictor_r14/10.csv",
-      "sha256": "31ed7d393a1ca9ff1053ce63aeb56ace90b7687c8939de100ed08fb441a0fa4e"
+      "sha256": "7405f6d41f9b9266b0bafb34b80c46ff0397116d0be81bc3e04ccbc2f4f81891"
     },
     {
       "path": "experiments/ts_predictor_r14/11.csv",
-      "sha256": "7482836e8438d9f2a28cf1d4e89e61cbc3d1404c11c93c90f8dbfdd64ab0af24"
+      "sha256": "cd2baf9711a22df50e9f8ecaf51c27aa57c0ae3feac1fb17be69de069e925a47"
     },
     {
       "path": "experiments/ts_predictor_r14/12.csv",
-      "sha256": "7f92cd92919458daa30658d49246d64b3eacdc3008ecec793c31214bd219bd12"
+      "sha256": "15c6947f6ded7b5e5d47bf9fa4f8f939c43947b1612a361bd82598a7a716223f"
     },
     {
       "path": "experiments/ts_predictor_r14/13.csv",
-      "sha256": "024c8bff3977b0018f8924372b6691419ade647ceee076b69f9abd7359acdbe8"
+      "sha256": "34b6962e98519737ffc9fcf0e0f261f0c9367f7d835a0b7713846d4b45ea4b10"
     },
     {
       "path": "experiments/ts_predictor_r14/14.csv",
-      "sha256": "1631a113ca96812396974071a55dc1b84f1c6461469c625b1aae329c5bf86c4a"
+      "sha256": "f76f314d8e93a13d9414a11f878db8f44e748e926548c073a597bd06a9da353f"
     },
     {
       "path": "experiments/ts_predictor_r14/15.csv",
-      "sha256": "2a1c86753e573b283b9499ab4ba4deceabc11831a0d6ffd98e6509c5ea9d9d7f"
+      "sha256": "2bfc8e6f4c76fb49f6d6ac012751b09ba7dc1f56a7768dd93f2359eb0c07a467"
     },
     {
       "path": "experiments/ts_predictor_r14/2.csv",
-      "sha256": "5437fb0e450889be13d638c3e4ec0d1abcb3779f01438058371295ad2019a5b4"
+      "sha256": "8f33be181110a1b1065cf7ac7d4dbeb5339fd9aeea2f41ff67f3ae0995e5d18c"
     },
     {
       "path": "experiments/ts_predictor_r14/3.csv",
-      "sha256": "b819396719fd74b05ebd99440cc198eda5bd72a08365ca7c5f7555c1398782b9"
+      "sha256": "07f4bcbe36c350d8bc818e9524a36b704376cd5e890f9a4d01ec77b78a393e7b"
     },
     {
       "path": "experiments/ts_predictor_r14/4.csv",
-      "sha256": "19a4985336361ae1033bed1423d864a6ed0f018d6cf916eac1a057879a68f58b"
+      "sha256": "e6eeeb170639d30d29dc3fac379d3cda4ba14beb2ff41bb97b81fbc91609b8be"
     },
     {
       "path": "experiments/ts_predictor_r14/5.csv",
-      "sha256": "248f1fbe605a00b8dce198bedeb999af97f081c15335a50ac8575a76e0d3e284"
+      "sha256": "9ec4d47917a2b453cb39868131659194abd3ad309992e268b58f54df1095dddc"
     },
     {
       "path": "experiments/ts_predictor_r14/6.csv",
-      "sha256": "0fa308e9493e47efd852639ab74803035aef271eb1c49bc3b9af05c637218ec8"
+      "sha256": "7e7ea08e2f78fc31f89e48a8776daf7772f0bfae46b777e6f866956fe55f0650"
     },
     {
       "path": "experiments/ts_predictor_r14/7.csv",
-      "sha256": "468665110ef9ab60e63b89c108c3980bc4a0381d9001225a0b9dc5db6706bead"
+      "sha256": "7a8938f5dd45ed848b47b6cf07fece48c18db2fedcd490a18a8032f6abd99dd8"
     },
     {
       "path": "experiments/ts_predictor_r14/8.csv",
-      "sha256": "b10694bd52e7203c5527639357268cb19429bad7679f17161ed99959d4a0240a"
+      "sha256": "68802f4c606dc2856a31c10d263dd1af55a3102ead2097cd1881ecf9d62cff24"
     },
     {
       "path": "experiments/ts_predictor_r14/9.csv",
-      "sha256": "c26f928bb6358589a01f9744663b47255a481feb31fa456bc7ccb6d8077a0272"
+      "sha256": "d7de88cee752aab07e555442092ff96bf9e9d46e3c862250af661917e5a9984a"
     },
     {
       "path": "experiments/ts_predictor_r2/r2_cn_frac/LB_CE/JVET-hhi.xlsm",
@@ -1393,7 +1391,7 @@
       "source": "experiments/ts_predictor_r14/2.csv",
       "numbering_revision": "compact-15-v1",
       "independent_reference_crosscheck": false,
-      "excluded_reason": "用户确认 R14-2 当前结果不准确；保留原值，排除效果分析及 BD-rate。"
+      "excluded_reason": ""
     },
     {
       "experiment": "R14-3",
@@ -1498,11 +1496,10 @@
     "sequence_qp_records": 948,
     "group_qp_records": 420,
     "status": {
-      "calculated": 778,
+      "calculated": 928,
       "invalid_anchor": 4,
-      "missing": 135,
-      "anchor_imputed": 3,
-      "excluded_unreliable": 28
+      "missing": 13,
+      "anchor_imputed": 3
     },
     "method": "Replace target measured RD tuple only; other three QPs use Current; component PCHIP then 6:1:1",
     "target_imputed_is_not_measured": true,
