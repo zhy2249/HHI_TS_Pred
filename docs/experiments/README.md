@@ -14,6 +14,7 @@
 - [R12 十二组 CE 与七组部分 B 明细（仅汇总）](results/r12.md)
 - [R13 两组 CE 结果分析（2026-10-23）](TS_Predictor_R13_LB_CE_Results_20261023.md)
 - [R13-2 异常点诊断：Johnny 27/32/37、KristenAndSara 32](TS_Predictor_R13_Anomaly_Diagnosis_20261024.md) · [日志审计与本地短测派生数据](results/r13_diagnosis_20261024/README.md)
+- [R13 异常后续分析指导：首次搜索分叉、Y→UV与滤波分离](TS_Predictor_R13_Anomaly_Followup_Guide_20261024.md)（基于6784c2b；仅指导，未追加运行）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
@@ -21,7 +22,7 @@
 - [统一实验记录（过程、分析与决策）](TS_Predictor_Experiment_Log.md)
 - [R9 实现、宏与运行命令](TS_Predictor_R9_Implementation.md)
 - [R9 验收记录](TS_Predictor_R9_Validation.md)
-- [R11 八组实现、宏与分阶段运行](TS_Predictor_R11_Implementation.md)
+- [R11 八组实现与运行](TS_Predictor_R11_Implementation.md)
 - [R12 十二组实现与首批六组运行](TS_Predictor_R12_Implementation.md)
 - [R12 局部语法与量化验收记录](TS_Predictor_R12_Validation.md)
 - [R12 等价复杂度优化与回归验证](TS_Predictor_R12_Exact_Optimization.md)
