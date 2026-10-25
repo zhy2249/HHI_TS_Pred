@@ -82,8 +82,19 @@ int getProcStatusValue(const char *key)
 #endif
 
 #include "CommonLib/TsFixedPrediction.h"
+#include "DecoderLib/tsaudit/Offline.h"
 int main(int argc, char *argv[])
 {
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+  if(argc==2 && std::string(argv[1])=="--ts-audit-version")
+  { std::cout<<TsAudit::revision<<"\n"; return 0; }
+  if(argc>=2 && std::string(argv[1])=="--ts-audit-replay")
+  {
+    try { CHECK(argc!=4,"Usage: --ts-audit-replay snapshot.tsa output-directory"); return TsAudit::offline(argv[2],argv[3]); }
+    catch(const std::exception &e) { std::cerr<<e.what()<<"\n"; return 2; }
+  }
+#endif
+
   TsFixedPrediction::announce();
   int returnCode = EXIT_SUCCESS;
 
@@ -131,10 +142,12 @@ int main(int argc, char *argv[])
       printf("\n\n***ERROR*** A decoding mismatch occured: signalled md5sum does not match\n");
       returnCode = EXIT_FAILURE;
     }
+    TsAudit::finish(returnCode==EXIT_SUCCESS);
 #if ENABLE_TRY_CATCH
   }
   catch (Exception &e)
   {
+    TsAudit::finish(false);
     std::cerr << e.what() << std::endl;
     returnCode = EXIT_FAILURE;
   }

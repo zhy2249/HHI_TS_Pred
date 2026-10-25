@@ -42,6 +42,7 @@
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "CommonLib/TsR13DecodeObservation.h"
 #endif
+#include "tsaudit/Manager.h"
 #include "CommonLib/AdaptiveLoopFilterVtm.h"
 #include "CommonLib/AlfParameters.h"
 #include "CommonLib/dtrace_next.h"
@@ -1080,6 +1081,7 @@ void DecLib::finishPictureLight(int &poc, PicList *&rPicList)
 
 void DecLib::finishPicture(int &poc, PicList *&rPicList, MsgLevel msgl, bool associatedWithNewClvs)
 {
+  TsAudit::picture(*m_pic);
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   {
     // DecApp and tryDecodePicture call copyAdaptedLumaClip between loop

@@ -36,6 +36,7 @@
  */
 
 #include "CABACReader.h"
+#include "tsaudit/Manager.h"
 
 #include "CommonLib/AlfParameters.h"
 #include "CommonLib/AlfParametersEcm.h"
@@ -4456,6 +4457,7 @@ void CABACReader::residual_coding_subblock(CoeffCodingContext &cctx, TCoeff *coe
 
 void CABACReader::residual_codingTS(TransformUnit &tu, CompID compID)
 {
+  m_binDecoder.tsAudit=TsAudit::begin(tu,compID,getCtx());
   DTRACE(g_trace_ctx, D_SYNTAX, "residual_codingTS() etype=%d pos=(%d,%d) size=%dx%d\n", tu.blocks[compID].compID,
          tu.blocks[compID].x, tu.blocks[compID].y, tu.blocks[compID].width, tu.blocks[compID].height);
 
@@ -4473,11 +4475,15 @@ void CABACReader::residual_codingTS(TransformUnit &tu, CompID compID)
     {
       goRiceParam = goRiceParam + tu.cu->slice->m_tsrcIndex;
     }
+    if(m_binDecoder.tsAudit) { m_binDecoder.tsAudit->paths.push_back({-1,-1,0}); }
     residual_coding_subblockTS(cctx, coeff, goRiceParam);
+    if(m_binDecoder.tsAudit) { m_binDecoder.tsAudit->paths.back().end=cctx.remRegBins; }
 #if JVET_BJUT_TS_FIXED_PREDICTOR
     cctx.finishTsPredictorCG(coeff, true, true);
 #endif
   }
+  m_binDecoder.tsAudit=nullptr;
+  TsAudit::end(tu,compID,getCtx());
 }
 
 void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *coeff, const int riceParam)
@@ -4686,6 +4692,8 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
   }
 
   //===== set final coefficents =====
+  if(m_binDecoder.tsAudit)
+  { auto &p=m_binDecoder.tsAudit->paths.back(); p.p1=lastScanPosPass1; p.p2=lastScanPosPass2; }
   for (unsigned k = 0; k < numNonZero; k++)
   {
     TCoeff absCoeff     = coeff[sigBlkPos[k]];

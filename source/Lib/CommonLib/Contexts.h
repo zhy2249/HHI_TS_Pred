@@ -319,6 +319,11 @@ public:
   static uint8_t                getRenormBitsLPS(unsigned lpsRange) { return m_RenormTable_32[lpsRange >> 3]; }
   static uint8_t                getRenormBitsRange(unsigned range) { return 1; }
   std::pair<uint16_t, uint16_t> getState() const { return std::pair<uint16_t, uint16_t>(m_state[0], m_state[1]); }
+  // Explicit diagnostic serialization: setState alone resets the separately
+  // adapted state used by both fractional estimation and arithmetic decoding.
+  std::pair<uint16_t, uint16_t> getStateUsed() const { return {m_stateUsed[0], m_stateUsed[1]}; }
+  void setStateUsed(std::pair<uint16_t, uint16_t> value)
+  { m_stateUsed[0] = value.first; m_stateUsed[1] = value.second; }
 
   void setState(std::pair<uint16_t, uint16_t> pState)
   {

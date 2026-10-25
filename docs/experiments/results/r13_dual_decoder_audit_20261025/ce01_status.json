@@ -1,0 +1,36 @@
+{
+  "fixture": {
+    "status": "missing_fixture",
+    "population": "SEARCH_FIXTURE",
+    "reason": "Existing q and old context CSV omit stateUsed; not a restorable true snapshot. No encoding started.",
+    "partial_inputs": [
+      "fixtures/CE01/detail_input_q.csv",
+      "fixtures/CE01/detail_entry_context.csv"
+    ]
+  },
+  "final_query": {
+    "returncode": 0,
+    "expected_frames": 17,
+    "actual_frames": 17,
+    "sei_status": "SEI_present_decode_returncode_verified",
+    "sei_md5_ok_count": 17,
+    "log_truncated": false,
+    "on_off_equal": null,
+    "native_replay": {
+      "revision": "R13-DUAL-DECODE-AUDIT-impl1",
+      "valid": true,
+      "native_verified_tu": 0,
+      "selected_tu": 0,
+      "skipped_budget": 0,
+      "replays": 0,
+      "coefficient_visits": 0,
+      "core_truncated": false,
+      "cache_peak_bytes": 0,
+      "snapshot_skipped_budget": 0,
+      "raw_bytes": 188,
+      "snapshot_bytes": 0
+    },
+    "detail_status": "not_in_final_bitstream",
+    "audit_complete": true
+  }
+}

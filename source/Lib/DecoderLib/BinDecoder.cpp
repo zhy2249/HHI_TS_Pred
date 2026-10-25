@@ -257,6 +257,7 @@ unsigned BinDecoderBase::decodeBinEP()
   CodingStatistics::IncrementStatisticEP(*ptype, 1, int(bin));
 #endif
   DTRACE(g_trace_ctx, D_CABAC, "%d  %d  EP=%d \n", DTRACE_GET_COUNTER(g_trace_ctx, D_CABAC), m_range, bin);
+  if (tsAudit) { tsAudit->ep(bin,1); }
   return bin;
 }
 
@@ -268,7 +269,9 @@ unsigned BinDecoderBase::decodeBinsEP(unsigned numBins)
 
   if (m_range == 256)
   {
-    return decodeAlignedBinsEP(numBins);
+    const unsigned value=decodeAlignedBinsEP(numBins);
+    if (tsAudit) { tsAudit->ep(value,numBins); }
+    return value;
   }
   unsigned remBins = numBins;
   unsigned bins    = 0;
@@ -316,6 +319,7 @@ unsigned BinDecoderBase::decodeBinsEP(unsigned numBins)
            (bins >> (numBinsOrig - 1 - i)) & 1);
   }
 #endif
+  if (tsAudit) { tsAudit->ep(bins,numBins); }
   return bins;
 }
 
@@ -489,6 +493,7 @@ template<class BinProbModel> unsigned TBinDecoder<BinProbModel>::decodeBin(unsig
 #if ENABLE_CABAC_DUMP
   CabacRetrain::dumpBin(bin, ctxId);
 #endif
+  if (tsAudit) { tsAudit->bin(ctxId,bin,probModel.estFracBits(bin)); }
   probModel.update(bin);
   m_binBuffer.addBin(bin, ctxId);
 

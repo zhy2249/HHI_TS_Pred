@@ -1,0 +1,35 @@
+[
+  {
+    "test": "no_SEI_on_off",
+    "origin": "R13-1",
+    "passed": true
+  },
+  {
+    "test": "no_SEI_on_off",
+    "origin": "R13-2",
+    "passed": true
+  },
+  {
+    "test": "replay_budget_does_not_change_decode",
+    "passed": true,
+    "skipped": 3
+  },
+  {
+    "test": "summary_no_replay_or_snapshot",
+    "passed": true
+  },
+  {
+    "test": "corrupt_snapshot_rejected",
+    "passed": true,
+    "returncode": 2
+  },
+  {
+    "test": "truncated_stream_rejected",
+    "passed": true,
+    "returncode": 1
+  },
+  {
+    "test": "wrong_origin_policy_rejected",
+    "passed": true
+  }
+]

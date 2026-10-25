@@ -6,6 +6,29 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R13 双码流评分审计解码器（2026-10-25）
+
+快进同步至`f603715`，按新双源需求实现`R13-DUAL-DECODE-AUDIT-impl1`。
+R13-1/2各用自己的native模式解码；最终q稳定后，在同一入口概率状态上私有回放七个方法。
+保存完整概率字段（含stateUsed）、真实bin轨迹、pass/预算及可独立恢复的快照；两来源对角线逐bin核验。
+候选历史扩展仅是观察列，没有新增正式编码模式，也没有修改RDOQ或调用EncoderApp。
+
+- 将`experiments/ts_predictor_r13/13_bin`的96条码流复制到`runs/r13_dual_decode_audit_bundle/streams/`，
+  167073025字节逐条SHA256一致，原件保留。另收录既有17帧EQ/SP验证前缀及CE01部分真实输入。
+- Release编译通过；EQ/SP各48个合成TU通过Writer→Reader→回放→序列化核验，含Rice1–8、预算耗尽、BDPCM、
+  历史候选及同映射复用。此处Writer仅作局部语法单元测试，不编码视频。
+- 最终固定验收集：17帧前缀及Johnny27/32、FourPeople32两种来源各300帧，共1834个on帧及同数off帧。
+  每帧SEI MD5通过且on/off重建一致；前缀观察17帧，另外三对仅观察前32帧，共38个采样TU原生回放精确吻合。
+- 8项Python测试、7项运行时验收通过；独立进程快照回放的七个rate与捕获时完全一致。
+  预算不足只跳过观察；无SEI如实标缺失，损坏快照/截断码流/错误模式manifest显式失败。
+- 只筛选已有样本的尺寸/损失方向接口独立于主抽样；C0/C+分母分开，来源等权且空分母保留null。
+- CE01定点最终码流查询返回`not_in_final_bitstream`；旧context CSV缺stateUsed，完整搜索fixture记`missing_fixture`。
+  没有为了补齐而重新编码，也没有将落选trial假装成最终码流样本。
+
+服务器编码器/输入/配置身份未知字段仍为null；双来源条件统计不能消除TS/RDOQ选择偏差。
+本轮验收样本少，不给评分优劣或新BD-rate结论。源码/文档/小型核验表同步Git，原始码流和可执行包留本地。
+详见[实现与交付](TS_Predictor_Dual_Decoder_Audit_Implementation.md)及[验收记录](results/r13_dual_decoder_audit_20261025/README.md)。
+
 ## R13 Johnny32 POC16：2.762482 bit 的 predictor 明细（2026-10-25）
 
 只补跑既有EQ 17帧前缀，捕获Y(856,384)8×32被丢弃的TS候选；固定q和入口CABAC状态回放Current/EQ/SP。

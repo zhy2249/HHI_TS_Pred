@@ -1,0 +1,12 @@
+{
+  "input": "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_bundle/validation/j32/R13-1",
+  "size": null,
+  "loss_sign": "positive",
+  "first_poc": 0,
+  "last_poc": 2147483647,
+  "component": "Y",
+  "matched": 1,
+  "saved": 1,
+  "order": "descending absolute SP-minus-EQ cost",
+  "population": "retained sampled positions only; selection is for explanation, not representative frequencies"
+}

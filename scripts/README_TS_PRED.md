@@ -267,3 +267,19 @@ python3 -m unittest discover -s scripts -p 'test_ts_r8_design.py'
 
 前两项只检查数学规格；第三项复核本地已有R7 CE表格，不启动编码、不补点、不修改源表。
 结果收件目录为 `experiments/ts_predictor_r8/r8_<MODE>_<name>/`，存在目录不等于完成实验。
+
+
+## R13 双来源只读解码评分审计（2026-10-25）
+
+`ts_decode_score_audit.py` 只调用DecoderApp，按manifest将R13-1绑定EQ、R13-2绑定SP。
+无需原图，默认不保存重建视频；支持七种策略私有回放、单位置oracle、历史候选、快照离线恢复及来源等权汇总。
+现有本地包为 `runs/r13_dual_decode_audit_bundle/`，原96条收件码流已复制并核对SHA256，原件保留。
+
+```bash
+python3 scripts/ts_decode_score_audit.py inspect --manifest runs/r13_dual_decode_audit_bundle/manifest.json
+python3 scripts/ts_decode_score_audit.py decode-pair --manifest runs/r13_dual_decode_audit_bundle/manifest.json --pair Johnny_QP32 --first-poc 0 --last-poc 31 --verify-off --output runs/j32_decoder_audit_new
+```
+
+POC范围仅限制观察，仍解码完整文件和参考前缀；输出目录须为新目录。
+`select-examples`按尺寸/损失方向筛选已保留样本，不能据此重新计算代表性频率。
+构建、replay/detail、缺失CE01 fixture及验证范围见 [实现说明](../docs/experiments/TS_Predictor_Dual_Decoder_Audit_Implementation.md)。

@@ -39,6 +39,7 @@
 
 #include "CommonLib/Contexts.h"
 #include "CommonLib/BitStream.h"
+#include "tsaudit/BinTrace.h"
 
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
 class CodingStatisticsClassType;
@@ -65,6 +66,8 @@ public:
 
 public:
   virtual unsigned decodeBin(unsigned ctxId) = 0;
+  // Non-owning, TU-scoped diagnostic observer. Null has no state-copy cost.
+  TsAudit::Native *tsAudit = nullptr;
 
 public:
   unsigned decodeBinEP();

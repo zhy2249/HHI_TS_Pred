@@ -1,0 +1,29 @@
+{
+  "test_binary_sha256": "0f480a284e90e26a5a41bd468c1f3924eb87f3f3aeac2e9f5350a64e098c1ea5",
+  "test_source_sha256": "ab62d3d5df9e8971b38f016e60977a2a3733b73b1d3c16d77389e1a909a3b243",
+  "sequence_encode_decode": false,
+  "runs": [
+    {
+      "policy": 98,
+      "native_tu": 48,
+      "bypass_bins": 77423,
+      "history_extensions": 6047,
+      "bdpcm": 14,
+      "passed": true
+    },
+    {
+      "policy": 99,
+      "native_tu": 48,
+      "bypass_bins": 77474,
+      "history_extensions": 6047,
+      "bdpcm": 14,
+      "passed": true
+    }
+  ],
+  "snapshot_disk_limit_checked": true,
+  "compile_command": "g++ -std=gnu++17 -O1 -flto=2 -DNDEBUG -DTARGET_SIMD_X86 -DENABLE_TRACING=0 -DENABLE_CABAC_DUMP=0 -I source/Lib -I source/Lib/CommonLib -I source/Lib/CommonLib/x86 -I thirdparty -I thirdparty/sadl scripts/ts_dual_audit_native_test.cpp build/ts-r14/lib/libEncoderLib.a build/ts-r14/lib/libDecoderLib.a build/ts-r14/lib/libCommonLib.a -o /tmp/ts_dual_audit_native_test_final",
+  "commands": [
+    "TS_FIXED_PREDICTOR=r13_keep_hit_uniform /tmp/ts_dual_audit_native_test_final /tmp/ts_audit_final_EQ.tsa",
+    "TS_FIXED_PREDICTOR=r13_keep_hit_spatial /tmp/ts_dual_audit_native_test_final /tmp/ts_audit_final_SP.tsa"
+  ]
+}

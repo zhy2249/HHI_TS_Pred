@@ -1,0 +1,34 @@
+{
+  "snapshot": "runs/r13_dual_decode_audit_bundle/validation/prefix17/R13-1/snapshots/0_0_824_112_8_16.tsa",
+  "sha256": "671b5d1e31829a58b5f601d5dfe596894585fa7777add8289023adffc53b4186",
+  "native_validated": true,
+  "policies": [
+    "CURRENT",
+    "STATIC_EQ",
+    "STATIC_SP",
+    "KEEP_EQ",
+    "KEEP_SP",
+    "KEEP_EQ_H",
+    "KEEP_SP_H"
+  ],
+  "rates_frac": [
+    575248,
+    575248,
+    575248,
+    575248,
+    575248,
+    575248,
+    575248
+  ],
+  "capture_rates_frac": [
+    575248,
+    575248,
+    575248,
+    575248,
+    575248,
+    575248,
+    575248
+  ],
+  "independent_process": true,
+  "all_rates_equal": true
+}
