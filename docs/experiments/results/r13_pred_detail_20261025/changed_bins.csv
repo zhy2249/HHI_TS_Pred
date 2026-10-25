@@ -1,0 +1,6 @@
+cg,scan,pass,syntax,occurrence,category,symbol_changed,context_changed,eq_event_index,eq_value,eq_ctx_id,eq_state0,eq_state1,eq_frac0,eq_frac1,eq_regular_budget_before,eq_bypass_length,eq_cost_frac,eq_predictor,sp_event_index,sp_value,sp_ctx_id,sp_state0,sp_state1,sp_frac0,sp_frac1,sp_regular_budget_before,sp_bypass_length,sp_cost_frac,sp_predictor,sp_minus_eq_frac,sp_minus_eq_bits
+1,31,1,gt1,0,symbol_changed_context_same,True,False,48,0,1320,3726,11058,11611,72060,402,1,11611,0,48,1,1320,3726,11058,11611,72060,402,1,72060,2,60449,1.844757080078125
+1,31,1,parity,0,syntax_only_in_sp,,,,,,,,,,,,0,0,49,0,1313,4800,5080,7542,90492,401,1,7542,2,7542,0.23016357421875
+1,31,2,gt2,0,syntax_only_in_sp,,,,,,,,,,,,0,0,51,0,1315,2112,2728,3596,123574,399,1,3596,2,3596,0.1097412109375
+2,35,1,gt1,0,same_symbol_context_changed,False,True,56,0,1320,2795,10886,10560,76039,395,1,10560,1,58,0,1320,10986,11397,23189,44794,393,1,23189,1,12629,0.385406494140625
+2,39,1,gt1,0,same_symbol_context_changed,False,True,64,0,1320,2097,10716,9759,79383,387,1,9759,1,66,0,1320,8240,11219,16064,58833,385,1,16064,1,6305,0.192413330078125

@@ -1,10 +1,22 @@
 # TS predictor 实验记录
 
-最后更新：2026-10-24。这是本项目 TS predictor 研究的统一实验台账；
+最后更新：2026-10-25。这是本项目 TS predictor 研究的统一实验台账；
 后续实验在本文件追加和更新，不另建互相冲突的总记录。
 
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
+
+## R13 Johnny32 POC16：2.762482 bit 的 predictor 明细（2026-10-25）
+
+只补跑既有EQ 17帧前缀，捕获Y(856,384)8×32被丢弃的TS候选；固定q和入口CABAC状态回放Current/EQ/SP。
+全TU只有scan31的pred不同：q1、H=[0,2,1,0,1]；EQ分数p0=840/p2=1144，SP分数p0=1344/p2=1312。
+SP将U=2加倍后严格选p2，将当前幅值1映射成2；不是tie-break差异。
+scan31增加71587 fractional units，scan35/39的gt1 context传播再增加18934，合计90521/32768=2.762481689453 bit。
+真实EQ与重放EQ精确一致；旧整个trial与本次TSRC-only的差值完全一致。
+
+36个合成TU及4项Python检查通过；17帧编码byte-exact且独立解码MD5通过。
+仅诊断，不改predictor/搜索规则，不新增或改写正式RD/BD数据。
+全部256个系数、候选逐样本评分、bin/context贡献见[定点记录](TS_Predictor_R13_Pred_Rate_Trace_20261025.md)。
 
 ## R13 异常续查：解码观察与定点搜索（2026-10-24）
 

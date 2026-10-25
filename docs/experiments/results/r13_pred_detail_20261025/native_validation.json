@@ -1,0 +1,26 @@
+[
+  {
+    "mode": "current",
+    "tu_count": 12,
+    "passed": true,
+    "native_fractional_rate_equal": true,
+    "q_and_context_unchanged": true,
+    "log": "runs/r13_pred_detail_native_20261025/current.log"
+  },
+  {
+    "mode": "r13_keep_hit_uniform",
+    "tu_count": 12,
+    "passed": true,
+    "native_fractional_rate_equal": true,
+    "q_and_context_unchanged": true,
+    "log": "runs/r13_pred_detail_native_20261025/r13_keep_hit_uniform.log"
+  },
+  {
+    "mode": "r13_keep_hit_spatial",
+    "tu_count": 12,
+    "passed": true,
+    "native_fractional_rate_equal": true,
+    "q_and_context_unchanged": true,
+    "log": "runs/r13_pred_detail_native_20261025/r13_keep_hit_spatial.log"
+  }
+]

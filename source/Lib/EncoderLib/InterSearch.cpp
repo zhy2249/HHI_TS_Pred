@@ -38,6 +38,7 @@
 #include "InterSearch.h"
 #include "TsR8Search.h"
 #include "TsR13SearchDiagnostic.h"
+#include "CommonLib/TsR13PredDetail.h"
 
 #include "CommonLib/CommonDef.h"
 #include "CommonLib/Rom.h"
@@ -7677,6 +7678,16 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
                .add("no_residual",int(tu.noResidual));
               R13SearchDiagnostic::emit("transform_entry",f);
             }
+            // Narrow forensic target: the discarded Johnny QP32/POC16 TS
+            // trial behind the 90521 fractional-unit EQ/SP difference. The
+            // hashes select the original search input, not just its geometry.
+            const bool r13PredDetail = TsR13PredDetail::enabled() && compID == COMP_Y &&
+              slice.m_poc == 16 && compArea.x == 856 && compArea.y == 384 &&
+              compArea.width == 8 && compArea.height == 32 && tr == MtsType::SKIP &&
+              tu.cu->qp == 33 &&
+              R13SearchDiagnostic::bufferHash(csFull->getOrgResiBuf(compArea)) == 6133638857810301496ULL &&
+              R13SearchDiagnostic::bufferHash(cs.getPredBuf(compArea)) == 8384959809021157691ULL &&
+              R13SearchDiagnostic::contextHash(m_CABACEstimator->getCtx()) == 5773553372657782758ULL;
             currAbsSum                = 0;
             m_pcTrQuant->quantNxN(tu, compID, cQP, currAbsSum, m_CABACEstimator->getCtx(), tl.trCoeffs);
 
@@ -7746,7 +7757,20 @@ void InterSearch::xEstimateInterResidualQT(CodingStructure &cs, Partitioner &par
                 cuCtx.isDQPCoded         = true;
                 cuCtx.isChromaQpAdjCoded = true;
                 m_CABACEstimator->residual_coding_last(tu, compID, &cuCtx);
-                m_CABACEstimator->residual_coding_coef(tu, compID, &cuCtx);
+                if (r13PredDetail)
+                {
+                  CHECK(R13SearchDiagnostic::bufferHash(tu.getCoeffs(compID)) != 1454644526469312942ULL,
+                        "R13 predictor forensic target coefficients changed");
+                  const Ctx detailEntry(m_CABACEstimator->getCtx());
+                  const uint64_t detailBefore = m_CABACEstimator->getEstFracBits();
+                  m_CABACEstimator->residual_coding_coef(tu, compID, &cuCtx);
+                  TsR13PredDetail::observe(tu, compID, detailEntry,
+                    m_CABACEstimator->getEstFracBits() - detailBefore);
+                }
+                else
+                {
+                  m_CABACEstimator->residual_coding_coef(tu, compID, &cuCtx);
+                }
                 m_CABACEstimator->residual_coding_sign(tu, compID);
                 m_CABACEstimator->nst_idx(tu, cuCtx);
                 m_CABACEstimator->mts_idx(tu, cuCtx);

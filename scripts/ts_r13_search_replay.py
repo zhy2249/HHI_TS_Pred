@@ -25,6 +25,8 @@ def main():
     p.add_argument('--poc', type=int, default=16)
     p.add_argument('--ctu', type=int, required=True)
     p.add_argument('--limit', type=int, default=200000)
+    p.add_argument('--pred-detail', action='store_true',
+                   help='Only replay the fixed Johnny QP32 POC16 8x32 TS target; no full search trace')
     args = p.parse_args()
     if args.output.exists():
         raise ValueError('New output directory required')
@@ -34,6 +36,9 @@ def main():
     expected, info = parse_log(Path(done['result']['encode_log']))
     if args.poc not in expected:
         raise ValueError('Target POC outside source prefix')
+    if args.pred_detail and (args.poc != 16 or args.ctu != 36 or done['sequence'] != 'Johnny'
+                            or done['QP'] != 32 or done['fixed_predictor'] != 'r13_keep_hit_uniform'):
+        raise ValueError('Predictor detail probe is restricted to the original Johnny32 EQ target')
     command = list(done['command'])
     command[0] = str(args.encoder.resolve())
     args.output.mkdir(parents=True)
@@ -45,6 +50,8 @@ def main():
                TS_R13_DIAG='0', TS_R13_SEARCH_TRACE='1', TS_R13_SEARCH_POC=str(args.poc),
                TS_R13_SEARCH_CTU=str(args.ctu), TS_R13_SEARCH_LIMIT=str(args.limit),
                TS_R13_DIAG_SCOPE=info['r13_component_scope'])
+    if args.pred_detail:
+        env.update(TS_R13_SEARCH_TRACE='0', TS_R13_PRED_DETAIL=str((args.output/'detail').resolve()))
     patch = subprocess.check_output(['git', 'diff', '--', 'source'])
     (args.output / 'source.patch').write_bytes(patch)
     new_sources = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard', 'source'], text=True).splitlines()
@@ -75,9 +82,19 @@ def main():
     for line in (args.output / 'encode.log').read_text(errors='replace').splitlines():
         if line.startswith('TS_R13_SEARCH {'):
             events.append(json.loads(line[len('TS_R13_SEARCH '):]))
-    if not events or any(r['event'] == 'truncated' for r in events):
+    if args.pred_detail:
+        details = [line for line in (args.output/'encode.log').read_text().splitlines()
+                   if line.startswith('TS_R13_PRED_DETAIL ')]
+        if len(details) != 1 or 'sp_minus_eq_frac=90521 ' not in details[0]:
+            raise ValueError('Missing, duplicate or changed predictor detail target')
+        for suffix in ('coeff', 'candidates', 'bins', 'summary'):
+            path = args.output/f'detail_{suffix}.csv'
+            if not path.is_file() or not path.stat().st_size:
+                raise ValueError(f'Missing detail table: {path}')
+        identity['predictor_detail'] = details[0]
+    elif not events or any(r['event'] == 'truncated' for r in events):
         raise ValueError('No search trace or truncated search trace')
-    if (events[0]['event'] != 'ctu_begin' or events[-1]['event'] != 'ctu_end'
+    elif (events[0]['event'] != 'ctu_begin' or events[-1]['event'] != 'ctu_end'
             or events[-1].get('truncated') or any(
                 r['poc'] != args.poc or r['ctu'] != args.ctu or r['seq'] != i + 1
                 for i, r in enumerate(events))

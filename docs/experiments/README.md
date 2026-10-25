@@ -16,6 +16,7 @@
 - [R13-2 异常点诊断：Johnny 27/32/37、KristenAndSara 32](TS_Predictor_R13_Anomaly_Diagnosis_20261024.md) · [日志审计与本地短测派生数据](results/r13_diagnosis_20261024/README.md)
 - [R13 异常后续分析指导：首次搜索分叉、Y→UV与滤波分离](TS_Predictor_R13_Anomaly_Followup_Guide_20261024.md)（基于6784c2b；仅指导，未追加运行）
 - [R13 码流解码续查：首个保留划分、CCCM传播与滤波拆分](TS_Predictor_R13_Decoder_Followup_20261024.md) · [只读诊断派生数据](results/r13_followup_20261024/README.md)
+- [Johnny QP32 POC16：2.762482 bit 的逐 predictor、remapping 与 CABAC 核对](TS_Predictor_R13_Pred_Rate_Trace_20261025.md)
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)

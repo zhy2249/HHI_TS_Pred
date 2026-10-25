@@ -1,0 +1,62 @@
+{
+  "command": [
+    "/home/zhy/HHI/HHI_TS_pred/build/ts-r14/bin/EncoderApp",
+    "-c",
+    "/home/zhy/HHI/HHI_TS_pred/scripts/HHI\u6d4b\u8bd5cfg/LBeu/cfg/encoder_lowdelay_nx2High.cfg",
+    "-c",
+    "/home/zhy/HHI/HHI_TS_pred/scripts/HHI\u6d4b\u8bd5cfg/LBeu/cfg/per-sequence/Johnny.cfg",
+    "-i",
+    "/home/zhy/videos/classE/Johnny_1280x720_60.yuv",
+    "-q",
+    "32",
+    "-b",
+    "/home/zhy/HHI/HHI_TS_pred/runs/r13_pred_detail_20261025/output.bin",
+    "-f",
+    "17",
+    "--PrintHexPSNR=1",
+    "--SEIDecodedPictureHash=1",
+    "-o",
+    ""
+  ],
+  "source_done": "/home/zhy/HHI/HHI_TS_pred/runs/r13_diagnosis_20261024/diag_followup/johnny_q32_f17_r13_keep_hit_uniform/r13_1_keep_hit_uniform/LBeu_Johnny/LBeu_Johnny_QP32.done.json",
+  "source_done_sha256": "18bf483e49fd2e35c559016508096fe89bd07d6128ffd0cb82370475c846e9b6",
+  "source_head": "389387edfcc6a1839c3487a66ea5abdbb61a69e7",
+  "source_patch_sha256": "9fc5ac363df04a9553d791cf5eed8763504a01cc2ade67685c73d8046d053e4e",
+  "untracked_source_sha256": {
+    "source/Lib/CommonLib/TsR13PredDetail.h": "2781a75cd2c3a0dfaba42b4167e159275ab1838255af6345d456ecab7a8b416d"
+  },
+  "encoder_sha256": "17d152485997b88a614f75eb4abf75a5e3e829c91d2fcdd5cec99fc17228ee2a",
+  "decoder_sha256": "a4e403c0761173242fed6d6a93da0a84b791e95d5803965880e67385c9b7f201",
+  "input_sha256": "69e56cc75d40ed9e88ce39dd7662d2cde4eab33989242894ca7dd46f24b04acb",
+  "observer_env": {
+    "TS_FIXED_PREDICTOR": "r13_keep_hit_uniform",
+    "TS_R13_STATS": "0",
+    "TS_R13_TRACE": "0",
+    "TS_R13_DIAG": "0",
+    "TS_R13_SEARCH_TRACE": "0",
+    "TS_R13_SEARCH_POC": "16",
+    "TS_R13_SEARCH_CTU": "36",
+    "TS_R13_SEARCH_LIMIT": "200000",
+    "TS_R13_DIAG_SCOPE": "all",
+    "TS_R13_PRED_DETAIL": "/home/zhy/HHI/HHI_TS_pred/runs/r13_pred_detail_20261025/detail"
+  },
+  "reference_bitstream_sha256": "103ecf4012b6cf4f4fc28e09fcf18e0f5dc9aee3380a458d27ac22e00414e568",
+  "encode_returncode": 0,
+  "elapsed_seconds": 544.3785353600106,
+  "bitstream_sha256": "103ecf4012b6cf4f4fc28e09fcf18e0f5dc9aee3380a458d27ac22e00414e568",
+  "predictor_detail": "TS_R13_PRED_DETAIL poc=16 component=0 x=856 y=384 width=8 height=32 current_frac=1788834 eq_frac=1652118 sp_frac=1742639 sp_minus_eq_frac=90521 native_frac=1652118 prefix=/home/zhy/HHI/HHI_TS_pred/runs/r13_pred_detail_20261025/detail",
+  "decode_command": [
+    "/home/zhy/HHI/HHI_TS_pred/runs/r13_followup_20261024/bin/DecoderApp_verified",
+    "-b",
+    "/home/zhy/HHI/HHI_TS_pred/runs/r13_pred_detail_20261025/output.bin",
+    "-o",
+    "",
+    "-dph",
+    "1"
+  ],
+  "decode_returncode": 0,
+  "checked_frames": 17,
+  "bit_exact": true,
+  "trace_events": 0,
+  "encode_log_sha256": "09d1e9e3497a911bca92504ec1fb246b8a627561e867b83ff14d3585aa513026"
+}
