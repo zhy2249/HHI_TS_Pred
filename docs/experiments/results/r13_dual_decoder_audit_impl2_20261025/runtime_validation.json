@@ -1,0 +1,98 @@
+{
+  "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+  "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+  "manifest_sha256": "94c05b4dfd3364bd51c32145e95ae9bc02fee28fd82cafc35869da4dc7775929",
+  "results": [
+    {
+      "test": "standard_summary_budget_snapshot_output_states",
+      "origin": "R13-1",
+      "passed": true,
+      "native_tu": 3,
+      "limited_policy_complete": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "observed_B_slice_intra_TU": 0
+    },
+    {
+      "test": "independent_process_snapshot_all_seven_rates",
+      "origin": "R13-1",
+      "passed": true,
+      "snapshots": 3
+    },
+    {
+      "test": "standard_summary_budget_snapshot_output_states",
+      "origin": "R13-2",
+      "passed": true,
+      "native_tu": 3,
+      "limited_policy_complete": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "observed_B_slice_intra_TU": 0
+    },
+    {
+      "test": "independent_process_snapshot_all_seven_rates",
+      "origin": "R13-2",
+      "passed": true,
+      "snapshots": 3
+    },
+    {
+      "test": "incomplete_comparisons_are_NA",
+      "passed": true
+    },
+    {
+      "test": "no_SEI_on_off_is_not_encoder_SEI_verification",
+      "origin": "R13-1",
+      "passed": true
+    },
+    {
+      "test": "no_SEI_on_off_is_not_encoder_SEI_verification",
+      "origin": "R13-2",
+      "passed": true
+    },
+    {
+      "test": "corrupt_snapshot_rejected",
+      "passed": true,
+      "returncode": 2
+    },
+    {
+      "test": "truncated_stream_rejected",
+      "origin": "R13-1",
+      "passed": true,
+      "returncode": 1
+    },
+    {
+      "test": "truncated_stream_rejected",
+      "origin": "R13-2",
+      "passed": true,
+      "returncode": 1
+    },
+    {
+      "test": "wrong_origin_policy_rejected",
+      "passed": true
+    },
+    {
+      "test": "LFS_pointer_rejected",
+      "passed": true
+    },
+    {
+      "test": "matching_resume_does_not_redecode",
+      "passed": true
+    },
+    {
+      "test": "legacy_snapshot_does_not_invent_slice_type",
+      "passed": true
+    }
+  ]
+}

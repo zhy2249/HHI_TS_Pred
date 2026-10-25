@@ -22,6 +22,7 @@ int main(int argc,char **argv)
     const int w=1<<(2+trial%4),h=1<<(2+(trial/4)%4);const int cw=w*scale,ch=h*scale;
     CodingUnit cu(ChromaFormat::_420,Area(0,0,cw,ch));TransformUnit tu(static_cast<const UnitArea&>(cu));
     cu.cs=&cs;cu.slice=&slice;cu.qp=22+trial%20;cu.predMode=trial%2?MODE_INTRA:MODE_INTER;
+    slice.m_eSliceType=SliceType(trial%3);
     cu.bdpcmMode[0]=cu.bdpcmMode[1]=trial%7==0?BdpcmMode::HOR:trial%7==1?BdpcmMode::VER:BdpcmMode::NONE;
     bdpcm+=cu.getBdpcmMode(comp)!=BdpcmMode::NONE;tu.cs=&cs;tu.cu=&cu;tu.mtsIdx[comp]=MtsType::SKIP;
     sps.m_spsRangeExtension.m_tsrcRicePresentFlag=true;slice.m_tsrcIndex=trial%8;
@@ -31,6 +32,8 @@ int main(int argc,char **argv)
     for(int i=0;i<w*h;++i) { actual[i]=trial%4==0?(rng()%19?0:1):int(rng()%65)-32; }
     actual[0]=3;
     Snapshot s;s.policy=TsFixedPrediction::mode();s.poc=trial;s.component=comp;s.qp=cu.qp;s.rice=1+slice.m_tsrcIndex;s.budget=(w*h*7)>>2;
+    captureIdentity(s,tu,comp);
+    CHECK(s.sliceType!=trial%3 || s.isIntraCu!=int(trial%2) || s.isInterCu!=int(!(trial%2)),"Slice and CU metadata conflated");
     captureGeometry(s,tu,comp);
     OutputBitstream bits;BinEncoder_Std enc;CABACWriter writer(enc,nullptr);writer.initBitstream(&bits);enc.reset(cu.qp,I_SLICE);
     CoeffCodingContext ec(tu,comp,false,cu.getBdpcmMode(comp));ec.remRegBins=s.budget;unsigned riceBits[8]{};
@@ -43,6 +46,7 @@ int main(int argc,char **argv)
     dec.tsAudit=nullptr;s.exit=saveContext(dec.getCtx());CHECK(s.q!=decoded,"Native decoding changed coefficients");CHECK(dec.decodeBinTrm()!=1,"Native termination mismatch");dec.finish();
     auto d=decisions(s);auto r=replay(s,predictors(d,s.policy==98?3:4));validateNative(s,r);
     save(s,argv[1]);auto restored=load(argv[1]);auto loaded=replay(restored,predictors(decisions(restored),s.policy==98?3:4));validateNative(restored,loaded);CHECK(loaded.bins.bits!=r.bins.bits,"Offline rate differs");
+    CHECK(restored.sliceType!=s.sliceType || restored.isIntraCu!=s.isIntraCu || restored.isInterCu!=s.isInterCu,"Snapshot lost Slice/CU metadata");
     // A disk limit must be checked before creating/truncating the destination.
     const auto missing=std::string(argv[1])+".budget_rejected";
     CHECK(save(s,missing,1) || std::ifstream(missing).good(),"Snapshot disk budget did not fail closed");

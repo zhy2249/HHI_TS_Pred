@@ -1,0 +1,77 @@
+[
+  {
+    "pair_id": "Johnny_QP27",
+    "origin": "R13-1",
+    "slice_type": "B",
+    "is_intra_cu": 1,
+    "is_inter_cu": 0,
+    "poc": 168,
+    "geometry": [
+      608,
+      316,
+      16,
+      4
+    ],
+    "native_validated": true,
+    "all_seven_rates_equal": true,
+    "rates_frac": [
+      527390,
+      527390,
+      527390,
+      527390,
+      527390,
+      527390,
+      527390
+    ]
+  },
+  {
+    "pair_id": "Johnny_QP27",
+    "origin": "R13-2",
+    "slice_type": "B",
+    "is_intra_cu": 1,
+    "is_inter_cu": 0,
+    "poc": 168,
+    "geometry": [
+      608,
+      316,
+      16,
+      4
+    ],
+    "native_validated": true,
+    "all_seven_rates_equal": true,
+    "rates_frac": [
+      569342,
+      569342,
+      569342,
+      569342,
+      569342,
+      569342,
+      569342
+    ]
+  },
+  {
+    "pair_id": "Johnny_QP32",
+    "origin": "R13-1",
+    "slice_type": "B",
+    "is_intra_cu": 1,
+    "is_inter_cu": 0,
+    "poc": 26,
+    "geometry": [
+      864,
+      704,
+      32,
+      16
+    ],
+    "native_validated": true,
+    "all_seven_rates_equal": true,
+    "rates_frac": [
+      898873,
+      840779,
+      898873,
+      840779,
+      898873,
+      840779,
+      898873
+    ]
+  }
+]

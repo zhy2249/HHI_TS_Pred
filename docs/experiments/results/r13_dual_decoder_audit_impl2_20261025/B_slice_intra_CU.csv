@@ -1,0 +1,4 @@
+pair_id,origin,component,poc,x,y,w,h,slice_type,is_intra_cu,is_inter_cu,snapshot
+Johnny_QP27,R13-1,0,168,608,316,16,4,B,1,0,snapshots/168_0_608_316_16_4.tsa
+Johnny_QP27,R13-2,0,168,608,316,16,4,B,1,0,snapshots/168_0_608_316_16_4.tsa
+Johnny_QP32,R13-1,0,26,864,704,32,16,B,1,0,snapshots/26_0_864_704_32_16.tsa

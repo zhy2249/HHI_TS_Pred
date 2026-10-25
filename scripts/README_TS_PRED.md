@@ -269,17 +269,19 @@ python3 -m unittest discover -s scripts -p 'test_ts_r8_design.py'
 结果收件目录为 `experiments/ts_predictor_r8/r8_<MODE>_<name>/`，存在目录不等于完成实验。
 
 
-## R13 双来源只读解码评分审计（2026-10-25）
+## R13 双来源只读解码评分审计 impl2（2026-10-25）
 
-`ts_decode_score_audit.py` 只调用DecoderApp，按manifest将R13-1绑定EQ、R13-2绑定SP。
-无需原图，默认不保存重建视频；支持七种策略私有回放、单位置oracle、历史候选、快照离线恢复及来源等权汇总。
-现有本地包为 `runs/r13_dual_decode_audit_bundle/`，原96条收件码流已复制并核对SHA256，原件保留。
+修复Slice/CU混淆、summary分母、部分完成状态及抽样权重。`ts_decode_score_audit.py`只启动DecoderApp；
+两来源分别绑定EQ/SP，`ts_audit_stats.py`输出统一口径的条件评分比较。原生算法、RDOQ和正式BD-rate不变。
 
 ```bash
-python3 scripts/ts_decode_score_audit.py inspect --manifest runs/r13_dual_decode_audit_bundle/manifest.json
-python3 scripts/ts_decode_score_audit.py decode-pair --manifest runs/r13_dual_decode_audit_bundle/manifest.json --pair Johnny_QP32 --first-poc 0 --last-poc 31 --verify-off --output runs/j32_decoder_audit_new
+python3 scripts/ts_decode_score_audit.py inspect --manifest runs/r13_dual_decode_audit_impl2_release/manifest.json
+python3 scripts/ts_decode_score_audit.py decode-pair --manifest runs/r13_dual_decode_audit_impl2_release/manifest.json --pair Johnny_QP32_prefix17 --first-poc 0 --last-poc 16 --verify-off --output runs/r13_impl2_prefix_new
+python3 scripts/ts_decode_score_audit.py batch --manifest runs/r13_dual_decode_audit_impl2_release/manifest.json --pairs all --jobs 4 --first-poc 0 --last-poc 299 --verify-off --output runs/r13_all_impl2 --dry-run
 ```
 
-POC范围仅限制观察，仍解码完整文件和参考前缀；输出目录须为新目录。
-`select-examples`按尺寸/损失方向筛选已保留样本，不能据此重新计算代表性频率。
-构建、replay/detail、缺失CE01 fixture及验证范围见 [实现说明](../docs/experiments/TS_Predictor_Dual_Decoder_Audit_Implementation.md)。
+all排除validation_only前缀，共48对/96个正式来源任务；去掉dry-run才运行，匹配续跑用resume。
+共用解码任务池、每对完成立即比较。POC只限制观察，默认不保存重建视频。
+`package_ts_decode_audit.py build/verify`负责本地归档、逐文件SHA256及异目录运行，不自动上传。
+[实现/命令/验收范围](../docs/experiments/TS_Predictor_Dual_Decoder_Audit_Implementation.md) ·
+[schema与加权口径](../docs/experiments/TS_Predictor_Dual_Decoder_Audit_Schema.md)。

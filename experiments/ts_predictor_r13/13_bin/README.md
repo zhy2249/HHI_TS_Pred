@@ -7,3 +7,5 @@
 编码器commit/二进制、原图及配置指纹缺失字段保留未知，不能由目录名自动确认。
 运行说明见 [双源解码评分审计](../../../docs/experiments/TS_Predictor_Dual_Decoder_Audit_Implementation.md)，
 复制清单与验收见 [核验记录](../../../docs/experiments/results/r13_dual_decoder_audit_20261025/README.md)。
+
+2026-10-25统计修复：当前使用 `runs/r13_dual_decode_audit_impl2_release/`（schema 2），旧impl1包作为历史验证保留。原96条文件未改动；实际二进制/码流仍为本地归档交付，未上传Git。

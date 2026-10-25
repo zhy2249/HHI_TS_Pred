@@ -1,0 +1,1135 @@
+{
+  "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+  "baseline": "1270ad3c2b24f9a7e78a19167cb6a55a3194e2e0",
+  "video_encoding_invoked": false,
+  "build": {
+    "source_head": "1270ad3c2b24f9a7e78a19167cb6a55a3194e2e0",
+    "source_patch_sha256": "1b27c29e2032ee74db4b29b3c96b1fe05bba7f7a05375e8cb8765c8a40815479",
+    "untracked_source_sha256": {
+      "source/Lib/DecoderLib/tsaudit/Budget.h": "5406f354873a0ec2f9b8dffc07c4612b9f7613e7c47bd176a6c24b41fb5ce574"
+    },
+    "source_identity_status": "packaging worktree; compile provenance requires the recorded build validation",
+    "binary_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "machine": "x86_64",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "minimum_isa": "x86_64 SSE4.1; runtime SSE4.2/AVX/AVX2 dispatch; no -march=native",
+    "runtime_dependencies": "\tlinux-vdso.so.1 (0x00007ba77517c000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007ba773200000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007ba773510000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007ba7734f0000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ba772e00000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007ba77517e000)\n",
+    "build_type": "Release",
+    "gpu_required": false,
+    "script_sha256": {
+      "ts_decode_score_audit.py": "22d159f566e1a7bc7b2c32fbd8c82dd01d5b16c4bd868b3d71856acf075d91ba",
+      "ts_audit_stats.py": "8057b2a7744651312166981fce8046ecacaa1433d5f57db109c6c6229c247e91"
+    }
+  },
+  "manifest_sha256": "94c05b4dfd3364bd51c32145e95ae9bc02fee28fd82cafc35869da4dc7775929",
+  "formal_streams_tested": 6,
+  "frames_each_on_or_off": 1800,
+  "native_sampled_tu": 114,
+  "records": [
+    {
+      "pair_id": "Johnny_QP27",
+      "origin": "R13-1",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "a5f5321eb1726d8fb39094db16f9ad5cec58392650d7aa35d681ff38187d88f4",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 41,
+          "selected_tu": 41,
+          "skipped_budget": 0,
+          "replays": 73,
+          "coefficient_visits": 5664,
+          "core_truncated": false,
+          "cache_peak_bytes": 543912,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 727765,
+          "snapshot_bytes": 5859451,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            5859451,
+            0,
+            0
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 41,
+              "selected_coeff": 14880,
+              "selected_nz": 149,
+              "native_verified_tu": 41,
+              "all_policy_tu": 41,
+              "policy_done_tu": [
+                41,
+                41,
+                41,
+                41,
+                41,
+                41,
+                41
+              ],
+              "point_requested": [
+                19,
+                1
+              ],
+              "point_done": [
+                19,
+                1
+              ],
+              "snapshots_saved": 41,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 73,
+              "coefficient_visits": 5664
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "08171795d2b4b9ae6dc4d04f6d0c80982dae3417c30dca93508001cfdc20545e",
+      "off_reconstruction_sha256": "08171795d2b4b9ae6dc4d04f6d0c80982dae3417c30dca93508001cfdc20545e",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/Johnny_QP27/R13_1.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    },
+    {
+      "pair_id": "Johnny_QP27",
+      "origin": "R13-2",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "46e593ed223dc004afdea7b6ffec0d05e371e10035c93503d561c679a685c307",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 40,
+          "selected_tu": 40,
+          "skipped_budget": 0,
+          "replays": 64,
+          "coefficient_visits": 4656,
+          "core_truncated": false,
+          "cache_peak_bytes": 513000,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 725815,
+          "snapshot_bytes": 5713706,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            5442929,
+            0,
+            270777
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 38,
+              "selected_coeff": 14976,
+              "selected_nz": 144,
+              "native_verified_tu": 38,
+              "all_policy_tu": 38,
+              "policy_done_tu": [
+                38,
+                38,
+                38,
+                38,
+                38,
+                38,
+                38
+              ],
+              "point_requested": [
+                19,
+                0
+              ],
+              "point_done": [
+                19,
+                0
+              ],
+              "snapshots_saved": 38,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 62,
+              "coefficient_visits": 4560
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 2,
+              "selected_coeff": 64,
+              "selected_nz": 3,
+              "native_verified_tu": 2,
+              "all_policy_tu": 2,
+              "policy_done_tu": [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 2,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 2,
+              "coefficient_visits": 96
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "0417ae339bebf9709392e2e9f5b7904fc30f4e03b224fadf88aadb42c69e0cfc",
+      "off_reconstruction_sha256": "0417ae339bebf9709392e2e9f5b7904fc30f4e03b224fadf88aadb42c69e0cfc",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/Johnny_QP27/R13_2.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    },
+    {
+      "pair_id": "Johnny_QP32",
+      "origin": "R13-1",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "ed913a7e1440c340811079221bc7419bd6edc53a2f7733f83c083fb1512c115c",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 9,
+          "selected_tu": 9,
+          "skipped_budget": 0,
+          "replays": 15,
+          "coefficient_visits": 1152,
+          "core_truncated": false,
+          "cache_peak_bytes": 523272,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 691147,
+          "snapshot_bytes": 1307017,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            1307017,
+            0,
+            0
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 9,
+              "selected_coeff": 4096,
+              "selected_nz": 37,
+              "native_verified_tu": 9,
+              "all_policy_tu": 9,
+              "policy_done_tu": [
+                9,
+                9,
+                9,
+                9,
+                9,
+                9,
+                9
+              ],
+              "point_requested": [
+                7,
+                0
+              ],
+              "point_done": [
+                7,
+                0
+              ],
+              "snapshots_saved": 9,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 15,
+              "coefficient_visits": 1152
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "e0883aa8e8ba05788ef60aa8484afdea6fb611c4b8a6086a9d952e308de08745",
+      "off_reconstruction_sha256": "e0883aa8e8ba05788ef60aa8484afdea6fb611c4b8a6086a9d952e308de08745",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/Johnny_QP32/R13_1.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    },
+    {
+      "pair_id": "Johnny_QP32",
+      "origin": "R13-2",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "4eeef89214b9b0637b6e3f59d4d408b05f71bcc8e1f6f7ae16066f4b64315724",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 9,
+          "selected_tu": 9,
+          "skipped_budget": 0,
+          "replays": 14,
+          "coefficient_visits": 816,
+          "core_truncated": false,
+          "cache_peak_bytes": 517128,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 689597,
+          "snapshot_bytes": 1276668,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            1276668,
+            0,
+            0
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 9,
+              "selected_coeff": 2816,
+              "selected_nz": 30,
+              "native_verified_tu": 9,
+              "all_policy_tu": 9,
+              "policy_done_tu": [
+                9,
+                9,
+                9,
+                9,
+                9,
+                9,
+                9
+              ],
+              "point_requested": [
+                5,
+                0
+              ],
+              "point_done": [
+                5,
+                0
+              ],
+              "snapshots_saved": 9,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 14,
+              "coefficient_visits": 816
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "ef221c9680ba68a262521a78ca3c1ef1595e4184f2b3a925b76184e5dc00d7c7",
+      "off_reconstruction_sha256": "ef221c9680ba68a262521a78ca3c1ef1595e4184f2b3a925b76184e5dc00d7c7",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/Johnny_QP32/R13_2.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    },
+    {
+      "pair_id": "FourPeople_QP32",
+      "origin": "R13-1",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "36ee034800e2d8b18b528a70a9d717969f0189da96642b9bfac393de512e1597",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 10,
+          "selected_tu": 10,
+          "skipped_budget": 0,
+          "replays": 19,
+          "coefficient_visits": 1296,
+          "core_truncated": false,
+          "cache_peak_bytes": 508872,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 692840,
+          "snapshot_bytes": 1411112,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            1411112,
+            0,
+            0
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 10,
+              "selected_coeff": 2880,
+              "selected_nz": 40,
+              "native_verified_tu": 10,
+              "all_policy_tu": 10,
+              "policy_done_tu": [
+                10,
+                10,
+                10,
+                10,
+                10,
+                10,
+                10
+              ],
+              "point_requested": [
+                7,
+                1
+              ],
+              "point_done": [
+                7,
+                1
+              ],
+              "snapshots_saved": 10,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 19,
+              "coefficient_visits": 1296
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "9fe6be9cd9a22b925ad19cbf662a67b671032664da1e29d456f46fc45ca84d1f",
+      "off_reconstruction_sha256": "9fe6be9cd9a22b925ad19cbf662a67b671032664da1e29d456f46fc45ca84d1f",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/FourPeople_QP32/R13_1.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    },
+    {
+      "pair_id": "FourPeople_QP32",
+      "origin": "R13-2",
+      "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+      "stream_sha256": "da83a40469d2b526ed5fbf65e9d1f8213a79ce0bd16f21c9a55c185f94bc3b8d",
+      "first_poc": 0,
+      "last_poc": 299,
+      "validation": {
+        "schema": 2,
+        "returncode": 0,
+        "expected_frames": null,
+        "actual_frames": 300,
+        "expected_frame_count_known": false,
+        "sei_status": "SEI_MD5_all_decoded_frames_verified",
+        "sei_md5_ok_count": 300,
+        "log_truncated": false,
+        "on_off_equal": true,
+        "native_replay": {
+          "schema": 2,
+          "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+          "valid": true,
+          "decode_complete": true,
+          "native_replay_complete": true,
+          "policy_complete": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "point_oracle_complete": true,
+          "snapshot_complete": true,
+          "output_complete": true,
+          "audit_complete": true,
+          "native_verified_tu": 5,
+          "selected_tu": 5,
+          "skipped_budget": 0,
+          "replays": 5,
+          "coefficient_visits": 432,
+          "core_truncated": false,
+          "cache_peak_bytes": 502728,
+          "snapshot_skipped_budget": 0,
+          "raw_bytes": 682270,
+          "snapshot_bytes": 697773,
+          "capture_skipped": 0,
+          "component_snapshot_bytes": [
+            697773,
+            0,
+            0
+          ],
+          "output_dropped_records": 0,
+          "output_dropped_by_kind": {},
+          "component_coverage": [
+            {
+              "selected_tu": 5,
+              "selected_coeff": 1088,
+              "selected_nz": 23,
+              "native_verified_tu": 5,
+              "all_policy_tu": 5,
+              "policy_done_tu": [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 5,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 5,
+              "coefficient_visits": 432
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            },
+            {
+              "selected_tu": 0,
+              "selected_coeff": 0,
+              "selected_nz": 0,
+              "native_verified_tu": 0,
+              "all_policy_tu": 0,
+              "policy_done_tu": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "point_requested": [
+                0,
+                0
+              ],
+              "point_done": [
+                0,
+                0
+              ],
+              "snapshots_saved": 0,
+              "native_skipped_budget": 0,
+              "policy_group_skipped_budget": 0,
+              "point_skipped_budget": 0,
+              "snapshot_skipped_budget": 0,
+              "replays": 0,
+              "coefficient_visits": 0
+            }
+          ]
+        },
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "off_returncode": 0,
+        "census_complete": true,
+        "detail_status": "ok",
+        "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+        "output_truncated_files": [],
+        "output_dropped_rows": 0
+      },
+      "reconstruction_sha256": "2d2c807258a9a1c92be1ab09cfc9a6970dde29a29ed9bd46caf16dc565b0461c",
+      "off_reconstruction_sha256": "2d2c807258a9a1c92be1ab09cfc9a6970dde29a29ed9bd46caf16dc565b0461c",
+      "command": [
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/bin/DecoderAppAudit",
+        "-b",
+        "/home/zhy/HHI/HHI_TS_pred/runs/r13_dual_decode_audit_impl2_release/streams/FourPeople_QP32/R13_2.bin",
+        "-o",
+        "",
+        "-dph",
+        "1"
+      ]
+    }
+  ]
+}

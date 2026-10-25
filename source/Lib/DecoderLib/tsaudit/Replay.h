@@ -12,10 +12,14 @@
 
 namespace TsAudit
 {
-constexpr const char *revision="R13-DUAL-DECODE-AUDIT-impl1";
+constexpr const char *revision="R13-DUAL-DECODE-AUDIT-impl2";
 constexpr const char *names[]={"CURRENT","STATIC_EQ","STATIC_SP","KEEP_EQ","KEEP_SP","KEEP_EQ_H","KEEP_SP_H"};
+inline const char *sliceName(int type)
+{ return type==I_SLICE?"I":type==P_SLICE?"P":type==B_SLICE?"B":type==L_SLICE?"L":"unknown"; }
 inline uint64_t hashNumber(uint64_t h,uint64_t v)
 { for(int i=0;i<8;++i) { h=(h^uint8_t(v))*1099511628211ULL; v>>=8; } return h; }
+inline uint64_t sampleHash(uint64_t x)
+{ x=(x^(x>>30))*0xbf58476d1ce4e5b9ULL; x=(x^(x>>27))*0x94d049bb133111ebULL; return x^(x>>31); }
 inline uint64_t hashBytes(const std::string &s)
 { uint64_t h=14695981039346656037ULL; for(unsigned char c:s) { h=(h^c)*1099511628211ULL; } return h; }
 struct Model
@@ -62,7 +66,8 @@ struct Geometry
 };
 struct Snapshot
 {
-  int poc=0,component=0,x=0,y=0,qp=0,intra=0,policy=0,rice=1,budget=0,population=0;
+  int poc=0,component=0,x=0,y=0,qp=0,isIntraCu=0,policy=0,rice=1,budget=0,population=0;
+  int sliceType=-1,isInterCu=-1; // -1 only when reading a legacy schema-1 snapshot.
   uint64_t priority=0,seen=0; // priority is determined without q or method outcomes
   Geometry g;
   std::vector<TCoeff> q;
@@ -70,6 +75,13 @@ struct Snapshot
   Native native;
   uint64_t qHash() const { uint64_t h=14695981039346656037ULL; for(auto v:q) { h=hashNumber(h,int64_t(v)); } return h; }
 };
+inline void captureIdentity(Snapshot &s,const TransformUnit &tu,CompID comp)
+{
+  const auto &a=tu.blocks[comp];
+  s.poc=tu.cu->slice->m_poc; s.component=int(comp); s.x=a.x; s.y=a.y; s.qp=tu.cu->qp;
+  s.sliceType=tu.cu->slice->m_eSliceType;
+  s.isIntraCu=tu.cu->predMode==MODE_INTRA; s.isInterCu=tu.cu->predMode==MODE_INTER;
+}
 inline void captureGeometry(Snapshot &s,const TransformUnit &tu,CompID comp)
 {
   CoeffCodingContext c(tu,comp,false,tu.cu->getBdpcmMode(comp)); auto &g=s.g;
@@ -188,7 +200,7 @@ inline std::vector<int> predictors(const std::vector<Decision> &d,int policy)
 inline bool save(const Snapshot &s,const std::string &path,uint64_t maxBytes=UINT64_MAX)
 {
   std::ostringstream o; const auto &g=s.g;
-  o<<s.poc<<' '<<s.component<<' '<<s.x<<' '<<s.y<<' '<<s.qp<<' '<<s.intra<<' '<<s.policy<<' '<<s.rice<<' '<<s.budget<<' '<<s.population<<' '<<s.priority<<' '<<s.seen<<'\n';
+  o<<s.poc<<' '<<s.component<<' '<<s.x<<' '<<s.y<<' '<<s.qp<<' '<<s.isIntraCu<<' '<<s.policy<<' '<<s.rice<<' '<<s.budget<<' '<<s.population<<' '<<s.priority<<' '<<s.seen<<' '<<s.sliceType<<' '<<s.isInterCu<<'\n';
   o<<g.w<<' '<<g.h<<' '<<g.logCG<<' '<<g.range<<' '<<g.bd<<' '<<g.parity<<' '; for(auto v:g.gt) { o<<v<<' '; } o<<'\n';
   auto vec=[&](const auto &v) { o<<v.size()<<' '; for(auto a:v) { o<<a<<' '; } o<<'\n'; };
   vec(s.q); vec(g.scan); vec(g.sig); vec(g.sign); vec(g.gt1); vec(g.groupCtx); vec(g.groupSig); vec(g.groupCode);
@@ -196,7 +208,7 @@ inline bool save(const Snapshot &s,const std::string &path,uint64_t maxBytes=UIN
   o<<s.native.bits<<' '<<s.native.events.size()<<'\n'; for(const auto &e:s.native.events) { o<<e.id<<' '<<e.value<<' '<<e.cost<<'\n'; }
   o<<s.native.paths.size()<<'\n'; for(const auto &p:s.native.paths) { o<<p.p1<<' '<<p.p2<<' '<<p.end<<'\n'; }
   const auto payload=o.str(); std::ostringstream header;
-  header<<"TSAUDIT 1 "<<payload.size()<<' '<<hashBytes(payload)<<'\n';
+  header<<"TSAUDIT 2 "<<payload.size()<<' '<<hashBytes(payload)<<'\n';
   // Test the exact serialized length before opening a file. A large TU must
   // never exceed the disk budget merely because the preceding file was small.
   if(header.str().size()+payload.size()>maxBytes) { return false; }
@@ -206,11 +218,13 @@ inline bool save(const Snapshot &s,const std::string &path,uint64_t maxBytes=UIN
 inline Snapshot load(const std::string &path)
 {
   std::ifstream file(path,std::ios::binary); std::string magic; unsigned version; uint64_t length,checksum;
-  CHECK(!(file>>magic>>version>>length>>checksum) || magic!="TSAUDIT" || version!=1 || length>8*1024*1024,"Invalid audit snapshot header");
+  CHECK(!(file>>magic>>version>>length>>checksum) || magic!="TSAUDIT" || (version!=1 && version!=2) || length>8*1024*1024,"Invalid audit snapshot header");
   CHECK(file.get()!='\n',"Invalid snapshot delimiter"); std::string payload(length,'\0'); file.read(&payload[0],length);
   CHECK(uint64_t(file.gcount())!=length || file.peek()!=EOF || hashBytes(payload)!=checksum,"Audit snapshot checksum/length mismatch");
   std::istringstream in(payload); Snapshot s; auto &g=s.g;
-  in>>s.poc>>s.component>>s.x>>s.y>>s.qp>>s.intra>>s.policy>>s.rice>>s.budget>>s.population>>s.priority>>s.seen;
+  in>>s.poc>>s.component>>s.x>>s.y>>s.qp>>s.isIntraCu>>s.policy>>s.rice>>s.budget>>s.population>>s.priority>>s.seen;
+  if(version>=2) { in>>s.sliceType>>s.isInterCu; }
+  CHECK(s.sliceType< -1 || s.sliceType>=NUMBER_OF_SLICE_TYPES || s.isIntraCu<0 || s.isIntraCu>1 || s.isInterCu< -1 || s.isInterCu>1,"Invalid snapshot slice/CU metadata");
   in>>g.w>>g.h>>g.logCG>>g.range>>g.bd>>g.parity; for(auto &v:g.gt) { in>>v; }
   CHECK(g.w<1 || g.h<1 || g.w>64 || g.h>64 || g.w*g.h>4096 || g.logCG<0 || g.logCG>4 || g.range<8 || g.range>20 || s.rice<0 || s.rice>8 || s.component<0 || s.component>2 || (s.policy!=98 && s.policy!=99) || s.budget!=(g.w*g.h*7)>>2,"Unsupported audit snapshot geometry/policy");
   auto vec=[&](auto &v,int expected) { unsigned n=0; in>>n; CHECK(n!=unsigned(expected),"Invalid snapshot vector size"); v.resize(n); for(auto &a:v) { in>>a; } };

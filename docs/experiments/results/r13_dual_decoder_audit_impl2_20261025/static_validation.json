@@ -1,0 +1,27 @@
+{
+  "python_tests": 14,
+  "python_tests_passed": true,
+  "budget_permutations": 1440,
+  "budget_permutations_passed": true,
+  "native_fixture_runs": [
+    {
+      "policy": 98,
+      "tu": 48,
+      "bypass_bins": 77423,
+      "history_extensions": 6047,
+      "bdpcm": 14,
+      "passed": true
+    },
+    {
+      "policy": 99,
+      "tu": 48,
+      "bypass_bins": 77474,
+      "history_extensions": 6047,
+      "bdpcm": 14,
+      "passed": true
+    }
+  ],
+  "native_fixture_binary_sha256": "257d5ad61e46da489af538503b9a968bcc9527c394e1c6038e3b76cab74eafbb",
+  "native_fixture_source_sha256": "410997ad48957c645e4d8a1486f3cddbbabf4b9f6829e3024c286661ba67ef69",
+  "budget_source_sha256": "1a3b3e6f5048be563ee34bc01a99faf563db572ae0323f6ed161904422a59672"
+}

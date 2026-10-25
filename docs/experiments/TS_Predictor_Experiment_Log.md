@@ -6,7 +6,27 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
-## R13 双码流评分审计解码器（2026-10-25）
+## R13 双码流审计统计修复 impl2（2026-10-25）
+
+以`1270ad3`为审查基线，确认并修复CU帧内标志混作Slice、summary漏计eligible、部分方法回放误标完整、
+分量顺序共享预算和正损失均值未加权问题。保留CABAC回放和真实R13算法；没有运行EncoderApp或视频编码，正式RD/BD/逐QP表未修改。
+
+- schema 2分别保存真实Slice与CU模式；旧快照缺Slice时只能unknown，不重标旧CSV。
+- 分量/TU独立观察预算，七方法和均匀位置组先预留再执行；逐层complete、逐方法null/原因和跳过规模可查询。
+  快照配额独立保留给分量；原始及派生输出截断可见，缺项不填0、不缩小为隐蔽的共同子集。
+- 统一两级权重的准确率、均值、正损失均值、分位与直方图；uniform、富集和极端案例分开。
+  新增Slice×CU、KeepHit/空间权重/历史对照表。POC块区间明确不包含完整两级抽样及跨内容不确定性。
+- 14项Python单元测试、1440预算分配顺序组合通过；两模式各48个局部语法fixture通过。
+  前缀summary/standard分母完全相同；低回放预算、零快照预算、输出截断和无SEI均保持重建，缺额如实报告。
+- Johnny27/32与FourPeople32先前32帧观察，再完成双来源各300帧观察：6文件1800个on帧＋1800个off帧均MD5通过，
+  114个采样TU原生bins/概率出口/pass/预算一致，7方法/单点/快照/输出完整。3个实际B Slice Intra CU身份及独立快照恢复正确。
+- 98条本地包含96正式流＋2验证前缀；全数据集只做96任务dry-run，未全量解码。
+  新增共享任务池/指纹续跑和tar.gz打包/异目录验证；源码文档同步Git，二进制与码流归档仍为本地交付，未宣称GitHub可下载。
+
+详情：[实现与对比](TS_Predictor_Dual_Decoder_Audit_Implementation.md)、[schema](TS_Predictor_Dual_Decoder_Audit_Schema.md)、
+[本轮验收](results/r13_dual_decoder_audit_impl2_20261025/README.md)。本轮结果只验收条件统计工具，不据此宣布评分模型整体优劣。
+
+## R13 双码流评分审计解码器（2026-10-25，impl1历史）
 
 快进同步至`f603715`，按新双源需求实现`R13-DUAL-DECODE-AUDIT-impl1`。
 R13-1/2各用自己的native模式解码；最终q稳定后，在同一入口概率状态上私有回放七个方法。
