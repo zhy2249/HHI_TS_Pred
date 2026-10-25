@@ -19,6 +19,7 @@
 - [Johnny QP32 POC16：2.762482 bit 的逐 predictor、remapping 与 CABAC 核对](TS_Predictor_R13_Pred_Rate_Trace_20261025.md)
 - [典型反例 CE01：Johnny32 POC16 8×32低幅值评分误判](counterexamples/CE01_Johnny32_POC16_8x32.md)
 - [后续设计：固定等权编码的RDOQ后评分审计＋历史众数候选](TS_Predictor_PostRDOQ_Score_Audit_History_Mode_Design.md)（TS-SCORE-AUDIT-HMODE-v1；设计，未接入编码器）
+- [双码流审计解码器要求：R13-1／R13-2对称比较、只读回放与交付](TS_Predictor_Dual_Stream_Decoder_Audit_Requirements.md)（R13-DUAL-DECODE-AUDIT-v1；解码端以此双源规格为准，待实现）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
