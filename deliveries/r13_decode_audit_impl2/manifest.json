@@ -1,0 +1,2407 @@
+{
+  "schema": 2,
+  "spec_version": "R13-DUAL-DECODE-AUDIT-v1",
+  "implementation_revision": "R13-DUAL-DECODE-AUDIT-impl2",
+  "scoring_revision": "R13-KH-168-v1",
+  "score_scale": 168,
+  "rate_scale": 32768,
+  "decoder": {
+    "path": "bin/DecoderAppAudit",
+    "sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b"
+  },
+  "policies": [
+    "CURRENT",
+    "STATIC_EQ",
+    "STATIC_SP",
+    "KEEP_EQ",
+    "KEEP_SP",
+    "KEEP_EQ_H",
+    "KEEP_SP_H"
+  ],
+  "limits": {
+    "seed": 20261025,
+    "tus_per_frame_component": 2,
+    "uniform_positions": 2,
+    "disagreement_positions": 2,
+    "replays_per_frame": 96,
+    "visits_per_frame": 125000,
+    "snapshot_cache_bytes": 67108864,
+    "snapshot_disk_bytes": 67108864,
+    "core_bytes": 33554432,
+    "raw_bytes": 8388608,
+    "log_bytes": 8388608,
+    "sampling_revision": "hash-avalanche-v2",
+    "budget_revision": "component-TU-reserved-family-v2"
+  },
+  "pairs": [
+    {
+      "pair_id": "BQMall_QP22",
+      "sequence": "BQMall",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQMall_QP22/R13_1.bin",
+          "sha256": "630bf7f48fb7400e26d538397074b6f3f8b905c54760c0e2b3f5a14a774727ea",
+          "bytes": 1813738,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQMall_QP22/R13_2.bin",
+          "sha256": "614f8ea6a1c7273d42eab96039704eead3a8f76d2422c2d1f7b9e6e46f4f6d9b",
+          "bytes": 1812620,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQMall_QP27",
+      "sequence": "BQMall",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQMall_QP27/R13_1.bin",
+          "sha256": "88eb91a86dc4fa14c762573b10114e68e6853d98e27b098a743b14e7e65eacb8",
+          "bytes": 747879,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQMall_QP27/R13_2.bin",
+          "sha256": "3e7ad8a0a58070731bd89fbee64a92baf3d1bc57c968301254354518a2b9e095",
+          "bytes": 748638,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQMall_QP32",
+      "sequence": "BQMall",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQMall_QP32/R13_1.bin",
+          "sha256": "48bd55155026b3deff25ef88aaa158ea7c3a2dffd6a55b15d460508368df9817",
+          "bytes": 366096,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQMall_QP32/R13_2.bin",
+          "sha256": "1add8453cb7814cfeece4d23a7071da81a257286fc77e03dc6402cbcfb259895",
+          "bytes": 366319,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQMall_QP37",
+      "sequence": "BQMall",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQMall_QP37/R13_1.bin",
+          "sha256": "0a080e55a40877ba7a90ee45a41f6193a1dc5779a57d36908811971e415acd01",
+          "bytes": 196024,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQMall_QP37/R13_2.bin",
+          "sha256": "39fa53eb661b60e0d31e419347714714f59070d2d81ae00aca10fff5a7133716",
+          "bytes": 196326,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQTerrace_QP22",
+      "sequence": "BQTerrace",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQTerrace_QP22/R13_1.bin",
+          "sha256": "a410f707eb1d5ce6b9d087c0c82c0fc6bee34c3fed321e8c284a91fe357409df",
+          "bytes": 17908240,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQTerrace_QP22/R13_2.bin",
+          "sha256": "093ddf93e57a4c554b0a3c098f9c350daaa112413cc91921de0410f8302df983",
+          "bytes": 17917665,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQTerrace_QP27",
+      "sequence": "BQTerrace",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQTerrace_QP27/R13_1.bin",
+          "sha256": "d0ad39f153f9ddfcc26468112d4df359c442436a22c81d10310f7104ae080870",
+          "bytes": 2282918,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQTerrace_QP27/R13_2.bin",
+          "sha256": "43f752f315c99246fa0a6e68cba466b1a4586029d90d1c1fb5e802ad9b2018e4",
+          "bytes": 2281716,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQTerrace_QP32",
+      "sequence": "BQTerrace",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQTerrace_QP32/R13_1.bin",
+          "sha256": "71a5f84567a0a6060e2a17fc6fc8d67878bee42c7f9d3d0507221861bb3b2a7d",
+          "bytes": 791831,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQTerrace_QP32/R13_2.bin",
+          "sha256": "83fff7f0fe511456b4ef62eabbf06a32b6ab73c971f12d4437107d343c63dc00",
+          "bytes": 792979,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BQTerrace_QP37",
+      "sequence": "BQTerrace",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BQTerrace_QP37/R13_1.bin",
+          "sha256": "f348af9b69dd0e89dba91f47f5926f75f9c4939c524778771146bbb8a6ad316c",
+          "bytes": 333953,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BQTerrace_QP37/R13_2.bin",
+          "sha256": "50dca3ebb9113c93d98d749637eea621896240980ab684df18fed9c374eaaaed",
+          "bytes": 333755,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrill_QP22",
+      "sequence": "BasketballDrill",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrill_QP22/R13_1.bin",
+          "sha256": "711e8ff6ec7339a00720815d84f54a9ba5d2b90b621da849c69eddd29d85c8d0",
+          "bytes": 1439332,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrill_QP22/R13_2.bin",
+          "sha256": "f7643a4b4fbc41c6c831152a2c1d8c0b3322176cf9d7224a1d15b805685edb5d",
+          "bytes": 1439601,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrill_QP27",
+      "sequence": "BasketballDrill",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrill_QP27/R13_1.bin",
+          "sha256": "2f8f19376779e9b1e97defdd6278677e6686c9f46e1e5e5a2d64160469702b31",
+          "bytes": 645402,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrill_QP27/R13_2.bin",
+          "sha256": "f54ae442b7202ff80ea7387f1b048ce6143577692bcf92624b3e7dd57c886be1",
+          "bytes": 645240,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrill_QP32",
+      "sequence": "BasketballDrill",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrill_QP32/R13_1.bin",
+          "sha256": "f08813f1bfd36d600bffd4c284de72c38736be496a3aac32b62aed908b738384",
+          "bytes": 325634,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrill_QP32/R13_2.bin",
+          "sha256": "2dbb5a5a637b18bb4ed57ceb15fe54ebd51d43cc7b9af11c579d2f42f8a8b452",
+          "bytes": 325342,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrill_QP37",
+      "sequence": "BasketballDrill",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrill_QP37/R13_1.bin",
+          "sha256": "f19bb7da037fbf57cb0f0c149a55084a2108eee2ec8efc03d040472e79400387",
+          "bytes": 176534,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrill_QP37/R13_2.bin",
+          "sha256": "846a2cb95950296e53dcc74074d4ded182b62a5907c97b7cdb24f387bb10e72b",
+          "bytes": 176068,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrive_QP22",
+      "sequence": "BasketballDrive",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrive_QP22/R13_1.bin",
+          "sha256": "ba45d203cc20a03d7318248b5742a0200f4b9ae33aa498bb4e42820b82bafee8",
+          "bytes": 8211714,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrive_QP22/R13_2.bin",
+          "sha256": "9dff7e84c0ce94a4ba543574c5fab242092ce4aeafa54f8824a211c03a363668",
+          "bytes": 8207343,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrive_QP27",
+      "sequence": "BasketballDrive",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrive_QP27/R13_1.bin",
+          "sha256": "17109427bb4c8789a75a97eb8fc2020618c39a67095ee2d4806e3ec7e00824c3",
+          "bytes": 2597476,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrive_QP27/R13_2.bin",
+          "sha256": "6ac4f1acf7ed4af431be70971766a13b1089500ebed925c5af5c3844c6d80515",
+          "bytes": 2598038,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrive_QP32",
+      "sequence": "BasketballDrive",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrive_QP32/R13_1.bin",
+          "sha256": "f0dd2979aa76215203d6debff37409174e0435f0b05e9ce66caa33705ee2c25e",
+          "bytes": 1251318,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrive_QP32/R13_2.bin",
+          "sha256": "cb5808ef2de175e8214b121e716aa2b7bb27f2d0091bb5b6e81e41b26db7ddd7",
+          "bytes": 1250722,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "BasketballDrive_QP37",
+      "sequence": "BasketballDrive",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/BasketballDrive_QP37/R13_1.bin",
+          "sha256": "254a656bd714cea159fd39f2ff7ad27341e9e6c4e58f1f1749562d8baadc1084",
+          "bytes": 652178,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/BasketballDrive_QP37/R13_2.bin",
+          "sha256": "20e9f2d69f2a732c4821a9041abb7465dab59f1aa4dd7ff89b0ddbef36abf10f",
+          "bytes": 650998,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Cactus_QP22",
+      "sequence": "Cactus",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Cactus_QP22/R13_1.bin",
+          "sha256": "e314fec044000d83d25340828c082ec5d1cceef7d0d0905fd9cb920ea28cf622",
+          "bytes": 6355720,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Cactus_QP22/R13_2.bin",
+          "sha256": "48ba63e2bf3dd7bcbabd24d0b1593090779eeb8f1bb318ee8d78477cbbbe27f1",
+          "bytes": 6360373,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Cactus_QP27",
+      "sequence": "Cactus",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Cactus_QP27/R13_1.bin",
+          "sha256": "df64e3564af11e64cb4b93672392ec7aec3ad0872cf52cc8360ca5b494341f0f",
+          "bytes": 1934354,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Cactus_QP27/R13_2.bin",
+          "sha256": "6e46788922c31cc0a92e5e1e267ff0188acb5d6e8689d8b438f8b8e8200eb5a9",
+          "bytes": 1934591,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Cactus_QP32",
+      "sequence": "Cactus",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Cactus_QP32/R13_1.bin",
+          "sha256": "76a7f0b5f4593e6423137d6a7da5e640cd179bf1c5ee31725ae1cfeeb6367912",
+          "bytes": 894573,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Cactus_QP32/R13_2.bin",
+          "sha256": "a608e0c745a6148c25502df313fe698f641fdbee5ab666492b7238f50d4d8343",
+          "bytes": 895282,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Cactus_QP37",
+      "sequence": "Cactus",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Cactus_QP37/R13_1.bin",
+          "sha256": "00f063bcb614d726d170e9d9e8256a4e564e49a45cc622c38069bea8d35e1759",
+          "bytes": 448156,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Cactus_QP37/R13_2.bin",
+          "sha256": "af4d7cc0a8299ffde22ccbf67e7f3a4f88112236820d23ffdfa1a39d28da706e",
+          "bytes": 448254,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "FourPeople_QP22",
+      "sequence": "FourPeople",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/FourPeople_QP22/R13_1.bin",
+          "sha256": "b91a9587298e8f0bff95db5a9b5fa3b8b7043bb84d1d04ac9029b94e3cb77ac7",
+          "bytes": 1071087,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/FourPeople_QP22/R13_2.bin",
+          "sha256": "5fb961c645a1f0cc53218ce6c6d0878972659dc0725cb838aa7213a37d4d6f08",
+          "bytes": 1071005,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "FourPeople_QP27",
+      "sequence": "FourPeople",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/FourPeople_QP27/R13_1.bin",
+          "sha256": "321e8ff1bfbbc9e5de5ac8d9c839c735c2d6e070a1ef71f702dd00f738b5b629",
+          "bytes": 432847,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/FourPeople_QP27/R13_2.bin",
+          "sha256": "e10ec4d0b207be8d5f607d6f38f063eaafe081cfeb0d4276509d5ef361243779",
+          "bytes": 433343,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "FourPeople_QP32",
+      "sequence": "FourPeople",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/FourPeople_QP32/R13_1.bin",
+          "sha256": "36ee034800e2d8b18b528a70a9d717969f0189da96642b9bfac393de512e1597",
+          "bytes": 228171,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/FourPeople_QP32/R13_2.bin",
+          "sha256": "da83a40469d2b526ed5fbf65e9d1f8213a79ce0bd16f21c9a55c185f94bc3b8d",
+          "bytes": 229056,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "FourPeople_QP37",
+      "sequence": "FourPeople",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/FourPeople_QP37/R13_1.bin",
+          "sha256": "46d32ea245752e60ac63c7527823d418eabb668199c17ddaada1f66932d59657",
+          "bytes": 133161,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/FourPeople_QP37/R13_2.bin",
+          "sha256": "53ea1b8a55ec5213d894223edd47d0fc6713c5bc65e280e3b55d091b67690e59",
+          "bytes": 132868,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Johnny_QP22",
+      "sequence": "Johnny",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Johnny_QP22/R13_1.bin",
+          "sha256": "74ba6ec44f5323805aeb38653c8d7f2eeb9d7a64b988bdf650dc19a58c42199c",
+          "bytes": 721774,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Johnny_QP22/R13_2.bin",
+          "sha256": "786e35a50025367cb085f9cd6d9b36d1eea442dfcf16f7546013ba3351311209",
+          "bytes": 722590,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Johnny_QP27",
+      "sequence": "Johnny",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Johnny_QP27/R13_1.bin",
+          "sha256": "a5f5321eb1726d8fb39094db16f9ad5cec58392650d7aa35d681ff38187d88f4",
+          "bytes": 232818,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Johnny_QP27/R13_2.bin",
+          "sha256": "46e593ed223dc004afdea7b6ffec0d05e371e10035c93503d561c679a685c307",
+          "bytes": 233449,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Johnny_QP32",
+      "sequence": "Johnny",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Johnny_QP32/R13_1.bin",
+          "sha256": "ed913a7e1440c340811079221bc7419bd6edc53a2f7733f83c083fb1512c115c",
+          "bytes": 117882,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Johnny_QP32/R13_2.bin",
+          "sha256": "4eeef89214b9b0637b6e3f59d4d408b05f71bcc8e1f6f7ae16066f4b64315724",
+          "bytes": 117953,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Johnny_QP37",
+      "sequence": "Johnny",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Johnny_QP37/R13_1.bin",
+          "sha256": "f27dc4a263225fdc84e4698ba2911f9432a2a7638cd5249af7e8c9799bcccf6b",
+          "bytes": 72412,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/Johnny_QP37/R13_2.bin",
+          "sha256": "395fb899a666c913ba707de6543feaab152400e4ca8911aa867c92c050bc0cb4",
+          "bytes": 72657,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "KristenAndSara_QP22",
+      "sequence": "KristenAndSara",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/KristenAndSara_QP22/R13_1.bin",
+          "sha256": "ff697c7617d77aaa864b66a5073309ffed1c51aa32f91129915d80221d61c0e9",
+          "bytes": 865286,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/KristenAndSara_QP22/R13_2.bin",
+          "sha256": "704b823c51d8be98a150de38969a34f3afb02d450d45da9097dad508b89ca8c2",
+          "bytes": 866080,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "KristenAndSara_QP27",
+      "sequence": "KristenAndSara",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/KristenAndSara_QP27/R13_1.bin",
+          "sha256": "bd148ec2fcd33201af3348cbf7bc10e6070d15b76fd7b63e4dad232e75956772",
+          "bytes": 328376,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/KristenAndSara_QP27/R13_2.bin",
+          "sha256": "94b83e977ec297d4b4698013f4e261a880fe5761bc88d38fe5015b1ff65f855d",
+          "bytes": 328222,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "KristenAndSara_QP32",
+      "sequence": "KristenAndSara",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/KristenAndSara_QP32/R13_1.bin",
+          "sha256": "343915459b680a375efdd695f68337ce011a75e576c705f773e9e750fc8364aa",
+          "bytes": 162370,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/KristenAndSara_QP32/R13_2.bin",
+          "sha256": "603e7c1f38b3fa4fae43d1129a4d3246a13bb6dc5486657f7a99a05696fb9e0a",
+          "bytes": 163092,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "KristenAndSara_QP37",
+      "sequence": "KristenAndSara",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/KristenAndSara_QP37/R13_1.bin",
+          "sha256": "2c0d2577d853e6d298afb056b9b65992cdee48cde6306a7e3c6da6b87b3fac0b",
+          "bytes": 94479,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/KristenAndSara_QP37/R13_2.bin",
+          "sha256": "bd44c9cde5608d6fa2a3405a181a4357eef1481d34ec996f780c34d670b6127a",
+          "bytes": 94281,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "MarketPlace_QP22",
+      "sequence": "MarketPlace",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/MarketPlace_QP22/R13_1.bin",
+          "sha256": "1d8a8ea529c44ce36c0d8b74e64d58a75f0b876595eafe0e57a96e53cbda1e8b",
+          "bytes": 5805931,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/MarketPlace_QP22/R13_2.bin",
+          "sha256": "29f77dfe2770753614fd9eb6565683468a4ff25ee2a15c84dcec31acdd04a2c8",
+          "bytes": 5805272,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "MarketPlace_QP27",
+      "sequence": "MarketPlace",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/MarketPlace_QP27/R13_1.bin",
+          "sha256": "9dcf62591e8f919cfbe7f01a221933b931b21f75ffa249dbb510f5902d297b48",
+          "bytes": 1918429,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/MarketPlace_QP27/R13_2.bin",
+          "sha256": "6d3755857148de812eb5126afe16eb5ff6ac3b668fb71ebbef4f53f8564054e7",
+          "bytes": 1919132,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "MarketPlace_QP32",
+      "sequence": "MarketPlace",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/MarketPlace_QP32/R13_1.bin",
+          "sha256": "9cd3e5aceb37e6372a2a185ba505ac3aafb987a0a792af9bb1c4b10d65dba77f",
+          "bytes": 868659,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/MarketPlace_QP32/R13_2.bin",
+          "sha256": "ddefe45fffbcbf6c1852111e3f08c3d995ba10d19b86210f77d1046b2ad81667",
+          "bytes": 868445,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "MarketPlace_QP37",
+      "sequence": "MarketPlace",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/MarketPlace_QP37/R13_1.bin",
+          "sha256": "b6039f15d76cfbcad78f220e2f4f315b7ce5e03e72acb24b00c6d4bdcf3da3be",
+          "bytes": 426140,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/MarketPlace_QP37/R13_2.bin",
+          "sha256": "5df89e3a6d38c13363801c351d9fa52ba012a8e00186b611b3c53a1cc0a00951",
+          "bytes": 426709,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "PartyScene_QP22",
+      "sequence": "PartyScene",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/PartyScene_QP22/R13_1.bin",
+          "sha256": "a9aafd1ad62ae609295fdc2892f62c3272953671c5b68f173bdc3a225c084457",
+          "bytes": 3977411,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/PartyScene_QP22/R13_2.bin",
+          "sha256": "29da52edf4f64dfb4098d160bf7bc26c7a88f974abe67fd34b6e92fce1de27fd",
+          "bytes": 3972412,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "PartyScene_QP27",
+      "sequence": "PartyScene",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/PartyScene_QP27/R13_1.bin",
+          "sha256": "ac11abf33f426f6601aec2810c83f687b74c1ace6c53c8b7add796cfd3ae05bd",
+          "bytes": 1624084,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/PartyScene_QP27/R13_2.bin",
+          "sha256": "7e6cf7d5798c2ea0fb693d414a768d4f6d73864e08485afac85f0a2b3d8b0eae",
+          "bytes": 1623776,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "PartyScene_QP32",
+      "sequence": "PartyScene",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/PartyScene_QP32/R13_1.bin",
+          "sha256": "9a0f83e95aedce7f1b65e940656c3cda6948f260c777b266f8c49fc3ad0a0510",
+          "bytes": 735503,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/PartyScene_QP32/R13_2.bin",
+          "sha256": "e21746bbc772b55b96904870459a3a6012c8b3e8e38c24b2784a738a8b0d0d14",
+          "bytes": 736276,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "PartyScene_QP37",
+      "sequence": "PartyScene",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/PartyScene_QP37/R13_1.bin",
+          "sha256": "5c2b0ff9ba0ee546a7e0eba138fc0c578026005ed656296be432c5d59ce08b13",
+          "bytes": 344233,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/PartyScene_QP37/R13_2.bin",
+          "sha256": "5d590c0cc2be560949f938068f68e995d54b92a3a38100f6a2ca10855008002c",
+          "bytes": 344775,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RaceHorsesC_QP22",
+      "sequence": "RaceHorsesC",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RaceHorsesC_QP22/R13_1.bin",
+          "sha256": "b1332cd224bda99eae77727d64a18c8d0b8f0209eefbe64d0f9f4712f417eec3",
+          "bytes": 3385346,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RaceHorsesC_QP22/R13_2.bin",
+          "sha256": "0a3581a455775e9ace7b621c93b49770863d1fb82db623489e3c897bebde7533",
+          "bytes": 3381331,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RaceHorsesC_QP27",
+      "sequence": "RaceHorsesC",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RaceHorsesC_QP27/R13_1.bin",
+          "sha256": "277896ee0c861aa3147c71f8288e50a4c2634dc80dc54190463e24fadcb73fa5",
+          "bytes": 1074072,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RaceHorsesC_QP27/R13_2.bin",
+          "sha256": "856ce54fd73f821c758c3fcca0c0d28d98c2c8af4a2b3dbb05b81ed62f913d3b",
+          "bytes": 1075077,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RaceHorsesC_QP32",
+      "sequence": "RaceHorsesC",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RaceHorsesC_QP32/R13_1.bin",
+          "sha256": "efa8649165b54eaa669d2c25bdd0bf335e635dc0470bd6dd61808d48b7aa649a",
+          "bytes": 455486,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RaceHorsesC_QP32/R13_2.bin",
+          "sha256": "0889af0ba7e7ade775d5f7527d8b72c45eb8cfde010eed2e6d2de5412537916a",
+          "bytes": 455328,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RaceHorsesC_QP37",
+      "sequence": "RaceHorsesC",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RaceHorsesC_QP37/R13_1.bin",
+          "sha256": "d28c7b9582a62e2277e75581693d531277570b03ba8fa40f81feb53d7e27bff8",
+          "bytes": 203479,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RaceHorsesC_QP37/R13_2.bin",
+          "sha256": "8fa9b8117945645d904589736867b929cd5b4be083a8325d35a3375ca15e2547",
+          "bytes": 203611,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RitualDance_QP22",
+      "sequence": "RitualDance",
+      "nominal_qp": 22,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RitualDance_QP22/R13_1.bin",
+          "sha256": "ae9429fcaed3486cbc54d2eba92130d4b07fe8f0d899ad7c051c700313161199",
+          "bytes": 4729430,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RitualDance_QP22/R13_2.bin",
+          "sha256": "b2a737a788290906ef0676b80896c51677f01a7fe66031047e9563f753c779d2",
+          "bytes": 4729971,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RitualDance_QP27",
+      "sequence": "RitualDance",
+      "nominal_qp": 27,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RitualDance_QP27/R13_1.bin",
+          "sha256": "545925b7b85f05426749f2c82b57fb11469c8bc6570f59b98684bb77ca996284",
+          "bytes": 2298955,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RitualDance_QP27/R13_2.bin",
+          "sha256": "6a8680702198a2fe000524adc5fac1168abdba2b2073aeb6ef7001359d5d7c73",
+          "bytes": 2297246,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RitualDance_QP32",
+      "sequence": "RitualDance",
+      "nominal_qp": 32,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RitualDance_QP32/R13_1.bin",
+          "sha256": "ee4df9dbb6301f01202668320c1d3f2eb2f6cac30a0e9336c49c6005f949478e",
+          "bytes": 1195368,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RitualDance_QP32/R13_2.bin",
+          "sha256": "4bd53ba6ab3a22b75a31820bdbfa33e404adea6046e8f28228f8effda2083a36",
+          "bytes": 1195830,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "RitualDance_QP37",
+      "sequence": "RitualDance",
+      "nominal_qp": 37,
+      "configuration": null,
+      "configuration_hint": "LB half-frame (historical experiment convention; unverified for these files)",
+      "width": null,
+      "height": null,
+      "bit_depth": null,
+      "chroma_format": null,
+      "frame_rate": null,
+      "frame_skip": null,
+      "temporal_subsample": null,
+      "expected_frames": null,
+      "source_content_sha256": null,
+      "pairing_status": "unverified_encoding_identity",
+      "unknown": [
+        "encoder source/binary/config/input identity",
+        "frame range"
+      ],
+      "origins": {
+        "R13-1": {
+          "path": "streams/RitualDance_QP37/R13_1.bin",
+          "sha256": "f81c49228d88a096d8d1394b07c75955e3adef6362a0c0b10a0a54477c9823a1",
+          "bytes": 657422,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        },
+        "R13-2": {
+          "path": "streams/RitualDance_QP37/R13_2.bin",
+          "sha256": "5c0f4fd8628cf81a02d9e8379dd28a0f412bc34916c47dc1dff875d7414b9dec",
+          "bytes": 657687,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "user supplied 13_1/13_2 directory",
+          "encoder_commit": null,
+          "encoder_sha256": null,
+          "config_sha256": null,
+          "sei_status": "uninspected"
+        }
+      },
+      "validation_only": false
+    },
+    {
+      "pair_id": "Johnny_QP32_prefix17",
+      "sequence": "Johnny",
+      "nominal_qp": 32,
+      "configuration": "LB",
+      "width": 1280,
+      "height": 720,
+      "bit_depth": 10,
+      "chroma_format": "420",
+      "frame_rate": 60,
+      "frame_skip": 0,
+      "temporal_subsample": 1,
+      "expected_frames": 17,
+      "source_content_sha256": "69e56cc75d40ed9e88ce39dd7662d2cde4eab33989242894ca7dd46f24b04acb",
+      "pairing_status": "local_prefix_config_and_content_verified",
+      "unknown": [],
+      "origins": {
+        "R13-1": {
+          "path": "streams/Johnny_QP32_prefix17/R13_1.bin",
+          "sha256": "103ecf4012b6cf4f4fc28e09fcf18e0f5dc9aee3380a458d27ac22e00414e568",
+          "bytes": 17593,
+          "native_policy": "r13_keep_hit_uniform",
+          "scope": "all",
+          "binding_source": "prior validated local done marker",
+          "encoder_commit": "bd0f36c6cb822fd7016d603aed87c7d6afa95a13",
+          "encoder_sha256": "0941278c358a8518a1c7cb7493b27c6369e585f13140f4b4fce5ae3d3f8fe5cb",
+          "config_sha256": {
+            "/home/zhy/HHI/HHI_TS_pred/scripts/HHI测试cfg/LBeu/cfg/encoder_lowdelay_nx2High.cfg": "e2f41d2121bf62b1e7e16fcbee5cfff69dd82313c319ae35194e2b1528c1f87e",
+            "/home/zhy/HHI/HHI_TS_pred/scripts/HHI测试cfg/LBeu/cfg/per-sequence/Johnny.cfg": "c3b5fbf00148c69e9bd24eabe1e0a09d918e64b0d19017c9f2084b124d2b5d9a"
+          },
+          "sei_status": "known_present_MD5"
+        },
+        "R13-2": {
+          "path": "streams/Johnny_QP32_prefix17/R13_2.bin",
+          "sha256": "f99ea23a926bd39fcd6fc975eb8da841b03fb354d0c402423d6613f179d594fe",
+          "bytes": 17572,
+          "native_policy": "r13_keep_hit_spatial",
+          "scope": "all",
+          "binding_source": "prior validated local done marker",
+          "encoder_commit": "bd0f36c6cb822fd7016d603aed87c7d6afa95a13",
+          "encoder_sha256": "0941278c358a8518a1c7cb7493b27c6369e585f13140f4b4fce5ae3d3f8fe5cb",
+          "config_sha256": {
+            "/home/zhy/HHI/HHI_TS_pred/scripts/HHI测试cfg/LBeu/cfg/encoder_lowdelay_nx2High.cfg": "e2f41d2121bf62b1e7e16fcbee5cfff69dd82313c319ae35194e2b1528c1f87e",
+            "/home/zhy/HHI/HHI_TS_pred/scripts/HHI测试cfg/LBeu/cfg/per-sequence/Johnny.cfg": "c3b5fbf00148c69e9bd24eabe1e0a09d918e64b0d19017c9f2084b124d2b5d9a"
+          },
+          "sei_status": "known_present_MD5"
+        }
+      },
+      "validation_only": true
+    }
+  ],
+  "fixtures": {
+    "CE01": {
+      "status": "missing_fixture",
+      "population": "SEARCH_FIXTURE",
+      "reason": "Legacy context omits stateUsed; no encoding started."
+    }
+  },
+  "implementation_commit": "22e61aed7f5c00c57b47b7217cba663751ec12e9",
+  "implementation_source_tree": "05a4ed0ab466c39a2f7b7ab14022e7096f96fb6d",
+  "delivery": {
+    "channel": "git_tracked_directory",
+    "authorization": "2026-10-25 user exception for R13 bitstreams",
+    "paths": "relative to this manifest",
+    "publication_receipt": "../../docs/experiments/results/r13_dual_decoder_audit_impl2_20261025/remote_delivery.json"
+  }
+}

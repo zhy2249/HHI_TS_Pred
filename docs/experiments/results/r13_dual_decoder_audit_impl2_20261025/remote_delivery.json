@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "authorization": "2026-10-25 explicit user exception: upload R13 bin files",
+  "repository": "zhy2249/HHI_TS_Pred",
+  "branch": "experiment/ts-predictor-study",
+  "path": "deliveries/r13_decode_audit_impl2",
+  "channel": "real Git blobs; no LFS",
+  "payload_files": 112,
+  "formal_streams": 96,
+  "validation_streams": 2,
+  "payload_bytes": 190245711,
+  "checksums_sha256": "dbfbcf089d5a49fdb44dc2c2b83a4361a5a8e9f85d845d6f6cdf67beca01e520",
+  "manifest_sha256": "1452b01969e5ff1aba56a3348ed5dbfef05b6162f4ae5a520ae8a33b6a40379c",
+  "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+  "implementation_commit": "22e61aed7f5c00c57b47b7217cba663751ec12e9",
+  "remote_binary_published": false,
+  "remote_download_verified": false,
+  "status": "staged for upload; verification pending"
+}

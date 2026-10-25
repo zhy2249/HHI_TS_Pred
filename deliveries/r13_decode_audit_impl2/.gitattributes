@@ -1,0 +1,3 @@
+# Preserve exact payload bytes; no LFS filter.
+streams/** -text -diff -filter
+bin/** -text -diff -filter

@@ -1,0 +1,29 @@
+{
+  "source_head": "1270ad3c2b24f9a7e78a19167cb6a55a3194e2e0",
+  "source_patch_sha256": "1b27c29e2032ee74db4b29b3c96b1fe05bba7f7a05375e8cb8765c8a40815479",
+  "untracked_source_sha256": {
+    "source/Lib/DecoderLib/tsaudit/Budget.h": "5406f354873a0ec2f9b8dffc07c4612b9f7613e7c47bd176a6c24b41fb5ce574"
+  },
+  "source_identity_status": "compiled source patch and added header verified against implementation_commit; source_head retains original build baseline",
+  "binary_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "machine": "x86_64",
+  "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+  "minimum_isa": "x86_64 SSE4.1; runtime SSE4.2/AVX/AVX2 dispatch; no -march=native",
+  "runtime_dependencies": "\tlinux-vdso.so.1 (0x00007ba77517c000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007ba773200000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007ba773510000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007ba7734f0000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ba772e00000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007ba77517e000)\n",
+  "build_type": "Release",
+  "gpu_required": false,
+  "script_sha256": {
+    "ts_decode_score_audit.py": "22d159f566e1a7bc7b2c32fbd8c82dd01d5b16c4bd868b3d71856acf075d91ba",
+    "ts_audit_stats.py": "8057b2a7744651312166981fce8046ecacaa1433d5f57db109c6c6229c247e91"
+  },
+  "implementation_commit": "22e61aed7f5c00c57b47b7217cba663751ec12e9",
+  "implementation_source_tree": "05a4ed0ab466c39a2f7b7ab14022e7096f96fb6d",
+  "packaged_scripts_sha256": {
+    "ts_decode_score_audit.py": "22d159f566e1a7bc7b2c32fbd8c82dd01d5b16c4bd868b3d71856acf075d91ba",
+    "ts_audit_stats.py": "8057b2a7744651312166981fce8046ecacaa1433d5f57db109c6c6229c247e91",
+    "test_ts_decode_score_audit_runtime.py": "d63474ac6b45f0b8a059736df4840f5ee40ec9bc28d4e2956285c822dfec826e",
+    "test_ts_decode_score_audit.py": "60bb8bee14c8394480f4a90618ada312d0932b8985be84e2c326ba343cbd8961",
+    "package_ts_decode_audit.py": "3cf5e57ee1e2c6769bc709a38405397010465d3df242ce914cfdd46f0fc96f6a"
+  }
+}
