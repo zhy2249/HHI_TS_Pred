@@ -9,7 +9,7 @@
 - [逐序列 / 逐 QP 明细与可筛选 CSV](results/README.md)
 - [R13 / R14 / R3 / R6 QP 分析汇总（2026-10-24）](TS_Predictor_Results_Ledger.md#qp-analysis) · [分量与逐序列 CSV](results/qp_bdrate.csv) · [类别汇总 CSV](results/qp_group_summary.csv)
 - [R9 逐序列 / 逐 QP 结果（仅汇总）](results/r9.md)
-- [R10-1～6 CE 及10-3 完整 B 明细（仅记录）](results/r10.md)
+- [R10-1～6 CE 及 R10-3 完整 B 明细（仅记录）](results/r10.md)
 - [R11 八组 CE 及 R11-2 部分 B 明细（仅汇总）](results/r11.md)
 - [R12 十二组 CE 与七组部分 B 明细（仅汇总）](results/r12.md)
 - [R13 两组 CE 结果分析（2026-10-23）](TS_Predictor_R13_LB_CE_Results_20261023.md)
