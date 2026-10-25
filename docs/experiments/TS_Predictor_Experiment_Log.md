@@ -6,6 +6,18 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R13 码流与审计程序例外交付（2026-10-25）
+
+用户本轮明确授权上传R13码流副本，交付提交`01d62c9`：
+`deliveries/r13_decode_audit_impl2/`保存96条正式流、2条验证前缀、Linux解码器与脚本/manifest，共112个文件190245711字节。
+使用真实Git blobs，禁用该交付目录二进制的文本/过滤转换；不更改全局.gitignore，不推广为后续实验自动上传权限。
+原视频、重建、工作簿、日志和用户其它未提交内容未上传。
+
+从GitHub SSH全新克隆后，全部文件SHA256与码流清单一致；下载得到的程序运行两来源各17帧验证，
+原生及七方法完整、编码端SEI MD5和on/off MD5均通过。不运行EncoderApp，不重算或改动正式BD-rate。
+同机远端下载已核验，跨OS/ABI和GitHub连接器二进制读取能力不作扩展声明。
+[交付README](../../deliveries/r13_decode_audit_impl2/README.md) · [远端验收记录](results/r13_dual_decoder_audit_impl2_20261025/remote_delivery.json)。
+
 ## R13 双码流审计统计修复 impl2（2026-10-25）
 
 以`1270ad3`为审查基线，确认并修复CU帧内标志混作Slice、summary漏计eligible、部分方法回放误标完整、

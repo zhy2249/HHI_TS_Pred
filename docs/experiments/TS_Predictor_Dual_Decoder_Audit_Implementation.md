@@ -206,9 +206,29 @@ python3 scripts/package_ts_decode_audit.py verify \
 归档只收manifest列出的流、明确程序/脚本/文档；带SHA256SUMS和归档SHA256 sidecar。
 所有运行路径相对包根目录；verify安全解包到新目录，核验实际字节（拒绝LFS指针），可实际执行双来源smoke。
 本轮不取消.gitignore、不把.bin/程序/快照/原始YUV/工作簿/大日志提交到Git。
-**源码和小型核验文档可由Git取得；实际程序与码流采用本地归档交付，尚未远程发布，也未验证GitHub连接器下载。**
+初次交付时仅源码/小型核验文档上传Git，程序与码流只在本地归档；以下追加记录覆盖最新交付状态。
 异目录运行验收的实际记录和归档指纹见本轮验证目录；同机搬移不等于另一OS/CPU环境已通过。
 
 最终本地归档已生成（183428639字节），源码对应 `22e61ae`；
 [归档指纹与交付状态](results/r13_dual_decoder_audit_impl2_20261025/delivery.json)和
 [实际异目录双源执行验收](results/r13_dual_decoder_audit_impl2_20261025/package_validation.json)已保存。
+
+## 9. 用户例外授权后的实际 Git 交付
+
+2026-10-25，用户明确授权“本次是个例外将13的bin文件也上传一份”。
+已将96条正式流＋2条验证前缀、配套Linux解码器/脚本/manifest以真实Git文件放入
+[`deliveries/r13_decode_audit_impl2/`](../../deliveries/r13_decode_audit_impl2/README.md)，交付提交 `01d62c9`。
+这是独立交付副本，不修改原96条来源、全局.gitignore或后续默认上传规则；不使用LFS，不上传YUV、重建、工作簿或运行日志。
+
+通过GitHub SSH全新克隆验证112个交付文件SHA256（含98条实际码流），并用下载的程序执行两来源17帧smoke：
+SEI/on-off MD5、原生回放和全部七方法通过。当前环境的远端实际下载已验证，
+不把同机运行扩展解释成其它OS/ABI兼容认证，也不声称已测试GitHub连接器的二进制接口。
+详见[远端交付验收](results/r13_dual_decoder_audit_impl2_20261025/remote_delivery.json)。
+归档本身的旧SHA和“本地归档”历史记录保留；此次远端交付形态是可直接检出的目录，不重复上传175MiB tar.gz。
+
+取得仓库后可以直接运行：
+
+```bash
+python3 deliveries/r13_decode_audit_impl2/scripts/ts_decode_score_audit.py inspect --manifest deliveries/r13_decode_audit_impl2/manifest.json
+python3 deliveries/r13_decode_audit_impl2/scripts/ts_decode_score_audit.py decode-pair --manifest deliveries/r13_decode_audit_impl2/manifest.json --pair Johnny_QP32_prefix17 --first-poc 0 --last-poc 16 --verify-off --output runs/r13_uploaded_prefix
+```

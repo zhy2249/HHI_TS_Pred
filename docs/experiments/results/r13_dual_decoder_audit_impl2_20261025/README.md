@@ -74,8 +74,10 @@ Release / GCC11.4 / glibc2.35 / SSE4.1，Python3.10+ 标准库，无 GPU/原始 
 [交付摘要](delivery.json)、[异目录验收](package_validation.json)、[归档manifest](delivery_manifest.json)、
 [构建身份](delivery_build_info.json) 均保留；实现提交为 `22e61aed7f5c00c57b47b7217cba663751ec12e9`。
 该提交的 source 补丁/新增头文件与实际构建前指纹逐项相同；这些验证记录的原 manifest 指纹保留不被新交付元数据覆盖。
-**源码/小型文档经 Git 同步；实际程序与 96 条正式流＋2 条前缀仅本地归档，未远程发布，未验证 GitHub 下载。**
-不取消 .gitignore、不提交这些原始文件。异目录运行与另一机器/发行版运行是两种验证；后者尚未完成。
+初次验收时程序/流仅本地归档。随后用户明确例外授权，真实文件现已发布于
+[`deliveries/r13_decode_audit_impl2/`](../../../../deliveries/r13_decode_audit_impl2/README.md)，交付提交 `01d62c9`。
+[远端交付验收](remote_delivery.json)：已从GitHub全新克隆，112个文件/98条流指纹一致，下载的解码器双来源17帧核验通过。
+本次只在独立交付目录例外提交上述码流/程序，不取消全局.gitignore。远端下载与另一机器/发行版运行是两种验证；后者尚未完成。
 
 仓库根目录可复现：
 
@@ -87,7 +89,7 @@ python3 scripts/test_ts_decode_score_audit_runtime.py --manifest runs/r13_dual_d
 python3 scripts/package_ts_decode_audit.py verify --archive runs/delivery/r13_decode_audit_impl2.tar.gz --output runs/r13_archive_recheck --smoke-pair Johnny_QP32_prefix17
 ```
 
-后续 96 条的共享任务池/续跑命令见实现文档。打包脚本提供本地归档，另一个环境仍需取得该实际归档后才能运行。
+后续96条的共享任务池/续跑命令见实现文档。另一个环境可直接检出Git交付目录；本地tar.gz也继续保留，不必两者重复下载。
 
 ## 尚未验证及解释边界
 

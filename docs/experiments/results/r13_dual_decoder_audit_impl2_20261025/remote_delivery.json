@@ -13,7 +13,49 @@
   "manifest_sha256": "1452b01969e5ff1aba56a3348ed5dbfef05b6162f4ae5a520ae8a33b6a40379c",
   "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
   "implementation_commit": "22e61aed7f5c00c57b47b7217cba663751ec12e9",
-  "remote_binary_published": false,
-  "remote_download_verified": false,
-  "status": "staged for upload; verification pending"
+  "remote_binary_published": true,
+  "remote_download_verified": true,
+  "status": "published, fresh remote download hashes verified, downloaded decoder paired smoke passed",
+  "delivery_commit": "01d62c9cb9caeeac07f1c2a4a84b2ae1f60bfa16",
+  "remote_url": "https://github.com/zhy2249/HHI_TS_Pred/tree/experiment/ts-predictor-study/deliveries/r13_decode_audit_impl2",
+  "transport": "fresh authenticated GitHub SSH clone, --depth 1; not a local clone or LFS",
+  "sha256_verified_files": 112,
+  "sha256_verified_streams": 98,
+  "independent_OS_validated": false,
+  "downloaded_binary_executed": true,
+  "paired_smoke": {
+    "R13-1": {
+      "actual_frames": 17,
+      "sei_status": "SEI_MD5_all_decoded_frames_verified",
+      "on_off_equal": true,
+      "audit_complete": true,
+      "policy_complete": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "native_verified_tu": 3
+    },
+    "R13-2": {
+      "actual_frames": 17,
+      "sei_status": "SEI_MD5_all_decoded_frames_verified",
+      "on_off_equal": true,
+      "audit_complete": true,
+      "policy_complete": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "native_verified_tu": 3
+    }
+  },
+  "frozen_payload_url": "https://github.com/zhy2249/HHI_TS_Pred/tree/01d62c9cb9caeeac07f1c2a4a84b2ae1f60bfa16/deliveries/r13_decode_audit_impl2"
 }

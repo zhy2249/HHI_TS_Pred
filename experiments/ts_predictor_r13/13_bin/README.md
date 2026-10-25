@@ -9,3 +9,5 @@
 复制清单与验收见 [核验记录](../../../docs/experiments/results/r13_dual_decoder_audit_20261025/README.md)。
 
 2026-10-25统计修复：当前使用 `runs/r13_dual_decode_audit_impl2_release/`（schema 2），旧impl1包作为历史验证保留。原96条文件未改动；实际二进制/码流仍为本地归档交付，未上传Git。
+
+2026-10-25后续更新：用户例外授权后，96条正式码流及配套程序已复制上传至 [`deliveries/r13_decode_audit_impl2/`](../../../deliveries/r13_decode_audit_impl2/README.md)。原件不变；已从远端重新克隆并核验实际文件与双来源前缀解码，详见该交付目录和审计验证记录。
