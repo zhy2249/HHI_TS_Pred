@@ -17,6 +17,8 @@
 - [R13 异常后续分析指导：首次搜索分叉、Y→UV与滤波分离](TS_Predictor_R13_Anomaly_Followup_Guide_20261024.md)（基于6784c2b；仅指导，未追加运行）
 - [R13 码流解码续查：首个保留划分、CCCM传播与滤波拆分](TS_Predictor_R13_Decoder_Followup_20261024.md) · [只读诊断派生数据](results/r13_followup_20261024/README.md)
 - [Johnny QP32 POC16：2.762482 bit 的逐 predictor、remapping 与 CABAC 核对](TS_Predictor_R13_Pred_Rate_Trace_20261025.md)
+- [典型反例 CE01：Johnny32 POC16 8×32低幅值评分误判](counterexamples/CE01_Johnny32_POC16_8x32.md)
+- [后续设计：固定等权编码的RDOQ后评分审计＋历史众数候选](TS_Predictor_PostRDOQ_Score_Audit_History_Mode_Design.md)（TS-SCORE-AUDIT-HMODE-v1；设计，未接入编码器）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
@@ -50,7 +52,7 @@
 | 条件 / 历史选择 | [设计](TS_Conditional_Predictor_Experiment_Design.md)、[实现](TS_Conditional_Predictor_Implementation.md) | [验证](TS_Conditional_Predictor_Validation.md)、[初步结果](TS_Conditional_Predictor_Preliminary_Results_20260918.md) |
 | R2 | [前期方案](TS_Predictor_Revision2_Design.md)、[协议](TS_Predictor_R2_Experiment_Protocol.md)、[实现](TS_Predictor_R2_Implementation.md) | [验证](TS_Predictor_R2_Validation.md)、[CE 结果](TS_Predictor_R2_LB_CE_Results_20260919.md) |
 | R3 | [设计](TS_Predictor_R3_Experiment_Design.md)、[实现](TS_Predictor_R3_Implementation.md) | [验证](TS_Predictor_R3_Validation.md)、[CE 结果](TS_Predictor_R3_LB_CE_Results_20260920.md)、[R3 B / R4 结果](TS_Predictor_R3B_R4_Results_20260921.md)、[已有 LB/AI/RA 的 QP 分析](results/r3.md) |
-| R4 | [设计](TS_Predictor_R4_Experiment_Design.md)、[非消融扩展](TS_Predictor_R4_NonAblation_Extension.md)、[实现](TS_Predictor_R4_Implementation.md) | [验证](TS_Predictor_R4_Validation.md)、[结果](TS_Predictor_R3B_R4_Results_20260921.md) |
+| R4 | [设计](TS_Predictor_R4_Experiment_Design.md)、[非消融扩展](TS_Predictor_R4_NonAblation_Extension.md)、[实现](TS_Predictor_R4_Implementation.md) | [验证](TS_Predictor_R4_Validation.md)、[CE 结果](TS_Predictor_R4_CE_Results.md) |
 | R5 | [设计](TS_Predictor_R5_Experiment_Design.md)、[实现](TS_Predictor_R5_Implementation.md) | [验证](TS_Predictor_R5_Validation.md)、[CE 结果](TS_Predictor_R5_LB_CE_Results_20260923.md) |
 | R6 | [设计](TS_Predictor_R6_Experiment_Design.md)、[实现](TS_Predictor_R6_Implementation.md)、[后续计划](TS_Predictor_Post_R6_Plan_20260924.md) | [验证](TS_Predictor_R6_Validation.md)、[CE 结果](TS_Predictor_R6_LB_CE_Results_20260924.md)、[逐点与 QP 分析](results/r6.md) |
 | R7 / rate estimator | [实验编号](TS_Predictor_R7_Experiment_Design.md)、[评分研究与实现](TS_Predictor_Rate_Estimator_Study.md) | [shadow 结果](TS_Predictor_Rate_Shadow_Results_20260924.md)、[R7→R8 依据](TS_Predictor_R7_Evidence_for_R8.md) |
