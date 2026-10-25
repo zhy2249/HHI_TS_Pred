@@ -1,0 +1,343 @@
+{
+  "archive_sha256": "ec7d4af82079b2baf2496ab5125c423641a002fab6d2c1058bb9cf209ec0fc21",
+  "checksums_verified": true,
+  "pairs": 49,
+  "streams": 98,
+  "decoder_sha256": "54e66385447d7ecd513c0e676b3f47a1571d9eecd9678b116d1eb6d1d81f182b",
+  "relocation_verified": true,
+  "independent_OS_validated": false,
+  "remote_download_verified": false,
+  "smoke_pair": "Johnny_QP32_prefix17",
+  "origins": {
+    "R13-1": {
+      "schema": 2,
+      "returncode": 0,
+      "expected_frames": 17,
+      "actual_frames": 17,
+      "expected_frame_count_known": true,
+      "sei_status": "SEI_MD5_all_decoded_frames_verified",
+      "sei_md5_ok_count": 17,
+      "log_truncated": false,
+      "on_off_equal": true,
+      "native_replay": {
+        "schema": 2,
+        "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+        "valid": true,
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "native_verified_tu": 3,
+        "selected_tu": 3,
+        "skipped_budget": 0,
+        "replays": 4,
+        "coefficient_visits": 240,
+        "core_truncated": false,
+        "cache_peak_bytes": 517128,
+        "snapshot_skipped_budget": 0,
+        "raw_bytes": 42429,
+        "snapshot_bytes": 426851,
+        "capture_skipped": 0,
+        "component_snapshot_bytes": [
+          426851,
+          0,
+          0
+        ],
+        "output_dropped_records": 0,
+        "output_dropped_by_kind": {},
+        "component_coverage": [
+          {
+            "selected_tu": 3,
+            "selected_coeff": 896,
+            "selected_nz": 12,
+            "native_verified_tu": 3,
+            "all_policy_tu": 3,
+            "policy_done_tu": [
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3
+            ],
+            "point_requested": [
+              2,
+              0
+            ],
+            "point_done": [
+              2,
+              0
+            ],
+            "snapshots_saved": 3,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 4,
+            "coefficient_visits": 240
+          },
+          {
+            "selected_tu": 0,
+            "selected_coeff": 0,
+            "selected_nz": 0,
+            "native_verified_tu": 0,
+            "all_policy_tu": 0,
+            "policy_done_tu": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "point_requested": [
+              0,
+              0
+            ],
+            "point_done": [
+              0,
+              0
+            ],
+            "snapshots_saved": 0,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 0,
+            "coefficient_visits": 0
+          },
+          {
+            "selected_tu": 0,
+            "selected_coeff": 0,
+            "selected_nz": 0,
+            "native_verified_tu": 0,
+            "all_policy_tu": 0,
+            "policy_done_tu": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "point_requested": [
+              0,
+              0
+            ],
+            "point_done": [
+              0,
+              0
+            ],
+            "snapshots_saved": 0,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 0,
+            "coefficient_visits": 0
+          }
+        ]
+      },
+      "decode_complete": true,
+      "native_replay_complete": true,
+      "policy_complete": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "point_oracle_complete": true,
+      "snapshot_complete": true,
+      "output_complete": true,
+      "audit_complete": true,
+      "off_returncode": 0,
+      "census_complete": true,
+      "detail_status": "ok",
+      "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+      "output_truncated_files": [],
+      "output_dropped_rows": 0
+    },
+    "R13-2": {
+      "schema": 2,
+      "returncode": 0,
+      "expected_frames": 17,
+      "actual_frames": 17,
+      "expected_frame_count_known": true,
+      "sei_status": "SEI_MD5_all_decoded_frames_verified",
+      "sei_md5_ok_count": 17,
+      "log_truncated": false,
+      "on_off_equal": true,
+      "native_replay": {
+        "schema": 2,
+        "revision": "R13-DUAL-DECODE-AUDIT-impl2",
+        "valid": true,
+        "decode_complete": true,
+        "native_replay_complete": true,
+        "policy_complete": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "point_oracle_complete": true,
+        "snapshot_complete": true,
+        "output_complete": true,
+        "audit_complete": true,
+        "native_verified_tu": 3,
+        "selected_tu": 3,
+        "skipped_budget": 0,
+        "replays": 4,
+        "coefficient_visits": 240,
+        "core_truncated": false,
+        "cache_peak_bytes": 517128,
+        "snapshot_skipped_budget": 0,
+        "raw_bytes": 42429,
+        "snapshot_bytes": 426851,
+        "capture_skipped": 0,
+        "component_snapshot_bytes": [
+          426851,
+          0,
+          0
+        ],
+        "output_dropped_records": 0,
+        "output_dropped_by_kind": {},
+        "component_coverage": [
+          {
+            "selected_tu": 3,
+            "selected_coeff": 896,
+            "selected_nz": 12,
+            "native_verified_tu": 3,
+            "all_policy_tu": 3,
+            "policy_done_tu": [
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3
+            ],
+            "point_requested": [
+              2,
+              0
+            ],
+            "point_done": [
+              2,
+              0
+            ],
+            "snapshots_saved": 3,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 4,
+            "coefficient_visits": 240
+          },
+          {
+            "selected_tu": 0,
+            "selected_coeff": 0,
+            "selected_nz": 0,
+            "native_verified_tu": 0,
+            "all_policy_tu": 0,
+            "policy_done_tu": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "point_requested": [
+              0,
+              0
+            ],
+            "point_done": [
+              0,
+              0
+            ],
+            "snapshots_saved": 0,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 0,
+            "coefficient_visits": 0
+          },
+          {
+            "selected_tu": 0,
+            "selected_coeff": 0,
+            "selected_nz": 0,
+            "native_verified_tu": 0,
+            "all_policy_tu": 0,
+            "policy_done_tu": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "point_requested": [
+              0,
+              0
+            ],
+            "point_done": [
+              0,
+              0
+            ],
+            "snapshots_saved": 0,
+            "native_skipped_budget": 0,
+            "policy_group_skipped_budget": 0,
+            "point_skipped_budget": 0,
+            "snapshot_skipped_budget": 0,
+            "replays": 0,
+            "coefficient_visits": 0
+          }
+        ]
+      },
+      "decode_complete": true,
+      "native_replay_complete": true,
+      "policy_complete": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "point_oracle_complete": true,
+      "snapshot_complete": true,
+      "output_complete": true,
+      "audit_complete": true,
+      "off_returncode": 0,
+      "census_complete": true,
+      "detail_status": "ok",
+      "completeness_contract": "full selected-TU native + all seven policies + both point samples + snapshots + all outputs; summary only requests census",
+      "output_truncated_files": [],
+      "output_dropped_rows": 0
+    }
+  }
+}

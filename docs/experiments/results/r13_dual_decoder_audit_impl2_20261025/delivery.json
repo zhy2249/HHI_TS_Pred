@@ -1,0 +1,15 @@
+{
+  "archive": "runs/delivery/r13_decode_audit_impl2.tar.gz",
+  "sha256": "ec7d4af82079b2baf2496ab5125c423641a002fab6d2c1058bb9cf209ec0fc21",
+  "bytes": 183428639,
+  "pairs": 49,
+  "streams": 98,
+  "remote_binary_published": false,
+  "implementation_commit": "22e61aed7f5c00c57b47b7217cba663751ec12e9",
+  "manifest_sha256": "f60191653d018898c8003be8f66389ad73249f33890e075fc1d2e1c0593d78d9",
+  "checksums_sha256": "c9c93dab8bad9be830e2f99cb5048817eaa94249243cb65a75934a48cc2401a0",
+  "relocation_verified": true,
+  "independent_OS_validated": false,
+  "remote_download_verified": false,
+  "payload": "96 original streams + 2 validation prefixes, Linux x86_64 DecoderAppAudit, scripts and docs; no raw YUV/reconstruction/workbook"
+}

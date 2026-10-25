@@ -208,3 +208,7 @@ python3 scripts/package_ts_decode_audit.py verify \
 本轮不取消.gitignore、不把.bin/程序/快照/原始YUV/工作簿/大日志提交到Git。
 **源码和小型核验文档可由Git取得；实际程序与码流采用本地归档交付，尚未远程发布，也未验证GitHub连接器下载。**
 异目录运行验收的实际记录和归档指纹见本轮验证目录；同机搬移不等于另一OS/CPU环境已通过。
+
+最终本地归档已生成（183428639字节），源码对应 `22e61ae`；
+[归档指纹与交付状态](results/r13_dual_decoder_audit_impl2_20261025/delivery.json)和
+[实际异目录双源执行验收](results/r13_dual_decoder_audit_impl2_20261025/package_validation.json)已保存。

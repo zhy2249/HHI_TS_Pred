@@ -68,7 +68,12 @@ Release / GCC11.4 / glibc2.35 / SSE4.1，Python3.10+ 标准库，无 GPU/原始 
 源码基线＋补丁指纹保存在 validation.json；最终归档另记录对应实现提交，不覆盖历史验证指纹。
 
 本地整理包 `runs/r13_dual_decode_audit_impl2_release/`；正式归档 `runs/delivery/r13_decode_audit_impl2.tar.gz`。
-候选归档已在 `/tmp` 新目录解包，逐文件 SHA256 和两个来源真实运行通过；正式归档的校验摘要在本目录另存。
+正式归档 **183428639 字节**，SHA256：
+`ec7d4af82079b2baf2496ab5125c423641a002fab6d2c1058bb9cf209ec0fc21`。
+已在 `/tmp` 新目录解包，逐文件 SHA256 和两个来源真实运行通过。
+[交付摘要](delivery.json)、[异目录验收](package_validation.json)、[归档manifest](delivery_manifest.json)、
+[构建身份](delivery_build_info.json) 均保留；实现提交为 `22e61aed7f5c00c57b47b7217cba663751ec12e9`。
+该提交的 source 补丁/新增头文件与实际构建前指纹逐项相同；这些验证记录的原 manifest 指纹保留不被新交付元数据覆盖。
 **源码/小型文档经 Git 同步；实际程序与 96 条正式流＋2 条前缀仅本地归档，未远程发布，未验证 GitHub 下载。**
 不取消 .gitignore、不提交这些原始文件。异目录运行与另一机器/发行版运行是两种验证；后者尚未完成。
 

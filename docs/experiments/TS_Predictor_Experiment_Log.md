@@ -22,6 +22,7 @@
   114个采样TU原生bins/概率出口/pass/预算一致，7方法/单点/快照/输出完整。3个实际B Slice Intra CU身份及独立快照恢复正确。
 - 98条本地包含96正式流＋2验证前缀；全数据集只做96任务dry-run，未全量解码。
   新增共享任务池/指纹续跑和tar.gz打包/异目录验证；源码文档同步Git，二进制与码流归档仍为本地交付，未宣称GitHub可下载。
+  正式归档183428639字节，已解包校验所有实际文件并执行双来源17帧on/off；源版本22e61ae，交付manifest与SHA单独保存。
 
 详情：[实现与对比](TS_Predictor_Dual_Decoder_Audit_Implementation.md)、[schema](TS_Predictor_Dual_Decoder_Audit_Schema.md)、
 [本轮验收](results/r13_dual_decoder_audit_impl2_20261025/README.md)。本轮结果只验收条件统计工具，不据此宣布评分模型整体优劣。
