@@ -27,6 +27,7 @@
 - [61组规则与状态转移本地测试设计](TS_Predictor_Rule_Lab_Design.md) · [Git源码、96流运行与结果回传说明](../../scripts/ts_rule_lab/README.md)
 - [61组规则全量结果：96流/754,151个TU，相对EQ的新增空间Weak](TS_Predictor_Rule_Lab_Results_20261026.md) · [全部表格、原生核验及资源记录](results/ts_rule_lab_20261026/README.md)（仅条件TSRC rate，非BD-rate）
 - [后续设计：双值／短区间可逆映射与评分分离验证](TS_Predictor_Mapping_and_Score_Next_Design.md)（TS-MAPPING-SCORE-NEXT-v1；纯数学核对，尚无新回放收益）
+- [下一轮21组：静态评分逐级多目标映射、精确快算法及全96流验收](TS_Predictor_Greedy_MultiMapping_Experiment_Requirements.md)（TS-MG-STATIC-FAST-v1；设计已冻结，生产实现／新收益待本地验证）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
