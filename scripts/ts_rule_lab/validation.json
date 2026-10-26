@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-25",
+  "rule_revision": "TS-RULE-SUITE-v1",
+  "corpus_revision": "TS-RULE-LAB-v1",
+  "base_commit": "b789da4f4f67002aa8da9f90d5343c8aa14196b5",
+  "rule_count": 61,
+  "family_counts": {
+    "fixed": 10,
+    "causal_gate": 6,
+    "state": 36,
+    "hybrid": 6,
+    "expert_credit": 3
+  },
+  "catalogue_sha256": "ac7d21c015dd77dab6625e86fa527eb322d024eccdf7a33ae79908c9beca5400",
+  "python_unit_tests": 28,
+  "python_unit_tests_passed": true,
+  "scope": "Pure Python rules, recorded coefficient fixture and synthetic protocol/report records only",
+  "native_decoder_build_tested": false,
+  "full_96_stream_decode_run": false,
+  "new_cabac_measurements": false,
+  "video_encoding_invoked": false,
+  "best_full_dataset_rule": null,
+  "requires_local_acceptance": [
+    "Native build",
+    "Both-source native replay identity",
+    "Audit on/off reconstruction hashes",
+    "First ten scheduled controls equal native controls",
+    "Complete 96-stream EOF coverage"
+  ]
+}
