@@ -36,6 +36,9 @@
 */
 
 #include "QuantRDOQ.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "TsR15CodecStats.h"
+#endif
 
 #include "UnitTools.h"
 #include "ContextModelling.h"
@@ -1277,6 +1280,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
   CoeffCodingContext cctx(tu, compID, tu.cs->slice->m_signDataHidingEnabledFlag, m_bdpcm);
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   const bool useR14=cctx.tsR14Active();
+  const bool useR15=cctx.tsR15Active();
   const auto &r13Obs=TsFixedPrediction::r13Observation();
   const bool diagnoseR13=r13Obs.diagnostic && tu.cu->slice->m_poc<=r13Obs.diagnosticMaxPoc &&
     (r13Obs.poc<0 || tu.cu->slice->m_poc==r13Obs.poc) &&
@@ -1357,10 +1361,17 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       int rightPixel, belowPixel, predPixel;
 
       cctx.neighTS(rightPixel, belowPixel, scanPos, dstCoeff);
+      const TsMultiMapping::Action *multiAction=nullptr;
 #if JVET_BJUT_TS_FIXED_PREDICTOR
       TsFixedPrediction::R14Decision r14Decision;
-      TsFixedPrediction::MagnitudeAction action;
-      if(useR14)
+      TsFixedPrediction::MagnitudeAction action{-1,0};
+      TsMultiMapping::Action r15Action;
+      if(useR15)
+      {
+        r15Action=cctx.prepareTsR15(scanPos,dstCoeff);
+        multiAction=&r15Action;
+      }
+      else if(useR14)
       {
         r14Decision=cctx.prepareTsR14(scanPos,dstCoeff);
         action={r14Decision.predictor,0};
@@ -1369,7 +1380,12 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
 #else
       const auto action=cctx.magnitudeActionTS(scanPos,dstCoeff);
 #endif
-      predPixel = cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      predPixel = multiAction ? TsMultiMapping::map(upAbsLevel,*multiAction) :
+#else
+      predPixel =
+#endif
+        cctx.deriveModCoeff(rightPixel, belowPixel, upAbsLevel, false,
                                      action.predictor,action.protect);
 
       bool allowUp = action.protect ? (upAbsLevel==unsigned(action.predictor) && action.predictor>action.protect+1) : predPixel == 1;
@@ -1385,6 +1401,11 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
       {
         coeffLevels[m_testedLevels++] = upAbsLevel;
       }
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      if(useR15 && TsFixedPrediction::r15StatsEnabled())
+        TsMultiMapping::recordQuant(r15Action,upAbsLevel!=roundAbsLevel && upAbsLevel!=minAbsLevel,
+          allowUp,cctx.deriveModCoeff(rightPixel,belowPixel,upAbsLevel,false)==1,m_testedLevels);
+#endif
 
       double dErr        = double(levelDouble);
       coeffLevelError[0] = dErr * dErr * errorScale;
@@ -1422,7 +1443,7 @@ void QuantRDOQ::xRateDistOptQuantTS(TransformUnit &tu, const CompID &compID, con
                                     errorScale, coeffLevels, coeffLevelError, &fracBitsSig, fracBitsPar, cctx, fracBits,
                                     fracBitsSign, fracBitsGr1, sign, rightPixel, belowPixel, goRiceParam, lastCoeff,
                                     extendedPrecision, maxLog2TrDynamicRange, numUsedCtxBins,
-                                    action.predictor,action.protect);
+                                    action.predictor,action.protect,multiAction);
 
 #if JVET_BJUT_TS_FIXED_PREDICTOR
       if(diagnoseR13)
@@ -1967,8 +1988,12 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
                                                 const BinFracBits &fracBitsSign, const BinFracBits &fracBitsGt1,
                                                 const uint8_t sign, int rightPixel, int belowPixel, uint16_t ricePar,
                                                 bool isLast, bool useLimitedPrefixLength,
-                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction, int protect) const
+                                                const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction, int protect,
+                                                const TsMultiMapping::Action *multiAction) const
 {
+#if !JVET_BJUT_TS_FIXED_PREDICTOR
+  (void)multiAction;
+#endif
   double   currCostSig  = 0;
   uint32_t bestAbsLevel = 0;
   numUsedCtxBins        = 0;
@@ -2023,7 +2048,12 @@ inline uint32_t QuantRDOQ::xGetCodedLevelTSPred(double &rd64CodedCost, double &r
     int modAbsLevel           = absLevel;
     if (cctx.remRegBins >= 4)
     {
-      modAbsLevel = cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE, prediction, protect);
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+      modAbsLevel = multiAction ? TsMultiMapping::map(absLevel,*multiAction) :
+#else
+      modAbsLevel =
+#endif
+        cctx.deriveModCoeff(rightPixel, belowPixel, absLevel, m_bdpcm != BdpcmMode::NONE, prediction, protect);
     }
     int    numCtxBins = 0;
     double dCurrCost  = coeffLevelError[errorInd] +

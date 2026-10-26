@@ -6,6 +6,20 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R15 真实量化与 TSRC 接入（2026-10-26）
+
+用户要求完成代码修改后，将既有 R15 的 18 项完整 Action 接入 TS-RDOQ、真实 CABACWriter 和 CABACReader；版本 `R15-CODEC-v1`，编号与静态选择规则不变。新增 `JVET_BJUT_TS_R15_MODE=0..18`，默认 0；`R15_STATS` 默认 0，`R15_ANALYSIS` 继续仅为旧 R13 来源的离线审计。无额外 mode bit；双方设置须一致。
+
+量化前按因果邻居固定当前位置 Action，候选共享完整映射；上取整额外候选仅在 `map(up,P)==1` 且原不重复条件满足时加入。零候选、distortion/lambda、CG 全零竞争保留；纯 bypass、BDPCM、TSRC 禁用和普通变换按原路径处理。Writer 的 CG 内缓存不跨试验，Reader 在第三遍使用已恢复邻居 inverse-map。
+
+已构建编码/解码程序并执行真实库的合成 TU 验收，未运行 EncoderApp、未新编码视频。18 组的 Writer/Reader 往返、fractional bits/出口上下文/预算、因果扰动、量化重入及 stats 开关检查通过；R15-2/6 等价、共同目标范围的 R15-1/NoPred 等价、非目标范围 Current 回归以及旧六模式回归通过。宏关闭构建与 Current 局部输出一致；已有 R13 两来源前缀各17帧由新 DecoderApp 解码，与修改前及编码端 SEI MD5 相符，无重建视频输出。
+
+测试确认旧 NoPred 在 TSRC 禁用时仍可能影响现有 TS-RDOQ，因此它与限定目标范围的 R15-1 不能宣称全工具等价。保留旧实现，以共同目标范围对比，并对非目标范围单独对照 Current。另一项测试修正只更新旧 R14 测试中已过期的 R13 观察字段期望，不修改生产身份规则。
+
+批量运行复用原任务池、半帧 LB、逐组工作簿和续跑，新增18个runtime及严格版本身份。计数只保留 RDOQ 试验人口和最终 Writer regular 非零人口，最多9条进程末汇总；完整验证记录通过 FIFO 哈希、不落大文件。没有改写任何正式结果表，也没有新 BD-rate 或生产复杂度结论。
+
+[闭环实现](TS_Predictor_R15_Codec_Implementation.md) · [验收和覆盖限制](TS_Predictor_R15_Codec_Validation.md) · [本地测试与用户运行命令](../../scripts/README_ts_r15_codec.md)。
+
 ## R15 静态整数多目标映射实现（2026-10-26）
 
 同步远端至 `b56e30a`，按 `TS-MG-STATIC-FAST-v1` 实现 G/N/P/D/X 与等权/22111 消融。

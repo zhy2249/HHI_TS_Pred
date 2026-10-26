@@ -1,0 +1,21 @@
+PASS current
+PASS nopred
+PASS r15_identity
+PASS r15_g_eq_k2
+PASS r15_g_eq_k3
+PASS r15_g_eq_k4
+PASS r15_g_eq_k6
+PASS r15_n_eq_k2
+PASS r15_n_eq_k3
+PASS r15_n_eq_k4
+PASS r15_n_eq_k6
+PASS r15_p_eq_k2
+PASS r15_p_eq_k3
+PASS r15_p_eq_k6
+PASS r15_d_eq_k2
+PASS r15_d_eq_k3
+PASS r15_x_eq_k2
+PASS r15_x_eq_k3
+PASS r15_g_sp_k3
+PASS r15_n_sp_k3
+PASS all R15 native checks; no video application was invoked

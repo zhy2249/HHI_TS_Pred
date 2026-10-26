@@ -9,6 +9,21 @@
 
 namespace TsFixedPrediction
 {
+inline const char *r15Name(int m)
+{
+  static const char *const names[]={"r15_identity","r15_g_eq_k2","r15_g_eq_k3","r15_g_eq_k4",
+    "r15_g_eq_k6","r15_n_eq_k2","r15_n_eq_k3","r15_n_eq_k4","r15_n_eq_k6",
+    "r15_p_eq_k2","r15_p_eq_k3","r15_p_eq_k6","r15_d_eq_k2","r15_d_eq_k3",
+    "r15_x_eq_k2","r15_x_eq_k3","r15_g_sp_k3","r15_n_sp_k3"};
+  return m>=1 && m<=18 ? names[m-1] : nullptr;
+}
+inline int r15PublicMode(int policy) { return policy>=115 && policy<=132 ? policy-114 : 0; }
+inline bool r15(int policy) { return r15PublicMode(policy)!=0; }
+inline int r15Policy(const char *value)
+{
+  for(int m=1;m<=18;++m) { if(!std::strcmp(value,r15Name(m))) { return m+114; } }
+  return 0;
+}
 inline const char *r14Name(int m)
 {
   switch(m)
@@ -223,7 +238,8 @@ inline const char *defaultName()
 #elif JVET_BJUT_TS_FIXED_PREDICTOR && JVET_BJUT_TS_FIXED_DIRECTIONAL
   return "directional";
 #else
-  return JVET_BJUT_TS_R14_MODE ? r14Name(JVET_BJUT_TS_R14_MODE) :
+  return JVET_BJUT_TS_R15_MODE ? r15Name(JVET_BJUT_TS_R15_MODE) :
+         JVET_BJUT_TS_R14_MODE ? r14Name(JVET_BJUT_TS_R14_MODE) :
          JVET_BJUT_TS_R13_MODE ? r13Name(JVET_BJUT_TS_R13_MODE) :
          JVET_BJUT_TS_R12_MODE ? r12Name(JVET_BJUT_TS_R12_MODE) :
          JVET_BJUT_TS_R11_MODE ? r11Name(JVET_BJUT_TS_R11_MODE) :
@@ -283,7 +299,7 @@ inline const char *name()
         std::strcmp(v, "r6_dense_nopred") && std::strcmp(v, "r6_reject_nopred") &&
         std::strcmp(v, "r6_trim_cost") && std::strcmp(v, "r6_trim_saving") &&
         std::strcmp(v, "r6_sparse_max") && std::strcmp(v, "r6_sparse_mean") && std::strcmp(v, "r6_sparse_min") &&
-        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v) && !r12Policy(v) && !r13Policy(v) && !r14Policy(v))
+        std::strcmp(v, "rate_raw") && std::strcmp(v, "rate_guard") && !r8Policy(v) && !r9Policy(v) && !r10Policy(v) && !r11Policy(v) && !r12Policy(v) && !r13Policy(v) && !r14Policy(v) && !r15Policy(v))
     {
       std::fprintf(stderr, "Invalid TS_FIXED_PREDICTOR: %s\n", v);
       std::exit(EXIT_FAILURE);
@@ -339,8 +355,17 @@ inline int mode()
                           r8Policy(name()) ? r8Policy(name()) : r9Policy(name()) ? r9Policy(name()) :
                           r10Policy(name()) ? r10Policy(name()) : r11Policy(name()) ? r11Policy(name()) :
                           r12Policy(name()) ? r12Policy(name()) : r13Policy(name()) ? r13Policy(name()) :
-                          r14Policy(name()) ? r14Policy(name()) : 1;
+                          r14Policy(name()) ? r14Policy(name()) : r15Policy(name()) ? r15Policy(name()) : 1;
   return value;
+}
+inline bool r15StatsEnabled()
+{
+  static const bool enabled=[]() {
+    const char *v=std::getenv("TS_R15_STATS");
+    CHECK(v && std::strcmp(v,"0") && std::strcmp(v,"1"),"TS_R15_STATS must be 0 or 1");
+    return v ? !std::strcmp(v,"1") : bool(JVET_BJUT_TS_R15_STATS);
+  }();
+  return enabled;
 }
 struct R14Observation
 {
@@ -471,6 +496,8 @@ inline void announce()
         "R13 component ablation requires an enabled R13 runtime");
   const auto &r14Obs=r14Observation();
   (void)r14Obs;
+  CHECK(r15StatsEnabled() && (!JVET_BJUT_TS_FIXED_PREDICTOR || !r15(mode())),
+        "R15 statistics require an enabled R15 runtime");
   CHECK(r10CacheEnabled() && !r10(mode()) && r9PublicMode(mode())!=9,
         "R10 exact cache requires R9-9 or R10-1..7; override TS_R10_CACHE=0 for other algorithms");
   const bool wantShadow = std::getenv("TS_RATE_SHADOW") && std::strcmp(std::getenv("TS_RATE_SHADOW"), "0");
@@ -551,6 +578,9 @@ inline void announce()
       std::printf("TS R14 observation=final-Writer; revision=R14-NF-168-v3; numbering=compact-15-v1; trajectory=%s; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
         name(),r14Obs.detailLimit,r14Obs.poc,int(r14Obs.trace));
   }
+  if(r15(mode()))
+    std::printf("TS R15 revision=R15-CODEC-v1; mapping=TS-MG-STATIC-FAST-v1; numbering=compact-18-v1; mode=%d; runtime=%s; engine=PREFIX; score=integer-syntax; target=TSRC-enabled-nonBDPCM; quant-search=map-up-to-1; stats=%d; stats-default=off; anchor=current; scope=YUV; state=none; mode-bits=0\n",
+      r15PublicMode(mode()),name(),int(r15StatsEnabled()));
   if(r13Obs.stats || r13Obs.trace)
     std::printf("TS R13 observation=final-Writer; revision=R13-KH-168-v1; trajectory=%s; shadow-modes=1,2; detail-limit=%d; poc=%d; trace=%d; no-decision-feedback\n",
       name(),r13Obs.detailLimit,r13Obs.poc,int(r13Obs.trace));

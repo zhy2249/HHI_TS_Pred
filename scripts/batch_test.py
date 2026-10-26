@@ -16,7 +16,7 @@ from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
-from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS, R13_MODE_NUMBERS, R14_MODE_NUMBERS, R14_REVISION, r14_protocol
+from ts_predictor_naming import experiment_directory, R9_MODE_NUMBERS, R10_MODE_NUMBERS, R11_MODE_NUMBERS, R12_MODE_NUMBERS, R13_MODE_NUMBERS, R14_MODE_NUMBERS, R14_REVISION, r14_protocol, R15_MODE_NUMBERS, R15_REVISION, r15_protocol
 
 
 _CFG_INPUTFILE_RE = re.compile(r"^\s*InputFile\s*:\s*(.*?)\s*(?:#.*)?$")
@@ -40,7 +40,7 @@ _TS_PREDICTOR_MODES = ("current", "nopred", "gradient", "directional",
                        "r8_raw_sparse_mean", "r8_raw_sparse_min", "r8_guard_sparse_mean", "r8_guard_sparse_min",
                        "r8_dense_nopred", "r8_trim_cost", "r8_trim_saving", "r8_reject_sparse_max", "r8_trim_sparse_max",
                        "r8_mixed_guard", "r8_minimax_complete", "r8_smoothed_all_support", "r8_dual_path", "r8_causal_path",
-                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS, *R13_MODE_NUMBERS, *R14_MODE_NUMBERS)
+                       "r8_r3_dual_quant", "r8_raw_dual_quant", *R9_MODE_NUMBERS, *R10_MODE_NUMBERS, *R11_MODE_NUMBERS, *R12_MODE_NUMBERS, *R13_MODE_NUMBERS, *R14_MODE_NUMBERS, *R15_MODE_NUMBERS)
 _TS_CONDITIONAL_MODES = set(_TS_PREDICTOR_MODES[4:])
 # Store raw observer settings rather than guessing the executable's compiled
 # defaults. In particular TS_COND_TRACE is enabled by presence (even "0"),
@@ -55,6 +55,7 @@ _TS_R13_LEGACY_OBSERVATION_KEYS = ("TS_R13_STATS", "TS_R13_TRACE", "TS_R13_DETAI
 _TS_R13_DIAGNOSTIC_KEYS = ("TS_R13_DIAG", "TS_R13_DIAG_MAX_POC", "TS_R13_DIAG_COMPONENT", "TS_R13_DIAG_SCOPE")
 _TS_R13_OBSERVATION_KEYS = (*_TS_R13_LEGACY_OBSERVATION_KEYS, *_TS_R13_DIAGNOSTIC_KEYS)
 _TS_R13_REVISION = "R13-KH-168-v1"
+_TS_R15_OBSERVATION_KEYS = ("TS_R15_STATS",)
 _TS_R14_OBSERVATION_KEYS = ("TS_R14_STATS", "TS_R14_TRACE", "TS_R14_DETAIL_LIMIT", "TS_R14_POC")
 
 
@@ -75,6 +76,8 @@ def _observation_identity(mode: str | None) -> dict:
         keys = (*keys, *_r13_observation_identity())
     if mode in R14_MODE_NUMBERS or any(key in os.environ for key in _TS_R14_OBSERVATION_KEYS):
         keys = (*keys, *_TS_R14_OBSERVATION_KEYS)
+    if mode in R15_MODE_NUMBERS or any(key in os.environ for key in _TS_R15_OBSERVATION_KEYS):
+        keys = (*keys, *_TS_R15_OBSERVATION_KEYS)
     return {key: os.environ.get(key) for key in keys}
 
 _PRESET_CFGS = {
@@ -384,7 +387,7 @@ def _detect_experiment_line(exe: Path, cwd: Path, mode: str | None = None) -> st
         probe_env.pop("TS_FIXED_PREDICTOR", None)  # Probe compiled default, not ambient shell override.
         probe_env.pop("TS_RATE_SHADOW", None)  # Observers constrain actual jobs, not capability probes.
         probe_env.pop("TS_RATE_RDOQ_SHADOW", None)
-        for key in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT", *_TS_R13_OBSERVATION_KEYS, *_TS_R14_OBSERVATION_KEYS):
+        for key in ("TS_R12_STATS", "TS_R12_TRACE", "TS_R12_SHADOW_MODES", "TS_R12_DETAIL_LIMIT", *_TS_R13_OBSERVATION_KEYS, *_TS_R14_OBSERVATION_KEYS, *_TS_R15_OBSERVATION_KEYS):
             probe_env.pop(key, None)  # Actual jobs inherit observers; capability/default probes do not.
         probe_env["TS_R10_CACHE"] = "0"  # Capability probes must not reject a Current default for an actual R10 job.
         if mode is not None:
@@ -531,6 +534,23 @@ def _r14_startup_matches(text: str, mode: str | None) -> bool:
     return False
 
 
+def _r15_startup_matches(text: str, mode: str | None) -> bool:
+    if mode not in R15_MODE_NUMBERS:
+        return True
+    protocol = r15_protocol(mode)
+    expected = {'TS R15 revision': R15_REVISION, 'numbering': protocol['numbering'],
+                'mapping': protocol['mapping'], 'mode': str(protocol['public_mode']),
+                'runtime': mode, 'engine': 'PREFIX', 'score': 'integer-syntax',
+                'target': 'TSRC-enabled-nonBDPCM', 'quant-search': 'map-up-to-1',
+                'state': 'none', 'mode-bits': '0'}
+    for line in text.splitlines():
+        if line.startswith('TS R15 revision='):
+            fields = dict(part.strip().split('=', 1) for part in line.split(';') if '=' in part)
+            if all(fields.get(key) == value for key, value in expected.items()):
+                return True
+    return False
+
+
 def _run_decode(job: TestJob) -> dict:
     _safe_mkdir(job.decode_log.parent)
     cmd = [str(job.decoder), "-b", str(job.bitstream)]
@@ -559,6 +579,7 @@ def _run_decode(job: TestJob) -> dict:
     if job.fixed_predictor:
         expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
         if (expected not in text or not _r14_startup_matches(text, job.fixed_predictor)
+                or not _r15_startup_matches(text, job.fixed_predictor)
                 or (job.frames and text.count("(OK)") != job.frames)):
             status = "failed"
     result = {
@@ -630,16 +651,16 @@ def _r13_identity(job: TestJob) -> dict:
     }
 
 
-def _r14_identity(job: TestJob) -> dict:
+def _numbered_codec_identity(job: TestJob) -> dict:
     def executable(path):
         stat = path.stat()
         return {"path": str(path), "sha256": _binary_sha256(str(path), stat.st_size,
                                                            stat.st_mtime_ns, stat.st_ctime_ns)}
     input_stat = job.input_path.stat()
     return {
-        **r14_protocol(job.fixed_predictor),
-        "observation_env": {key: os.environ.get(key) for key in _TS_R14_OBSERVATION_KEYS},
-        "observations_default": {"stats": 0, "trace": 0, "detail_limit": 64, "poc": None},
+        **(r15_protocol(job.fixed_predictor) if job.fixed_predictor in R15_MODE_NUMBERS else r14_protocol(job.fixed_predictor)),
+        "observation_env": {key: os.environ.get(key) for key in (_TS_R15_OBSERVATION_KEYS if job.fixed_predictor in R15_MODE_NUMBERS else _TS_R14_OBSERVATION_KEYS)},
+        "observations_default": ({"stats": 0} if job.fixed_predictor in R15_MODE_NUMBERS else {"stats": 0, "trace": 0, "detail_limit": 64, "poc": None}),
         "encoder": executable(job.encoder),
         "decoder": executable(job.decoder) if job.decode_md5 else None,
         "local_source_snapshot": _local_source_snapshot(str(job.repo_root)),
@@ -683,7 +704,8 @@ def _run_one(job: TestJob) -> dict:
 
     ts_fingerprint = None
     r13_identity = _r13_identity(job) if job.fixed_predictor in R13_MODE_NUMBERS else None
-    r14_identity = _r14_identity(job) if job.fixed_predictor in R14_MODE_NUMBERS else None
+    r14_identity = _numbered_codec_identity(job) if job.fixed_predictor in R14_MODE_NUMBERS else None
+    r15_identity = _numbered_codec_identity(job) if job.fixed_predictor in R15_MODE_NUMBERS else None
     ts_done = job.ts_stats.with_suffix(".done.json") if job.ts_stats else job.bitstream.with_suffix(".done.json")
     if ts_done:
         def identity(path):
@@ -698,6 +720,7 @@ def _run_one(job: TestJob) -> dict:
             "observation_env": _observation_identity(job.fixed_predictor),
             **({"r13_identity": r13_identity} if r13_identity is not None else {}),
             **({"r14_identity": r14_identity} if r14_identity is not None else {}),
+            **({"r15_identity": r15_identity} if r15_identity is not None else {}),
             **({"r12_revision": "R12-POS-01", "r12_stats": os.environ.get("TS_R12_STATS", "0"),
                 "r12_trace": os.environ.get("TS_R12_TRACE", "0"),
                 "r12_shadow_modes": os.environ.get("TS_R12_SHADOW_MODES", ""),
@@ -732,6 +755,8 @@ def _run_one(job: TestJob) -> dict:
                            and job.bitstream.stat().st_size > 0
                            and job.encode_log.is_file()
                            and (not job.decode_md5 or job.decode_log.is_file()))
+            if r15_identity is not None:
+                ts_complete = ts_complete and marker.get("r15_identity") == r15_identity
             if r14_identity is not None:
                 # Numbering is a separate protocol identity: never accept a
                 # pre-compaction marker merely carrying a copied fingerprint.
@@ -785,7 +810,7 @@ def _run_one(job: TestJob) -> dict:
             encode_env["TS_PRED_DEBUG"] = str(job.ts_stats.with_suffix(".debug.csv"))
     if ts_done.exists():
         ts_done.unlink()  # Only this task's obsolete completion marker; outputs are retained.
-    experiment_identity = r14_identity if r14_identity is not None else r13_identity
+    experiment_identity = r15_identity if r15_identity is not None else r14_identity if r14_identity is not None else r13_identity
     if experiment_identity is not None:
         job.bitstream.with_suffix(".identity.json").write_text(
             json.dumps({**experiment_identity, "command": cmd, "frames": job.frames, "qp": job.qp,
@@ -827,6 +852,7 @@ def _run_one(job: TestJob) -> dict:
         enc_text = job.encode_log.read_text(encoding="utf-8", errors="replace")
         expected = f"EXPERIMENT: TS_FIXED_PREDICTOR={job.fixed_predictor}; syntax=experimental-v1"
         if (expected not in enc_text or not _r14_startup_matches(enc_text, job.fixed_predictor)
+                or not _r15_startup_matches(enc_text, job.fixed_predictor)
                 or not job.bitstream.is_file() or job.bitstream.stat().st_size == 0
                 or not result.get("encoded_frames")
                 or (job.frames and result.get("encoded_frames") != job.frames)):
@@ -850,6 +876,7 @@ def _run_one(job: TestJob) -> dict:
         ts_done.write_text(json.dumps({"fingerprint": ts_fingerprint, "command": cmd,
                                       **({"r13_identity": r13_identity} if r13_identity is not None else {}),
                                       **({"r14_identity": r14_identity} if r14_identity is not None else {}),
+                                      **({"r15_identity": r15_identity} if r15_identity is not None else {}),
                                       "sequence": job.sequence_cfg.stem,
                                       "configuration": job.xlsm_tag or job.cfgs[0].stem,
                                       "QP": job.qp,

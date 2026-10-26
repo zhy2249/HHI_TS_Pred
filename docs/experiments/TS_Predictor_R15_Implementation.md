@@ -2,7 +2,7 @@
 
 本轮承接远端 `b56e30a` 的 [冻结设计](TS_Predictor_Greedy_MultiMapping_Experiment_Requirements.md)，revision 为 `TS-MG-STATIC-FAST-v1`。用户明确要求原编号 0、2、3 不重新设计；它们复用既有 Current、STATIC_EQ、STATIC_SP，只作为对照列。其余 18 项连续编号 R15-1～18。
 
-状态：**代码已实现；本地验收范围和实测状态见 [验证记录](TS_Predictor_R15_Validation.md)**。这是最终 q 条件下的解码器审计实验，未接入正式编码工具，不运行 EncoderApp，不登记新的 BD-rate。全 96 流入口已提供，不能把短前缀验收当成全量测量。
+状态：**18 组选择/映射、离线审计及后续真实 RDOQ/Writer/Reader 接入均已实现**。本页主体保存第一阶段固定 q 审计合同；该阶段验收见 [原验证记录](TS_Predictor_R15_Validation.md)。用户随后要求完成编码接入，新增 `R15_MODE=1..18`，见 [闭环代码实现](TS_Predictor_R15_Codec_Implementation.md) 和 [局部库验收](TS_Predictor_R15_Codec_Validation.md)。仍未启动视频编码、未登记新 BD-rate；审计全 96 流入口与闭环批量入口分别保留。
 
 ## 1. 编号和实验问题
 
@@ -68,9 +68,9 @@ G 遇非正增量停止；N 可以经过零增量平台，但最终同分仍保�
 
 操作计数是已插桩的搜索核事件，不等同于整个函数或 CPU 的完整指令计数。选择器基准对同一 H trace 预热、至少 5 次、轮换三个引擎顺序并核验输出 checksum；另测 map/unmap。合成 trace 不代表视频人口；审计回放时间、观察统计时间也不等于部署后的编解码复杂度。
 
-## 4. 接入方式与宏
+## 4. 第一阶段离线审计的接入方式与宏
 
-新增宏位于 `source/Lib/CommonLib/TypeDef.h`：
+离线审计宏位于 `source/Lib/CommonLib/TypeDef.h`；真实编码的 R15_MODE 另见 [闭环实现](TS_Predictor_R15_Codec_Implementation.md)：
 
 ```cpp
 #define JVET_BJUT_TS_FIXED_PREDICTOR 1
@@ -92,7 +92,7 @@ G 遇非正增量停止；N 可以经过零增量平台，但最终同分仍保�
 | `scripts/ts_multi_mapping/` | 独立 Python 规格、计划、回放、汇总、验证、计时 |
 | `tests/ts_multi_mapping/` | 纯函数三引擎比较及局部算术 Writer/Reader 夹具 |
 
-**没有修改** R13/R14 predictor、量化候选、RDOQ、真实 Writer/Reader 反映射。已有 `replayRateCG` 源码也未改；通过完整 Action 的 ADL remap 接口复用其三遍语法。
+第一阶段提交 `5b6d5fc` **没有修改** R13/R14 predictor、量化候选、RDOQ、真实 Writer/Reader 反映射。后续闭环接入新增 R15 专用分支；旧模式仍保持原规则。已有 `replayRateCG` 源码未改，通过完整 Action 的 ADL remap 接口复用其三遍语法。
 
 ## 5. 回放与文件合同
 

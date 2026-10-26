@@ -149,6 +149,9 @@ CoeffCodingContext::CoeffCodingContext(const TransformUnit &tu, CompID component
   m_tsPoc = tu.cu->slice->m_poc;
   m_tsTuX=tu.blocks[component].x; m_tsTuY=tu.blocks[component].y;
   m_tsIntra = tu.cu->predMode == MODE_INTRA;
+  if(TsFixedPrediction::r15(TsFixedPrediction::mode()) && tu.mtsIdx[component]==MtsType::SKIP &&
+     !tu.cu->slice->m_tsResidualCodingDisabledFlag && bdpcm==BdpcmMode::NONE)
+    { m_tsR15Mode=TsFixedPrediction::r15PublicMode(TsFixedPrediction::mode()); }
   if(TsFixedPrediction::r14(TsFixedPrediction::mode()))
   {
     m_tsR14Config=TsFixedPrediction::r14Config(TsFixedPrediction::r14PublicMode(TsFixedPrediction::mode()));
@@ -1089,6 +1092,7 @@ void CoeffCodingContext::finishTsPredictorCG(const TCoeff *coeff, bool trace, bo
 {
   using namespace TsFixedPrediction;
   const int policy = mode();
+  if(r15(policy)) { return; } // Stateless; the next CG reads its finalized q.
   if(r14(policy))
   {
     if(trace || report) { finishTsR14CG(coeff,trace,report); }

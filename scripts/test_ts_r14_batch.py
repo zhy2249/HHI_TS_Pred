@@ -152,9 +152,12 @@ class R14BatchTests(unittest.TestCase):
             keys = set(batch._TS_OBSERVATION_ENV_KEYS)
             self.assertEqual(set(batch._observation_identity('r3_risk_guard')), keys)
             self.assertEqual(set(batch._observation_identity('r13_keep_hit_uniform')),
-                             keys | set(batch._TS_R13_OBSERVATION_KEYS))
+                             keys | set(batch._TS_R13_LEGACY_OBSERVATION_KEYS))
             self.assertEqual(set(batch._observation_identity('r14_g2_none_equal')),
                              keys | set(batch._TS_R14_OBSERVATION_KEYS))
+        with patch.dict(os.environ, {'TS_R13_DIAG': '1'}, clear=True):
+            self.assertEqual(set(batch._observation_identity('r13_keep_hit_uniform')),
+                             keys | set(batch._TS_R13_OBSERVATION_KEYS))
         seen = []
         def run(cmd, **kwargs):
             seen.append(kwargs['env'])

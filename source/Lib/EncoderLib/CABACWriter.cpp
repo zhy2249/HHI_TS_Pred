@@ -37,6 +37,9 @@
 
 #include "CommonLib/Contexts.h"
 #include "CABACWriter.h"
+#if JVET_BJUT_TS_FIXED_PREDICTOR
+#include "CommonLib/TsR15CodecStats.h"
+#endif
 
 #include "EncLib.h"
 
@@ -4112,6 +4115,12 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
   // A single coefficient-causal walk of immutable FINAL q. This is required
   // in BOTH the real Writer and fractional estimator; never gated by isEncoding.
   const bool r14Active=cctx.tsR14Active();
+  const bool r15Active=cctx.tsR15Active();
+  // Cache only this invocation's immutable final-q mapping. All three syntax
+  // passes (including fractional estimation) consume the same full action.
+  static_assert(MLS_CG_SIZE<=5,"R15 local mapping mask is too small");
+  std::array<int,1<<MLS_CG_SIZE> r15Mapped;
+  uint32_t r15MappedMask=0;
   int r14Mapped[1 << MLS_CG_SIZE];
   if(r14Active && cctx.isSigGroup())
   {
@@ -4145,6 +4154,22 @@ void CABACWriter::residual_coding_subblockTS(CoeffCodingContext &cctx, const TCo
 #endif
   const auto remap = [&](int scanPos, int left, int above, TCoeff level, bool disabled) {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+    if(r15Active)
+    {
+      if(!level || disabled) { return int(level); }
+      const int index=scanPos-cctx.minSubPos();
+      CHECK(index<0 || index>=int(r15Mapped.size()),"R15 CG exceeds mapping cache");
+      const uint32_t bit=uint32_t(1)<<index;
+      if(!(r15MappedMask&bit))
+      {
+        const auto action=cctx.prepareTsR15(scanPos,coeff);
+        r15Mapped[index]=TsMultiMapping::map(int(level),action);
+        if(m_binEncoder.isEncoding())
+          { TsMultiMapping::recordWriter(action,int(level),std::max(std::abs(left),std::abs(above))); }
+        r15MappedMask|=bit;
+      }
+      return r15Mapped[index];
+    }
     if(r14Active)
     {
       // The syntax passes do not advance history. Pure bypass is identity,

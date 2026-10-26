@@ -1,4 +1,4 @@
-// R15 / TS-MG-STATIC-FAST-v1. Pure causal selectors; never selects a codec mode.
+// R15 / TS-MG-STATIC-FAST-v1. Shared pure causal selectors and reversible map.
 #pragma once
 #include "TsFixedPrediction.h"
 #include <array>
@@ -73,6 +73,13 @@ inline const std::array<Method,21> &methods()
     {13,15,"D_EQ_K2",'D',2,false},{14,16,"D_EQ_K3",'D',3,false},
     {15,17,"X_EQ_K2",'X',2,false},{16,18,"X_EQ_K3",'X',3,false},
     {17,19,"G_SP_K3",'G',3,true},{18,20,"N_SP_K3",'N',3,true}}};return m;
+}
+inline const Method &publicMethod(int number)
+{
+  CHECK(number<1 || number>18,"Invalid R15 public mode");
+  const auto &method=methods()[number+2];
+  CHECK(method.number!=number,"R15 registry numbering mismatch");
+  return method;
 }
 struct Operations
 {

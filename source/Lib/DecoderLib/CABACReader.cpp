@@ -4655,7 +4655,14 @@ void CABACReader::residual_coding_subblockTS(CoeffCodingContext &cctx, TCoeff *c
       }
     }
 #if JVET_BJUT_TS_FIXED_PREDICTOR
-    if(r14Active)
+    if(cctx.tsR15Active())
+    {
+      // Earlier positions have real magnitudes now. Future partial syntax
+      // levels never enter the causal support. Pure bypass uses identity.
+      if(cutoffVal && tcoeff>0)
+        { tcoeff=TsMultiMapping::unmap(int(tcoeff),cctx.prepareTsR15(scanPos,coeff)); }
+    }
+    else if(r14Active)
     {
       // Earlier positions have their REAL magnitudes now. Partial pass-1/2
       // levels and future positions are never used as learning observations.

@@ -72,7 +72,7 @@
 | R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组CE/七组部分B明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；无完整B/BCE，RA/AI未登记 |
 | R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md)、[实现与验证](TS_Predictor_R13_Implementation.md) | [两组完整CE分析](TS_Predictor_R13_LB_CE_Results_20261023.md)、[CE及1的部分B明细](results/r13.md)；B仅RitualDance完整，无完整B/BCE或可靠计时结论 |
 | R14 | [v3：12组动态＋3组固定对照，NONE／PAIR2](TS_Predictor_R14_Experiment_Design.md)、[本地源码接入与分阶段计划](TS_Predictor_R14_Engineering_Plan.md)、[连续1～15及旧号对照](TS_Predictor_R14_Implementation.md) | [当前CE多维分析](TS_Predictor_R14_LB_CE_Analysis_20261024.md)、[整体及QP明细](results/r14.md)、[早期部分结果分析（历史）](TS_Predictor_R14_Partial_Analysis_20261024.md)；412实测/8缺失，除2外14组完整；2正确部分结果纳入；10最佳但未稳定优于R3/R6，无服务器状态计数 |
-| R15 | [18组多目标映射与3个既有对照](TS_Predictor_R15_Implementation.md)、[运行脚本](../../scripts/ts_multi_mapping/README.md) | [本地验收](TS_Predictor_R15_Validation.md)；未运行新编码，完整96流待测，无新BD-rate |
+| R15 | [18组多目标映射与3个既有对照](TS_Predictor_R15_Implementation.md)、[真实RDOQ/Writer/Reader接入](TS_Predictor_R15_Codec_Implementation.md)、[编码命令](../../scripts/README_ts_r15_codec.md) | [离线审计验收](TS_Predictor_R15_Validation.md)、[真实库局部验收](TS_Predictor_R15_Codec_Validation.md)；未运行新视频编码，无新BD-rate |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 

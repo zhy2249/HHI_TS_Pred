@@ -274,6 +274,30 @@
 #if JVET_BJUT_TS_R14_MODE && (JVET_BJUT_TS_R13_MODE || JVET_BJUT_TS_R12_MODE || JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_RATE_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
 #error R14 and earlier TS defaults/cache are mutually exclusive
 #endif
+// R15 closed-loop multi-target remapping (TS-MG-STATIC-FAST-v1).
+// 0=off; 1=Identity; 2..5=G_EQ K2/3/4/6; 6..9=N_EQ K2/3/4/6;
+// 10..12=P_EQ K2/3/6; 13/14=D_EQ K2/3; 15/16=X_EQ K2/3;
+// 17=G_SP K3; 18=N_SP K3. Encoder and decoder must use the SAME mode.
+// TS_FIXED_PREDICTOR overrides this default. R15_ANALYSIS is a separate,
+// read-only offline audit switch; it does NOT enable R15 coding.
+#ifndef JVET_BJUT_TS_R15_MODE
+#define JVET_BJUT_TS_R15_MODE                              0
+#endif
+#ifndef JVET_BJUT_TS_R15_STATS
+#define JVET_BJUT_TS_R15_STATS                             0
+#endif
+#if JVET_BJUT_TS_R15_MODE < 0 || JVET_BJUT_TS_R15_MODE > 18
+#error Invalid TS R15 mode (requires 0..18)
+#endif
+#if JVET_BJUT_TS_R15_MODE && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error TS R15 requires the fixed-predictor master
+#endif
+#if JVET_BJUT_TS_R15_MODE && (JVET_BJUT_TS_R14_MODE || JVET_BJUT_TS_R13_MODE || JVET_BJUT_TS_R12_MODE || JVET_BJUT_TS_R11_MODE || JVET_BJUT_TS_R10_CACHE || JVET_BJUT_TS_R10_MODE || JVET_BJUT_TS_R9_MODE || JVET_BJUT_TS_R8_MODE || JVET_BJUT_TS_R7_MODE || JVET_BJUT_TS_RATE_MODE || JVET_BJUT_TS_R6_MODE || JVET_BJUT_TS_R5_MODE || JVET_BJUT_TS_R4_MODE || JVET_BJUT_TS_R3_MODE || JVET_BJUT_TS_R2_MODE || JVET_BJUT_TS_CONDITIONAL_MODE || JVET_BJUT_TS_FIXED_NOPRED || JVET_BJUT_TS_FIXED_GRADIENT || JVET_BJUT_TS_FIXED_DIRECTIONAL)
+#error R15 and earlier TS defaults/cache are mutually exclusive
+#endif
+#if JVET_BJUT_TS_R15_STATS != 0 && JVET_BJUT_TS_R15_STATS != 1
+#error TS R15 statistics must be 0 or 1
+#endif
 // R12 等价复杂度优化，不是新实验模式：1=动作专用评分/相同动作短路/延迟外层CF；
 // 0=原 R12 完整计算路径，供逐字节回归。两者须得到完全相同码流。
 // 不改变 R12_MODE；全部旧实验及 Current 不受影响；统计仍使用完整诊断路径。

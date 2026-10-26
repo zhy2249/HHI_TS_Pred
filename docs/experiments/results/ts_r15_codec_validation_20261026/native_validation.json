@@ -1,0 +1,1141 @@
+{
+  "schema": "R15-CODEC-NATIVE-v1",
+  "video_apps_run": false,
+  "records": {
+    "current": {
+      "runtime": "current",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "79ccc74fa30b92418f507aa4d6c935942aa8035419608b093e04652ad43825c8",
+        "bytes_streamed": 202182051
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "b184cba4f43c956283ed5b2b195c71d7551a9d672cf115009ba9b645f6c36b51",
+        "bytes_streamed": 312392874
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=0 multi=0 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23780 map_vs_current=0 multi=0 bypass_CG=833 zero_CG=56"
+      ],
+      "output_sha256": "d6053909fea914b71a1d80cb02d174878d05cfa72a088702f6b3918f509a3194"
+    },
+    "nopred": {
+      "runtime": "nopred",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "47f74b76c1082f23fcad0d7dd13458468993721c913388e42e3f847a6ee145e8",
+        "bytes_streamed": 202182011
+      },
+      "nontarget": {
+        "sha256": "7f83bf7d37653fb91fe590dfea6327847b38a11d234c9ab06ecdba4441c37dc4",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "5bbf1e133572a9560322561cadc8b90adea179ef7878f394d0d9095730303786",
+        "bytes_streamed": 312392834
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=8196 multi=0 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=11630 multi=0 bypass_CG=834 zero_CG=60"
+      ],
+      "output_sha256": "ebfb19211152d87d39ae7fb877dc21e024a28b332b774da1ae126fcf3c881dc2"
+    },
+    "r15_identity": {
+      "runtime": "r15_identity",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "47f74b76c1082f23fcad0d7dd13458468993721c913388e42e3f847a6ee145e8",
+        "bytes_streamed": 202182011
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "b7483e86c6009a9cffa8bb9906b84fec746c423d4bd9df9c1427e243c904f80f",
+        "bytes_streamed": 312392834
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=7199 multi=0 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=4905 multi=0 bypass_CG=834 zero_CG=60"
+      ],
+      "output_sha256": "c9fba48c5ed1e6eb8d4e87959e81ea9f46f3ae1b942e718c34f654db2b983423"
+    },
+    "r15_g_eq_k2": {
+      "runtime": "r15_g_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "c81b7ee8b503cb9e0192484b0a59d900739cf77014c30840b5f5aff24ccb61d1",
+        "bytes_streamed": 202181960
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "cc4714de24d9644c934151a21fd52a759fcce67ec218e3ce02973b0b7468d6f4",
+        "bytes_streamed": 312392783
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6084 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2991 multi=4595 bypass_CG=826 zero_CG=59"
+      ],
+      "output_sha256": "cd93feb0b01b3f326aa8938f81eb2402e7f83f414a42d39a9b425d56f0c12c62"
+    },
+    "r15_g_eq_k3": {
+      "runtime": "r15_g_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "c2c2ddd8f5ed455bf293f5c613cc3dc3eaffafe7317d9b8dde6aed34718eeb66",
+        "bytes_streamed": 202182038
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "94694598965f0266abd9703a8032c4586b084fd38556e32fe71bbc90285ecc33",
+        "bytes_streamed": 312392861
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6281 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3368 multi=4664 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "ac0dc9e8ada5449b61ddd5b94f47edba41533e5dbbbf8c0f38ceb26e8a8f26d7"
+    },
+    "r15_g_eq_k4": {
+      "runtime": "r15_g_eq_k4",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "dcd661feaa6040f3c0874aff04c2d86525cd92776e00d0378c71ed206024e3e5",
+        "bytes_streamed": 202182027
+      },
+      "payload": {
+        "sha256": "28a0574a19e46cef1f9fb369b85a4e7c30d1e58a53b9e26b60f6ef04743544fb",
+        "bytes_streamed": 312392850
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6309 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3522 multi=4660 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "cc93d759ace8dfc9ffb304b72011571ae06fe33aa5e8a54e693473aaa51ac75d"
+    },
+    "r15_g_eq_k6": {
+      "runtime": "r15_g_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "0869aa43ea202e42c148d7cc33dc1719c6a02f5947a611a8b0fb6ce6809027f6",
+        "bytes_streamed": 202182025
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "5c729aebd7143f137a0e134cd00dfbad45f902861eea075724d97c22de47276c",
+        "bytes_streamed": 312392848
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6308 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3580 multi=4660 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "8469d504d71f73dd9d2a83b3ecbf30894e6a432a2f2be57f8619634b45191a99"
+    },
+    "r15_n_eq_k2": {
+      "runtime": "r15_n_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "c81b7ee8b503cb9e0192484b0a59d900739cf77014c30840b5f5aff24ccb61d1",
+        "bytes_streamed": 202181960
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "cc4714de24d9644c934151a21fd52a759fcce67ec218e3ce02973b0b7468d6f4",
+        "bytes_streamed": 312392783
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6084 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2991 multi=4595 bypass_CG=826 zero_CG=59"
+      ],
+      "output_sha256": "4a4c5625a9f7c182953637758a308bb67481460f09a948778166c679cf48a316"
+    },
+    "r15_n_eq_k3": {
+      "runtime": "r15_n_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "e5f2a85a7befc2b4afb0d11e20716cd877efeaa63a010b217d1a55abc42ae598",
+        "bytes_streamed": 202182036
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "870469db8c106dab1486512751d1904012a1d617b268c97a9ecd6555cba1d429",
+        "bytes_streamed": 312392859
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6301 multi=12338 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3399 multi=4770 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "c3564498190506fd19bd791c08566f9132c4cf235ff2093d7f3a157085f54418"
+    },
+    "r15_n_eq_k4": {
+      "runtime": "r15_n_eq_k4",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "payload": {
+        "sha256": "f03db8155f85e77fe1be005d16637152f731d028f495eb2bab626a0a7ee42c4d",
+        "bytes_streamed": 312392847
+      },
+      "target": {
+        "sha256": "43f26ac3079003f5acadd827ffc981d175a536c9e535beeb6b0819bc12b7f3b7",
+        "bytes_streamed": 202182024
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6330 multi=12349 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3553 multi=4771 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "7bc882f4527ac8e65474b7b1d38dec9bd9a4608e21df9e0fa8c2474622956f2b"
+    },
+    "r15_n_eq_k6": {
+      "runtime": "r15_n_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "a5b20d779355885a497200a112f021088bdca33415608a90ece74d2e021e18d0",
+        "bytes_streamed": 202182022
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "9a191d3d7a754edbe37d7286c51b59f7f2edaacdf26d6aa5998a6b3234189566",
+        "bytes_streamed": 312392845
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6340 multi=12396 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3620 multi=4790 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "904a9195701dfc0f036e822033d53c192335cb2d8b8578c7f5a35a8dce7e29c3"
+    },
+    "r15_p_eq_k2": {
+      "runtime": "r15_p_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "25781742331e021ec61efe0a9144a83796cfc5431b6357e3750b21961f104544",
+        "bytes_streamed": 312392875
+      },
+      "target": {
+        "sha256": "088d1ff1815cb4768092eb0c15c2497b70e0fd21b9d9bf61c235353e6fdab981",
+        "bytes_streamed": 202182052
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=2485 multi=12892 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=1869 multi=4800 bypass_CG=832 zero_CG=55"
+      ],
+      "output_sha256": "bd5daa2267167cf7b166b4fed16dd37e1ae9cd593f83f7a74691227faa26ea11"
+    },
+    "r15_p_eq_k3": {
+      "runtime": "r15_p_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "cc329535315634d0afa478a253c30e16d952934eab6c189cf8639fd392c6cb94",
+        "bytes_streamed": 202181960
+      },
+      "payload": {
+        "sha256": "cec6f722d54b332f413819f2672699568748673e098f21500530eaa1f312c225",
+        "bytes_streamed": 312392783
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6338 multi=12892 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3727 multi=4733 bypass_CG=827 zero_CG=60"
+      ],
+      "output_sha256": "6f77bc052c3d2cee28628f5ab885b841a0bf14fc331466ca3f29a91ebeebbfab"
+    },
+    "r15_p_eq_k6": {
+      "runtime": "r15_p_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "e119a4078384d85b0eba65b7fffe8f1393d3c41318afd91a3b22967ecb31424d",
+        "bytes_streamed": 202182026
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "6066d5001ca263530e8241f38e2d1f582eb074a3dd1c0caf20d286a3c92f9180",
+        "bytes_streamed": 312392849
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6554 multi=12892 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=4324 multi=4798 bypass_CG=831 zero_CG=55"
+      ],
+      "output_sha256": "e83cdc9ef4352aa8fb5ab18f5c388d3703a3c24f9537718c858630d7934dc516"
+    },
+    "r15_d_eq_k2": {
+      "runtime": "r15_d_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "dc1ca9be4a01abce3e1c6cba3fc50f5b33d9cab059da9a2ee4cde48343d41f6f",
+        "bytes_streamed": 202181961
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "94265557467fdbbc3b23c57c7138f92c543d371133353a5ae15af5bf8a5ebf10",
+        "bytes_streamed": 312392784
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6082 multi=12244 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2988 multi=4597 bypass_CG=826 zero_CG=59"
+      ],
+      "output_sha256": "32a52e1fa9d667e3ed263079e71dd47467c51a2b42a28d40524ed71d85fda495"
+    },
+    "r15_d_eq_k3": {
+      "runtime": "r15_d_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "916f0408a6edc01cb0874e0366d981773512c883f63a9fb75a6a9b0316d578d0",
+        "bytes_streamed": 202182040
+      },
+      "payload": {
+        "sha256": "2f78e94e8333b1bb148a66d55b6f9a45a15ba8d9f3b42f3d42e9db8bf820be19",
+        "bytes_streamed": 312392863
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6286 multi=12244 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3368 multi=4666 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "a0ca33e61aa9d89bf6e0f2824c33fa49e8b73ba52bda8720f16c9c95692d5cf3"
+    },
+    "r15_x_eq_k2": {
+      "runtime": "r15_x_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "5d484ea3ee24a742b5600e541f32fa7f62f0e2892f038b6f4758b9d310b7117e",
+        "bytes_streamed": 202182024
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "130b21ab39d46ec193b2f8230de1a18ba90a6ae304d1505a0ec7bd3fc152f84e",
+        "bytes_streamed": 312392847
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6063 multi=12356 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=3016 multi=4686 bypass_CG=830 zero_CG=55"
+      ],
+      "output_sha256": "36f866609a466be3bff841f5a717c961453540f42a45b9f30fbe1ed1ee591043"
+    },
+    "r15_x_eq_k3": {
+      "runtime": "r15_x_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "5b322de3bead9e4b1b3316aff2c9f3339e1c560f9d29a3f35d9fa2d25e7b5636",
+        "bytes_streamed": 202182036
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "e547b331a64dbfe856134fb8962bc954764ebd235fa0afd44cbeb051d0239dd9",
+        "bytes_streamed": 312392859
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6337 multi=12725 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3470 multi=4940 bypass_CG=831 zero_CG=54"
+      ],
+      "output_sha256": "5e537d7d6cf9106bd16f2698d076b5a322f08f229a22fa1bde0e13c1c9f70a8f"
+    },
+    "r15_g_sp_k3": {
+      "runtime": "r15_g_sp_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "8e3a1705f560588b3896f268cc8aa32c0c94a295c71420c4ce3742a1751e4ce8",
+        "bytes_streamed": 202181926
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "6ce3141bcd85ba2503cb0d66bc424308176b131b95422a952624ca6ce250fdb4",
+        "bytes_streamed": 312392749
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6102 multi=12246 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3150 multi=4636 bypass_CG=825 zero_CG=60"
+      ],
+      "output_sha256": "83caaf1d0c68ebd204169e80b8e9dc2996723d51ca50f51f3d1585a521bf34b5"
+    },
+    "r15_n_sp_k3": {
+      "runtime": "r15_n_sp_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": false,
+      "target": {
+        "sha256": "37a36f7acb3f8c61e6b02ce201b75d06f17be1e41f1aa9617852fd8a018972eb",
+        "bytes_streamed": 202181926
+      },
+      "payload": {
+        "sha256": "1bc60cb085df805e5410732c8d25ccf697d16ce0b748049ec7648cb892b9da20",
+        "bytes_streamed": 312392749
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6109 multi=12327 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3169 multi=4696 bypass_CG=825 zero_CG=60"
+      ],
+      "output_sha256": "9dea6bde0490db070897badf2e1395e2951f97194979ca0693beb671b444266f"
+    },
+    "r15_identity_stats": {
+      "runtime": "r15_identity",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "47f74b76c1082f23fcad0d7dd13458468993721c913388e42e3f847a6ee145e8",
+        "bytes_streamed": 202182011
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "b7483e86c6009a9cffa8bb9906b84fec746c423d4bd9df9c1427e243c904f80f",
+        "bytes_streamed": 312392834
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=7199 multi=0 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=4905 multi=0 bypass_CG=834 zero_CG=60",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=0; up-gate-vs-current=556; listed-levels=60962"
+      ],
+      "output_sha256": "78c9007eb8af4127dda037d94a2b510d728e8d89f6ccd18f2486e15213328983"
+    },
+    "r15_g_eq_k2_stats": {
+      "runtime": "r15_g_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "c81b7ee8b503cb9e0192484b0a59d900739cf77014c30840b5f5aff24ccb61d1",
+        "bytes_streamed": 202181960
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "cc4714de24d9644c934151a21fd52a759fcce67ec218e3ce02973b0b7468d6f4",
+        "bytes_streamed": 312392783
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6084 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2991 multi=4595 bypass_CG=826 zero_CG=59",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=464; up-gate-vs-current=300; listed-levels=61426"
+      ],
+      "output_sha256": "41942965f212a73f2a1e91a424fc0664ffa91e55fa69587fc1d1c60307d45ba7"
+    },
+    "r15_g_eq_k3_stats": {
+      "runtime": "r15_g_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "c2c2ddd8f5ed455bf293f5c613cc3dc3eaffafe7317d9b8dde6aed34718eeb66",
+        "bytes_streamed": 202182038
+      },
+      "payload": {
+        "sha256": "94694598965f0266abd9703a8032c4586b084fd38556e32fe71bbc90285ecc33",
+        "bytes_streamed": 312392861
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6281 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3368 multi=4664 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=462; up-gate-vs-current=302; listed-levels=61424"
+      ],
+      "output_sha256": "e9e112d393dc46b2bf66a31734b2c928b5e73da4b7f620183fda9bc7cb7c3bd4"
+    },
+    "r15_g_eq_k4_stats": {
+      "runtime": "r15_g_eq_k4",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "dcd661feaa6040f3c0874aff04c2d86525cd92776e00d0378c71ed206024e3e5",
+        "bytes_streamed": 202182027
+      },
+      "payload": {
+        "sha256": "28a0574a19e46cef1f9fb369b85a4e7c30d1e58a53b9e26b60f6ef04743544fb",
+        "bytes_streamed": 312392850
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6309 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3522 multi=4660 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=464; up-gate-vs-current=302; listed-levels=61426"
+      ],
+      "output_sha256": "8d8016f7aa54cbc109ab47d433a9b2d5ee119e44fea50c977c79b28d77214a76"
+    },
+    "r15_g_eq_k6_stats": {
+      "runtime": "r15_g_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "0869aa43ea202e42c148d7cc33dc1719c6a02f5947a611a8b0fb6ce6809027f6",
+        "bytes_streamed": 202182025
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "5c729aebd7143f137a0e134cd00dfbad45f902861eea075724d97c22de47276c",
+        "bytes_streamed": 312392848
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6308 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3580 multi=4660 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=462; up-gate-vs-current=302; listed-levels=61424"
+      ],
+      "output_sha256": "440e390afa540eb098696fe78de21cbbc423fee95ba6f605c7e9afaa5aef65e0"
+    },
+    "r15_n_eq_k2_stats": {
+      "runtime": "r15_n_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "c81b7ee8b503cb9e0192484b0a59d900739cf77014c30840b5f5aff24ccb61d1",
+        "bytes_streamed": 202181960
+      },
+      "payload": {
+        "sha256": "cc4714de24d9644c934151a21fd52a759fcce67ec218e3ce02973b0b7468d6f4",
+        "bytes_streamed": 312392783
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6084 multi=12137 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2991 multi=4595 bypass_CG=826 zero_CG=59",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=464; up-gate-vs-current=300; listed-levels=61426"
+      ],
+      "output_sha256": "1618ea6eaddec2b9ae148f00ec12bc90c43fe25e61bf5a3f1be1ff941824a59c"
+    },
+    "r15_n_eq_k3_stats": {
+      "runtime": "r15_n_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "e5f2a85a7befc2b4afb0d11e20716cd877efeaa63a010b217d1a55abc42ae598",
+        "bytes_streamed": 202182036
+      },
+      "payload": {
+        "sha256": "870469db8c106dab1486512751d1904012a1d617b268c97a9ecd6555cba1d429",
+        "bytes_streamed": 312392859
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6301 multi=12338 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3399 multi=4770 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=464; up-gate-vs-current=300; listed-levels=61426"
+      ],
+      "output_sha256": "e25e3972b5ebc2db3f7cadc4e718a8195f8829c073bdb9f9db8728d694f2eb9e"
+    },
+    "r15_n_eq_k4_stats": {
+      "runtime": "r15_n_eq_k4",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "43f26ac3079003f5acadd827ffc981d175a536c9e535beeb6b0819bc12b7f3b7",
+        "bytes_streamed": 202182024
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "f03db8155f85e77fe1be005d16637152f731d028f495eb2bab626a0a7ee42c4d",
+        "bytes_streamed": 312392847
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6330 multi=12349 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3553 multi=4771 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=466; up-gate-vs-current=300; listed-levels=61428"
+      ],
+      "output_sha256": "62fc55ab613964f331f774ce899e22303f53424d7a783fb4ef61c76e970f29aa"
+    },
+    "r15_n_eq_k6_stats": {
+      "runtime": "r15_n_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "a5b20d779355885a497200a112f021088bdca33415608a90ece74d2e021e18d0",
+        "bytes_streamed": 202182022
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "9a191d3d7a754edbe37d7286c51b59f7f2edaacdf26d6aa5998a6b3234189566",
+        "bytes_streamed": 312392845
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6340 multi=12396 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3620 multi=4790 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=464; up-gate-vs-current=300; listed-levels=61426"
+      ],
+      "output_sha256": "1a617cd1ab26ff3bfee02cee16e3e8b8fb1c39a4afc3d6a074d98b2ff6fde3bb"
+    },
+    "r15_p_eq_k2_stats": {
+      "runtime": "r15_p_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "088d1ff1815cb4768092eb0c15c2497b70e0fd21b9d9bf61c235353e6fdab981",
+        "bytes_streamed": 202182052
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "25781742331e021ec61efe0a9144a83796cfc5431b6357e3750b21961f104544",
+        "bytes_streamed": 312392875
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=2485 multi=12892 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=1869 multi=4800 bypass_CG=832 zero_CG=55",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=130; up-gate-vs-current=438; listed-levels=61092"
+      ],
+      "output_sha256": "c95da625d5af857aca6697da77e649acda1342ae36a05e46a6940e61dc061a1b"
+    },
+    "r15_p_eq_k3_stats": {
+      "runtime": "r15_p_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "cc329535315634d0afa478a253c30e16d952934eab6c189cf8639fd392c6cb94",
+        "bytes_streamed": 202181960
+      },
+      "payload": {
+        "sha256": "cec6f722d54b332f413819f2672699568748673e098f21500530eaa1f312c225",
+        "bytes_streamed": 312392783
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6338 multi=12892 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3727 multi=4733 bypass_CG=827 zero_CG=60",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=130; up-gate-vs-current=432; listed-levels=61092"
+      ],
+      "output_sha256": "6b6c9953794113c85925797a38c724824e4030450ff3437e9ef905034840c8a2"
+    },
+    "r15_p_eq_k6_stats": {
+      "runtime": "r15_p_eq_k6",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "e119a4078384d85b0eba65b7fffe8f1393d3c41318afd91a3b22967ecb31424d",
+        "bytes_streamed": 202182026
+      },
+      "payload": {
+        "sha256": "6066d5001ca263530e8241f38e2d1f582eb074a3dd1c0caf20d286a3c92f9180",
+        "bytes_streamed": 312392849
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6554 multi=12892 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=4324 multi=4798 bypass_CG=831 zero_CG=55",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=130; up-gate-vs-current=428; listed-levels=61092"
+      ],
+      "output_sha256": "fb911c2180c15c9c0129e2f6be6125f894061040376cdba8ec5fc0e7c7227c86"
+    },
+    "r15_d_eq_k2_stats": {
+      "runtime": "r15_d_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "target": {
+        "sha256": "dc1ca9be4a01abce3e1c6cba3fc50f5b33d9cab059da9a2ee4cde48343d41f6f",
+        "bytes_streamed": 202181961
+      },
+      "payload": {
+        "sha256": "94265557467fdbbc3b23c57c7138f92c543d371133353a5ae15af5bf8a5ebf10",
+        "bytes_streamed": 312392784
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6082 multi=12244 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23732 map_vs_current=2988 multi=4597 bypass_CG=826 zero_CG=59",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=462; up-gate-vs-current=302; listed-levels=61424"
+      ],
+      "output_sha256": "867aec9919dd0c63b6191441efc8dd533ec9de4f50196f50be67e290babb978a"
+    },
+    "r15_d_eq_k3_stats": {
+      "runtime": "r15_d_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "2f78e94e8333b1bb148a66d55b6f9a45a15ba8d9f3b42f3d42e9db8bf820be19",
+        "bytes_streamed": 312392863
+      },
+      "target": {
+        "sha256": "916f0408a6edc01cb0874e0366d981773512c883f63a9fb75a6a9b0316d578d0",
+        "bytes_streamed": 202182040
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6286 multi=12244 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3368 multi=4666 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=460; up-gate-vs-current=304; listed-levels=61422"
+      ],
+      "output_sha256": "e3a0da0b128f5ab1b80bd9fc7b744b1249da733fa2c74841ece699444b7f1038"
+    },
+    "r15_x_eq_k2_stats": {
+      "runtime": "r15_x_eq_k2",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "5d484ea3ee24a742b5600e541f32fa7f62f0e2892f038b6f4758b9d310b7117e",
+        "bytes_streamed": 202182024
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "130b21ab39d46ec193b2f8230de1a18ba90a6ae304d1505a0ec7bd3fc152f84e",
+        "bytes_streamed": 312392847
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6063 multi=12356 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23796 map_vs_current=3016 multi=4686 bypass_CG=830 zero_CG=55",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=484; up-gate-vs-current=276; listed-levels=61446"
+      ],
+      "output_sha256": "903877d106231c055808784ad110f0032555144ae0714d90d1f8869d9adf3572"
+    },
+    "r15_x_eq_k3_stats": {
+      "runtime": "r15_x_eq_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "5b322de3bead9e4b1b3316aff2c9f3339e1c560f9d29a3f35d9fa2d25e7b5636",
+        "bytes_streamed": 202182036
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "e547b331a64dbfe856134fb8962bc954764ebd235fa0afd44cbeb051d0239dd9",
+        "bytes_streamed": 312392859
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6337 multi=12725 bypass_CG=1446 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23812 map_vs_current=3470 multi=4940 bypass_CG=831 zero_CG=54",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=480; up-gate-vs-current=268; listed-levels=61442"
+      ],
+      "output_sha256": "37986d51642d051064f5d2ac8b62f216c763cb35c188d4604ac34773ddee7f8a"
+    },
+    "r15_g_sp_k3_stats": {
+      "runtime": "r15_g_sp_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "8e3a1705f560588b3896f268cc8aa32c0c94a295c71420c4ce3742a1751e4ce8",
+        "bytes_streamed": 202181926
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "6ce3141bcd85ba2503cb0d66bc424308176b131b95422a952624ca6ce250fdb4",
+        "bytes_streamed": 312392749
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6102 multi=12246 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3150 multi=4636 bypass_CG=825 zero_CG=60",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=492; up-gate-vs-current=154; listed-levels=61454"
+      ],
+      "output_sha256": "22c4231c135f888ae73ea951b68ca448ab4f4e0189866e680f9b20dd1514f34d"
+    },
+    "r15_n_sp_k3_stats": {
+      "runtime": "r15_n_sp_k3",
+      "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "stats": true,
+      "target": {
+        "sha256": "37a36f7acb3f8c61e6b02ce201b75d06f17be1e41f1aa9617852fd8a018972eb",
+        "bytes_streamed": 202181926
+      },
+      "nontarget": {
+        "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+        "bytes_streamed": 27028551
+      },
+      "payload": {
+        "sha256": "1bc60cb085df805e5410732c8d25ccf697d16ce0b748049ec7648cb892b9da20",
+        "bytes_streamed": 312392749
+      },
+      "coverage": [
+        "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=6109 multi=12327 bypass_CG=1445 zero_CG=168",
+        "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+        "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23716 map_vs_current=3169 multi=4696 bypass_CG=825 zero_CG=60",
+        "TS_R15_QUANT_STATS population=RDOQ-trials-not-final-TUs; positions=31776; up-possible=7772; up-added=486; up-gate-vs-current=156; listed-levels=61448"
+      ],
+      "output_sha256": "8a566a078d23b6b641b848ceb2b2455027e6c38bc34a144c78aa3eb6e2d5a1c4"
+    },
+    "legacy_current": {
+      "before": {
+        "runtime": "current",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "payload": {
+          "sha256": "eb61b9439cc5176d8b93ac4d4592a23ece5ef240b614de1e30e4a4ce420f4dce",
+          "bytes_streamed": 170995858
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "c26317e410617ed6c582956061ee3508a569262bd90b61d57f1b1d0635d2a2b6"
+      },
+      "after": {
+        "runtime": "current",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "payload": {
+          "sha256": "eb61b9439cc5176d8b93ac4d4592a23ece5ef240b614de1e30e4a4ce420f4dce",
+          "bytes_streamed": 170995858
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "c26317e410617ed6c582956061ee3508a569262bd90b61d57f1b1d0635d2a2b6"
+      }
+    },
+    "legacy_r2_risk": {
+      "before": {
+        "runtime": "r2_risk",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "payload": {
+          "sha256": "b6d12f1cddcd18c337ad44d3687ad05c84ac67df3ca7f59a08b04b68a6db577e",
+          "bytes_streamed": 170995856
+        },
+        "coverage": [],
+        "output_sha256": "03612038186fc3fed06d983ba353a98e4354735e68a6baa2adeb63335361af3a"
+      },
+      "after": {
+        "runtime": "r2_risk",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "payload": {
+          "sha256": "b6d12f1cddcd18c337ad44d3687ad05c84ac67df3ca7f59a08b04b68a6db577e",
+          "bytes_streamed": 170995856
+        },
+        "coverage": [],
+        "output_sha256": "03612038186fc3fed06d983ba353a98e4354735e68a6baa2adeb63335361af3a"
+      }
+    },
+    "legacy_r3_risk_guard": {
+      "before": {
+        "runtime": "r3_risk_guard",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "payload": {
+          "sha256": "a92227d89c6f6d15fb2f9cb19d09b3f21f67fa5d08dc7b5fecf315e8fc587f78",
+          "bytes_streamed": 170995856
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "91997e3e1dbf3b035128d7388b76983a5783d01cfdd8cf0dd2e93f82fcd4ba19"
+      },
+      "after": {
+        "runtime": "r3_risk_guard",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "payload": {
+          "sha256": "a92227d89c6f6d15fb2f9cb19d09b3f21f67fa5d08dc7b5fecf315e8fc587f78",
+          "bytes_streamed": 170995856
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "91997e3e1dbf3b035128d7388b76983a5783d01cfdd8cf0dd2e93f82fcd4ba19"
+      }
+    },
+    "legacy_r6_reject_nopred": {
+      "before": {
+        "runtime": "r6_reject_nopred",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "payload": {
+          "sha256": "222bce96bd970c9050591c064a54ebe0bfc96ec092dc834b04edb2e650f22893",
+          "bytes_streamed": 170995858
+        },
+        "coverage": [],
+        "output_sha256": "6cf748422938933d75b1357f17ae4a56288834f9817a3ae23df266e6e2988a25"
+      },
+      "after": {
+        "runtime": "r6_reject_nopred",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "payload": {
+          "sha256": "222bce96bd970c9050591c064a54ebe0bfc96ec092dc834b04edb2e650f22893",
+          "bytes_streamed": 170995858
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "6cf748422938933d75b1357f17ae4a56288834f9817a3ae23df266e6e2988a25"
+      }
+    },
+    "legacy_r13_keep_hit_uniform": {
+      "before": {
+        "runtime": "r13_keep_hit_uniform",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "payload": {
+          "sha256": "64cb780a49bbbfcc63e395a4ec291e78d009da45f0370e90a0d757255335921a",
+          "bytes_streamed": 170995855
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "d9eefeda1440789e9f93cc46f2940d93e67644ac8a8d45ea20ec05a39989e42a"
+      },
+      "after": {
+        "runtime": "r13_keep_hit_uniform",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "payload": {
+          "sha256": "64cb780a49bbbfcc63e395a4ec291e78d009da45f0370e90a0d757255335921a",
+          "bytes_streamed": 170995855
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "d9eefeda1440789e9f93cc46f2940d93e67644ac8a8d45ea20ec05a39989e42a"
+      }
+    },
+    "legacy_r13_keep_hit_spatial": {
+      "before": {
+        "runtime": "r13_keep_hit_spatial",
+        "binary_sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+        "stats": false,
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "payload": {
+          "sha256": "aabe5b79b7d1fd495a64d2d5c3385a80322dee1f0d6e9bc4c2b737b9d7039bfb",
+          "bytes_streamed": 170995851
+        },
+        "coverage": [],
+        "output_sha256": "fe9915067d24004f8b1839f0a4927c6f679b9ebb601deddffac0240ffa147244"
+      },
+      "after": {
+        "runtime": "r13_keep_hit_spatial",
+        "binary_sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+        "stats": false,
+        "payload": {
+          "sha256": "aabe5b79b7d1fd495a64d2d5c3385a80322dee1f0d6e9bc4c2b737b9d7039bfb",
+          "bytes_streamed": 170995851
+        },
+        "nontarget": {
+          "sha256": "301fe6c9b46356fb8fba909a82f6f3a218c0de7862f319aa0237defe2f30986a",
+          "bytes_streamed": 121995
+        },
+        "coverage": [],
+        "output_sha256": "fe9915067d24004f8b1839f0a4927c6f679b9ebb601deddffac0240ffa147244"
+      }
+    },
+    "master_off": {
+      "off": {
+        "runtime": "current",
+        "binary_sha256": "d617239878884a95a502e6fa980fe88b012e55e0d5c587fa6818a6b7a9e32058",
+        "stats": false,
+        "target": {
+          "sha256": "79ccc74fa30b92418f507aa4d6c935942aa8035419608b093e04652ad43825c8",
+          "bytes_streamed": 202182051
+        },
+        "nontarget": {
+          "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+          "bytes_streamed": 27028551
+        },
+        "payload": {
+          "sha256": "b184cba4f43c956283ed5b2b195c71d7551a9d672cf115009ba9b645f6c36b51",
+          "bytes_streamed": 312392874
+        },
+        "coverage": [
+          "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=0 multi=0 bypass_CG=1446 zero_CG=168",
+          "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+          "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23780 map_vs_current=0 multi=0 bypass_CG=833 zero_CG=56"
+        ],
+        "output_sha256": "bf37ab9c4fc461de6cd9c22935db22c5b4a0a3ed7aa8de12f810cf3cee36db15"
+      },
+      "on_current": {
+        "runtime": "current",
+        "binary_sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+        "stats": false,
+        "target": {
+          "sha256": "79ccc74fa30b92418f507aa4d6c935942aa8035419608b093e04652ad43825c8",
+          "bytes_streamed": 202182051
+        },
+        "nontarget": {
+          "sha256": "80fa4e76f21ab5c4ce1a7595b18d521c3d795174899886d0a93f5149aef4b66c",
+          "bytes_streamed": 27028551
+        },
+        "payload": {
+          "sha256": "b184cba4f43c956283ed5b2b195c71d7551a9d672cf115009ba9b645f6c36b51",
+          "bytes_streamed": 312392874
+        },
+        "coverage": [
+          "TS_R15_SYNTAX TU=180 CG=1718 causal=24356 map_vs_current=0 multi=0 bypass_CG=1446 zero_CG=168",
+          "TS_R15_QUANT TU=288 zero=23 cleared=40 bdpcm_none=216 bdpcm_hor=36 bdpcm_ver=36 lossless=17 rdoq_off=22 tsrc_disabled=16 normal_transform=9 small=84",
+          "TS_R15_QUANT_ROUNDTRIP TU=208 CG=1573 causal=23780 map_vs_current=0 multi=0 bypass_CG=833 zero_CG=56"
+        ],
+        "output_sha256": "d6053909fea914b71a1d80cb02d174878d05cfa72a088702f6b3918f509a3194"
+      }
+    }
+  },
+  "output_contract": "raw records hashed through FIFO; no raw payload retained",
+  "comparison": "SHA256 and byte length over q, syntax, budget, fractional bits and all context fields",
+  "status": "PASS"
+}

@@ -59,6 +59,7 @@
 #include "TsR12Prediction.h"
 #include "TsR13Prediction.h"
 #include "TsR14Prediction.h"
+#include "TsMultiMapping.h"
 #endif
 
 #include <bitset>
@@ -626,6 +627,17 @@ public:
     return unsigned(x>0) | (unsigned(y>0)<<1) | (unsigned(x>0 && y>0)<<2) |
            (unsigned(x>=2)<<3) | (unsigned(y>=2)<<4);
   }
+  bool tsR15Active() const { return m_tsR15Mode!=0; }
+  // Fix this action BEFORE writing/testing the current RDOQ level. Only
+  // finalized causal neighbours are input; the returned action is immutable.
+  TsMultiMapping::Action prepareTsR15(int scanPos,const TCoeff *coeff) const
+  {
+    CHECK(!tsR15Active(),"R15 preparation on a non-target path");
+    int h[5]; r13SupportTS(scanPos,coeff,h);
+    return TsMultiMapping::select({{h[0],h[1],h[2],h[3],h[4]}},
+      TsMultiMapping::publicMethod(m_tsR15Mode),m_tsRice,m_maxLog2TrDynamicRange,
+      TsMultiMapping::Engine::PREFIX).action;
+  }
   // R14 is coefficient-causal, unlike the older finish-CG history. Preparation
   // is const; ONLY the explicit commit advances this trial's TU-local state.
   bool tsR14Active() const { return m_tsR14Active; }
@@ -760,6 +772,11 @@ public:
     if (!TsFixedPrediction::componentEnabled(mode, m_compID == COMP_Y)) { return -1; }
     if (mode == 0) { return 0; }
     if (mode == 1) { return -1; } // Native path, also used by macro-OFF builds.
+    if (TsFixedPrediction::r15(mode))
+    {
+      CHECK(tsR15Active(),"R15 requires the full multi-target action, not a single predictor");
+      return -1; // Native behaviour on non-target paths, including BDPCM.
+    }
     if (TsFixedPrediction::r14(mode))
     {
       // TSRC-disabled, non-TS and BDPCM remain native even when this runtime is
@@ -934,6 +951,7 @@ private:
   int m_tsR13EntryBins = -1; // Same-CG observation snapshot only; never used to select p.
   TsFixedPrediction::R14Config m_tsR14Config{};
   bool m_tsR14Active=false;
+  int m_tsR15Mode=0;
   int m_tsR14State=0,m_tsR14EntryState=0;
   int m_tsR14Pass1=-1,m_tsR14Pass2=-1;
   // Optional FINAL-Writer observations, never read by the predictor. A zero CG

@@ -96,7 +96,37 @@ def r14_protocol(mode: str) -> dict:
     }
 
 
+R15_REVISION = 'R15-CODEC-v1'
+R15_NUMBERING = 'compact-18-v1'
+R15_MODE_NUMBERS = dict(zip((
+    'r15_identity', 'r15_g_eq_k2', 'r15_g_eq_k3', 'r15_g_eq_k4', 'r15_g_eq_k6',
+    'r15_n_eq_k2', 'r15_n_eq_k3', 'r15_n_eq_k4', 'r15_n_eq_k6',
+    'r15_p_eq_k2', 'r15_p_eq_k3', 'r15_p_eq_k6', 'r15_d_eq_k2', 'r15_d_eq_k3',
+    'r15_x_eq_k2', 'r15_x_eq_k3', 'r15_g_sp_k3', 'r15_n_sp_k3'), range(1, 19)))
+
+
+def r15_protocol(mode: str) -> dict:
+    public = R15_MODE_NUMBERS[mode]
+    parts = mode.split('_')
+    return {
+        'revision': R15_REVISION, 'numbering': R15_NUMBERING,
+        'mapping': 'TS-MG-STATIC-FAST-v1', 'public_mode': public,
+        'MG': 1 if public == 1 else public + 2, 'internal_policy': 114 + public,
+        'runtime': mode, 'macro': 'JVET_BJUT_TS_R15_MODE', 'anchor': 'current',
+        'search': 'I' if public == 1 else parts[1].upper(),
+        'K': 0 if public == 1 else int(parts[3][1:]),
+        'weights': [2, 2, 1, 1, 1] if public >= 17 else [1, 1, 1, 1, 1],
+        'physical_slots': ['L', 'U', 'D', 'LL', 'UU'],
+        'minimum_nonzero_positions': 0 if public == 1 else 3,
+        'engine': 'PREFIX', 'score': 'integer-syntax', 'state': 'none',
+        'targetActive': 'TS && !TSRC_disabled && BDPCM==NONE',
+        'quant_search': 'map-up-to-1', 'mode_bits': 0,
+    }
+
+
 def directory_name(mode: str) -> str:
+    if mode in R15_MODE_NUMBERS:
+        return f'r15_{R15_MODE_NUMBERS[mode]}_{mode.removeprefix("r15_")}'
     if mode in R14_MODE_NUMBERS:
         return f'r14_{R14_MODE_NUMBERS[mode]}_{mode.removeprefix("r14_")}'
     if mode in R13_MODE_NUMBERS:

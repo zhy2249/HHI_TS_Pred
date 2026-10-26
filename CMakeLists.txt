@@ -298,3 +298,9 @@ add_executable(TsR14NativeTest EXCLUDE_FROM_ALL scripts/ts_r14_native_test.cpp)
 target_link_libraries(TsR14NativeTest EncoderLib DecoderLib)
 target_include_directories(TsR14NativeTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
 set_target_properties(TsR14NativeTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+# Real CABACWriter/Reader + QuantRDOQ on synthetic TUs; no frame/video coding.
+add_executable(TsR15NativeTest EXCLUDE_FROM_ALL scripts/ts_r15_native_test.cpp)
+target_link_libraries(TsR15NativeTest EncoderLib DecoderLib)
+target_include_directories(TsR15NativeTest PRIVATE "${CMAKE_SOURCE_DIR}/source/Lib")
+set_target_properties(TsR15NativeTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

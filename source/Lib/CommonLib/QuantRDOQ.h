@@ -46,6 +46,8 @@
 
 #include "Quant.h"
 
+namespace TsMultiMapping { struct Action; }
+
 //! \ingroup CommonLib
 //! \{
 
@@ -119,7 +121,8 @@ private:
                                        const FracBitsAccess &fracBitsAccess, const BinFracBits &fracBitsSign,
                                        const BinFracBits &fracBitsGt1, const uint8_t sign, int rightPixel,
                                        int belowPixel, uint16_t ricePar, bool isLast, bool useLimitedPrefixLength,
-                                       const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction, int protect=0) const;
+                                       const int maxLog2TrDynamicRange, int &numUsedCtxBins, int prediction, int protect=0,
+                                       const TsMultiMapping::Action *multiAction=nullptr) const;
 
   inline int xGetICRateTS(const uint32_t absLevel, const BinFracBits &fracBitsPar, const CoeffCodingContext &cctx,
                           const FracBitsAccess &fracBitsAccess, const BinFracBits &fracBitsSign,

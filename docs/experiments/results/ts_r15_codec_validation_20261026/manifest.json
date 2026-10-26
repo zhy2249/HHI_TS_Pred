@@ -1,0 +1,64 @@
+{
+  "schema": "R15-CODEC-VALIDATION-v1",
+  "base_commit": "5b6d5fc32c98e2e3cf425443717204b5fcbc5f31",
+  "revision": "R15-CODEC-v1",
+  "video_encoder_run": false,
+  "video_decoder_scope": "existing paired R13 prefix17 only",
+  "build": "Release; GCC 11.4; C++17; NX2_TOPLEVEL_OUTPUT_DIRS=OFF; NX2_ENABLE_LINK_TIME_OPT=OFF; -j2",
+  "binary_delivery": "local build only; binaries are not included in this source commit",
+  "executables": {
+    "build/ts-r15-codec/bin/EncoderApp": {
+      "sha256": "77b1e8230c822cb036ed57321a8b67fb7f0191caefaed9e927c62ee8fb97c12c",
+      "bytes": 32568336
+    },
+    "build/ts-r15-codec/bin/DecoderApp": {
+      "sha256": "75cf135c9256b993420c7e5f8cd9f77da02c9515ada0239584fc56733e9ea5cc",
+      "bytes": 29210480
+    },
+    "build/ts-r15-codec/bin/TsR15NativeTest": {
+      "sha256": "c9e108adc04c2d4b905aa717ab99d1831e73578cbda95a7a22e6ee5a39b0cb72",
+      "bytes": 27281888
+    },
+    "build/ts-r15-codec/bin/TsR13NativeTest": {
+      "sha256": "75e55c439c9c202ad1a307eb03ac9a52813a6c104adfc394057fffc82aa5ccea",
+      "bytes": 27265384
+    },
+    "build/ts-r15-master-off/bin/TsR15NativeTest": {
+      "sha256": "d617239878884a95a502e6fa980fe88b012e55e0d5c587fa6818a6b7a9e32058",
+      "bytes": 26572928
+    },
+    "build/ts-r14/bin/TsR13NativeTest": {
+      "sha256": "6ea545dfead40101ecd9568a20b63b41c6096949b7b6c92f3064f9db58d8e4ca",
+      "bytes": 11010232
+    }
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "424d67308a06b489392166ccdbbe9e4335931df2e96d5db54bc16077356db5d5",
+    "source/Lib/CommonLib/TypeDef.h": "e6521a0d973f659da75ac78d7bf62706953749a32eda2dd5ea5f1497b818b482",
+    "source/Lib/CommonLib/TsFixedPrediction.h": "99b53fd7bd7a4ba56413b8e38a5b68a1a2266dbd3e0458f3447a120cab31aaba",
+    "source/Lib/CommonLib/TsMultiMapping.h": "4ebdd4babfc743e1c952db561559f59f5903f3124654d31e7bfac6ddc45bfd04",
+    "source/Lib/CommonLib/TsR15CodecStats.h": "e69958591bded31403a2f3e4f91d7615292b2bdc5012d38c9b25d72f51564b58",
+    "source/Lib/CommonLib/ContextModelling.h": "40efac1ca2492c445586276cf1527e70633d0d0bdfc9d8f88b8727f47292d865",
+    "source/Lib/CommonLib/ContextModelling.cpp": "5be4d21b40c90da606005bcf162ca7ccfdbdfa8c50b0b5478d7f60282eba3c8f",
+    "source/Lib/CommonLib/QuantRDOQ.h": "1ca7477e5a8814dfdc7bd327c09473dcedd44f1e8f87f337761c65fe62981eb3",
+    "source/Lib/CommonLib/QuantRDOQ.cpp": "5cd3383e95f9b9b580b5a3475f7c97aa2422713ebcce916fd52e3a5ea5f1735b",
+    "source/Lib/EncoderLib/CABACWriter.cpp": "d42e877818d8aad53f51816d67bbf107e2060e43de311b0ddc5c02059e39bc86",
+    "source/Lib/DecoderLib/CABACReader.cpp": "d1bccfb4042c72e6ba7e3fd16a646efa1e8cbc8c9db19e0a23ca436d18ee9e71",
+    "scripts/ts_r15_native_test.cpp": "c9cf7c8d71a3f325f6ae506dd2c40b394a8cb0ce219d1ab661fd5b84efa6865e",
+    "scripts/test_ts_r15_native.py": "871b5b05167c84756b207aae9419155f83bde0e57a0a5c0c486c5d564de6461a",
+    "scripts/test_ts_r15_defaults.py": "07ce354d02f5a7f0adc5b1ea404b477e8fc8959710438c0a1bf5eddf7d3a4d0f",
+    "scripts/test_ts_r15_batch.py": "2186a25f02468eb30cc0cbabbf18056a1805fe25e76e5e62c281a73c20c87cdc",
+    "scripts/ts_predictor_naming.py": "7e5c56e65dc6aae76f6db0a7d82d00b992174972aa6b998812e2781ecb94b4ff",
+    "scripts/batch_test.py": "9c126a085563e80ac439d1182a011a7212bd4f46e0bead3c7ad371a935b00569"
+  },
+  "derived_files_sha256": {
+    "README.md": "0533f394444e9da33f28a3aee9161548b958ec1488db33b78639ed00a9bfd991",
+    "activity.csv": "7fd47caf10adb158e6029ef634d870585a9278d60ca6a75513de1331f88f34db",
+    "legacy_decode_validation.json": "cf8dbe941a81ff440faab2e76cd09af4a82ef1de4634e74d1a72f12004ce1b07",
+    "mapping_tests.log": "876d63a3797c068d177cdc9afbfb27c3efcdde903bd4f612a3a01f423ca559d6",
+    "native_resources.log": "0b7db6c30a99139d5b7c8c0c6eabea77205eb78427a5ee1774a87d574423c4f4",
+    "native_tests.log": "17aad5d4796dfb4d5ca5f3cf436a71c989a600036e4cc36b6c6fca6e82621313",
+    "native_validation.json": "14f43aea0fd7a13862b6b2566c053ee039edefb26914b157f11e7c60658cbe51",
+    "python_tests.log": "3b517579b04ee997ea53e26a9f69ead7b1baf048afecd46ed9d3877c5007e34f"
+  }
+}
