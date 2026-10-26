@@ -27,7 +27,7 @@
 - [61组规则与状态转移本地测试设计](TS_Predictor_Rule_Lab_Design.md) · [Git源码、96流运行与结果回传说明](../../scripts/ts_rule_lab/README.md)
 - [61组规则全量结果：96流/754,151个TU，相对EQ的新增空间Weak](TS_Predictor_Rule_Lab_Results_20261026.md) · [全部表格、原生核验及资源记录](results/ts_rule_lab_20261026/README.md)（仅条件TSRC rate，非BD-rate）
 - [后续设计：双值／短区间可逆映射与评分分离验证](TS_Predictor_Mapping_and_Score_Next_Design.md)（TS-MAPPING-SCORE-NEXT-v1；纯数学核对，尚无新回放收益）
-- [下一轮21组：静态评分逐级多目标映射、精确快算法及全96流验收](TS_Predictor_Greedy_MultiMapping_Experiment_Requirements.md)（TS-MG-STATIC-FAST-v1；设计已冻结，生产实现／新收益待本地验证）
+- [静态评分逐级多目标映射：原21组冻结要求](TS_Predictor_Greedy_MultiMapping_Experiment_Requirements.md) · [R15连续1～18实现、既有3对照及宏](TS_Predictor_R15_Implementation.md) · [R15数学/原生/双来源短前缀验收](TS_Predictor_R15_Validation.md)（只读条件回放；全96流及闭环收益未测）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
@@ -72,6 +72,7 @@
 | R12 | [最新原始计划](../external_inputs/R12_Experiment_Plan.md)、[十二组实现与运行](TS_Predictor_R12_Implementation.md) | [局部验收](TS_Predictor_R12_Validation.md)、[十二组CE/七组部分B明细](results/r12.md)、[结果台账](TS_Predictor_Results_Ledger.md)；无完整B/BCE，RA/AI未登记 |
 | R13 | [KeepHit评分指导](TS_Predictor_KeepHit_Score_Experiment_Guide.md)、[两组冻结设计](TS_Predictor_R13_Experiment_Design.md)、[实现与验证](TS_Predictor_R13_Implementation.md) | [两组完整CE分析](TS_Predictor_R13_LB_CE_Results_20261023.md)、[CE及1的部分B明细](results/r13.md)；B仅RitualDance完整，无完整B/BCE或可靠计时结论 |
 | R14 | [v3：12组动态＋3组固定对照，NONE／PAIR2](TS_Predictor_R14_Experiment_Design.md)、[本地源码接入与分阶段计划](TS_Predictor_R14_Engineering_Plan.md)、[连续1～15及旧号对照](TS_Predictor_R14_Implementation.md) | [当前CE多维分析](TS_Predictor_R14_LB_CE_Analysis_20261024.md)、[整体及QP明细](results/r14.md)、[早期部分结果分析（历史）](TS_Predictor_R14_Partial_Analysis_20261024.md)；412实测/8缺失，除2外14组完整；2正确部分结果纳入；10最佳但未稳定优于R3/R6，无服务器状态计数 |
+| R15 | [18组多目标映射与3个既有对照](TS_Predictor_R15_Implementation.md)、[运行脚本](../../scripts/ts_multi_mapping/README.md) | [本地验收](TS_Predictor_R15_Validation.md)；未运行新编码，完整96流待测，无新BD-rate |
 
 跨轮分析：[固定/条件/R2 多维复核](TS_Predictor_Cross_Round_Analysis_20260919.md)。
 

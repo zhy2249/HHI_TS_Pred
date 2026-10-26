@@ -1,0 +1,20 @@
+{
+  "complete": true,
+  "sources": [
+    {
+      "origin": "R13-1",
+      "macro_off_equals_on": true,
+      "frames": 17,
+      "hash_sha256": "bdb317df2175416be0c01490877c07526faab9c3cf0c3e074b93567ef91d44a0"
+    },
+    {
+      "origin": "R13-2",
+      "macro_off_equals_on": true,
+      "frames": 17,
+      "hash_sha256": "0f657f629694278a6d8d0b23be10ac57e28a0f85c03d89df28acee4a2dbc1503"
+    }
+  ],
+  "request_when_disabled_rejected": true,
+  "macro_off_decoder_sha256": "29129b24d891634aa83ec19462484178df5aae8e3585bb271fcebe62c8555f24",
+  "audit_decoder_sha256": "2d526c1695cf034c56507f35372ec4146f3cdcfcff17c755fc2f973a370fdfc8"
+}

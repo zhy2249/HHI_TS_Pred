@@ -1,0 +1,42 @@
+{
+  "revision": "TS-MG-STATIC-FAST-v1",
+  "math": {
+    "complete": true,
+    "neighborhoods": 18000,
+    "method_triples": 378000,
+    "mapping_checks": 13048128,
+    "failures": 0
+  },
+  "native": {
+    "complete": true,
+    "syntax_roundtrips": 528,
+    "bypass_bins": 260360,
+    "zero_groups": 110,
+    "high_amplitude_TU": 5,
+    "causal_perturbations": 3960,
+    "encoder_app_invoked": false
+  },
+  "independent": {
+    "neighborhoods": 516,
+    "method_checks": 10836,
+    "failures": 0
+  },
+  "encoding_invoked": false,
+  "source_sha256": {
+    "source/Lib/CommonLib/TsMultiMapping.h": "adb36a94e7d60cc6dee51a740df7f6447009693ad00c91ca603f7235f3317211",
+    "source/Lib/CommonLib/TsRateReplay.h": "542e612c4d767ad9cc66eff6593c11003faad957432e31ba15dd157916feb86b",
+    "source/Lib/CommonLib/TypeDef.h": "67b22123fdb029a071015332f37ec53a662505e9e8d104c45341a9ecc85f251a",
+    "source/Lib/CommonLib/TsFixedPrediction.h": "2e4d3c56d6a007fad8d5efbf2fc9648404c0e5d8b120bd107f70c07cb598719b",
+    "source/Lib/DecoderLib/tsaudit/MultiMapping.h": "4ad47f1eafb1f6dd95d59398e7659dd543e9d99d482bd3b2482bf1d0427ec197",
+    "source/Lib/DecoderLib/tsaudit/Replay.h": "0dd3507f1204dda00ab14383bb0ea52dd63688561afa695a59a8298335ad4b58",
+    "source/Lib/DecoderLib/tsaudit/Manager.h": "b8f2fbd0341cc10a0cdbc43f074e0ca7bfa150a708895b17bb30cf5ed09e8a13",
+    "source/App/DecoderApp/decmain.cpp": "4e3d42d2b4cdc7f6076305e1963eeaf84f8751217cdc718dfe35cc94b9778c78",
+    "scripts/ts_multi_mapping/run.py": "1d0b31139ba360e562592f0be392f437a24f6e288c251e80bea675c81f88da7a",
+    "scripts/ts_multi_mapping/reference.py": "97c37b514039de5dd20ed50d8c7849b61868f7b60189bd0d59afbdd2adf0857d",
+    "scripts/ts_rule_lab/ts_corpus.py": "e9d416d914110a05575cd7c69b102ccbcf5b1796d6727b8febb4d7b55a005cb1"
+  },
+  "tests_sha256": {
+    "syntax.cpp": "fb1a60ac27786301edc566d31546ab08c4539c325393e2fc224d69071d0629c4",
+    "selectors.cpp": "2a2d8ecb20b0410f747afaae9dd0cbcaf8926d7f722054d8959a65d6eee7c354"
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "revision": "TS-MG-STATIC-FAST-v1",
+  "protocol": "TS-MG-ACTION-v1",
+  "methods": [
+    {
+      "number": 0,
+      "mg": 0,
+      "name": "CURRENT",
+      "search": "C",
+      "depth": 1,
+      "spatial": false
+    },
+    {
+      "number": 0,
+      "mg": 2,
+      "name": "STATIC_EQ",
+      "search": "B",
+      "depth": 1,
+      "spatial": false
+    },
+    {
+      "number": 0,
+      "mg": 3,
+      "name": "STATIC_SP",
+      "search": "B",
+      "depth": 1,
+      "spatial": true
+    },
+    {
+      "number": 1,
+      "mg": 1,
+      "name": "IDENTITY",
+      "search": "I",
+      "depth": 0,
+      "spatial": false
+    },
+    {
+      "number": 2,
+      "mg": 4,
+      "name": "G_EQ_K2",
+      "search": "G",
+      "depth": 2,
+      "spatial": false
+    },
+    {
+      "number": 3,
+      "mg": 5,
+      "name": "G_EQ_K3",
+      "search": "G",
+      "depth": 3,
+      "spatial": false
+    },
+    {
+      "number": 4,
+      "mg": 6,
+      "name": "G_EQ_K4",
+      "search": "G",
+      "depth": 4,
+      "spatial": false
+    },
+    {
+      "number": 5,
+      "mg": 7,
+      "name": "G_EQ_K6",
+      "search": "G",
+      "depth": 6,
+      "spatial": false
+    },
+    {
+      "number": 6,
+      "mg": 8,
+      "name": "N_EQ_K2",
+      "search": "N",
+      "depth": 2,
+      "spatial": false
+    },
+    {
+      "number": 7,
+      "mg": 9,
+      "name": "N_EQ_K3",
+      "search": "N",
+      "depth": 3,
+      "spatial": false
+    },
+    {
+      "number": 8,
+      "mg": 10,
+      "name": "N_EQ_K4",
+      "search": "N",
+      "depth": 4,
+      "spatial": false
+    },
+    {
+      "number": 9,
+      "mg": 11,
+      "name": "N_EQ_K6",
+      "search": "N",
+      "depth": 6,
+      "spatial": false
+    },
+    {
+      "number": 10,
+      "mg": 12,
+      "name": "P_EQ_K2",
+      "search": "P",
+      "depth": 2,
+      "spatial": false
+    },
+    {
+      "number": 11,
+      "mg": 13,
+      "name": "P_EQ_K3",
+      "search": "P",
+      "depth": 3,
+      "spatial": false
+    },
+    {
+      "number": 12,
+      "mg": 14,
+      "name": "P_EQ_K6",
+      "search": "P",
+      "depth": 6,
+      "spatial": false
+    },
+    {
+      "number": 13,
+      "mg": 15,
+      "name": "D_EQ_K2",
+      "search": "D",
+      "depth": 2,
+      "spatial": false
+    },
+    {
+      "number": 14,
+      "mg": 16,
+      "name": "D_EQ_K3",
+      "search": "D",
+      "depth": 3,
+      "spatial": false
+    },
+    {
+      "number": 15,
+      "mg": 17,
+      "name": "X_EQ_K2",
+      "search": "X",
+      "depth": 2,
+      "spatial": false
+    },
+    {
+      "number": 16,
+      "mg": 18,
+      "name": "X_EQ_K3",
+      "search": "X",
+      "depth": 3,
+      "spatial": false
+    },
+    {
+      "number": 17,
+      "mg": 19,
+      "name": "G_SP_K3",
+      "search": "G",
+      "depth": 3,
+      "spatial": true
+    },
+    {
+      "number": 18,
+      "mg": 20,
+      "name": "N_SP_K3",
+      "search": "N",
+      "depth": 3,
+      "spatial": true
+    }
+  ],
+  "cost": "TsFixedPrediction::syntaxCost; COEF_REMAIN_BIN_REDUCTION=5",
+  "candidates": "1 plus distinct positive H; nonzero position n; fallback Current if n<3 except identity",
+  "priority": "Current>1 first, 1, other positives ascending",
+  "weights": [
+    "11111",
+    "22111"
+  ],
+  "tie": "strict first in priority; X score, mapping==B, canonical length, priority lexicographic",
+  "engine": "PREFIX",
+  "new_subexperiments": 18,
+  "existing_controls": [
+    0,
+    2,
+    3
+  ]
+}

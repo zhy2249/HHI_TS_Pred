@@ -1,0 +1,25 @@
+{
+  "revision": "TS-MG-STATIC-FAST-v1",
+  "trace": "fixed synthetic H; not a video-population estimate",
+  "trace_sha256": "950f59462af8426c788fb0d5afecd0fae973e430938e5519dcc4c85d35fab546",
+  "program_sha256": "1a8c66f99754db7e78b639e626a7cca663cdfd430da56f50de3b2d559c873c0d",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "cpu": "x86_64",
+  "cpu_affinity": [
+    0
+  ],
+  "repeats": 5,
+  "warmups": 1,
+  "rotating_engine_order": true,
+  "selectors": [
+    "NAIVE",
+    "PREFIX",
+    "FAST"
+  ],
+  "separate_kernels": [
+    "map",
+    "unmap"
+  ],
+  "operations": "instrumented core search operations, not complete machine-instruction counts",
+  "checksums_equal": true
+}

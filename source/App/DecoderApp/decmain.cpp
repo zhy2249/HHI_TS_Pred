@@ -85,6 +85,13 @@ int getProcStatusValue(const char *key)
 #include "DecoderLib/tsaudit/Offline.h"
 int main(int argc, char *argv[])
 {
+#if JVET_BJUT_TS_R15_ANALYSIS
+  if(argc==2 && std::string(argv[1])=="--ts-r15-version")
+  { std::cout<<TsMultiMapping::revision<<"\n";return 0; }
+#else
+  if(std::getenv("TS_R15_AUDIT"))
+  { std::cerr<<"R15 observer compiled out: enable JVET_BJUT_TS_R15_ANALYSIS in TypeDef.h and rebuild.\n";return 2; }
+#endif
 #if JVET_BJUT_TS_FIXED_PREDICTOR
   if(argc==2 && std::string(argv[1])=="--ts-corpus-version")
   { std::cout<<TsCorpus::revision<<"\n"; return 0; }

@@ -1,0 +1,28 @@
+{
+  "command": [
+    "python3",
+    "scripts/ts_multi_mapping/run.py",
+    "replay",
+    "--plan",
+    "runs/ts_r15_20261026/prefix_plan.json",
+    "--decoder",
+    "build/ts-r15/bin/DecoderAppR15Audit",
+    "--output",
+    "runs/ts_r15_20261026/acceptance",
+    "--verify-off",
+    "--fixtures",
+    "--jobs",
+    "1"
+  ],
+  "returncode": 0,
+  "stop_reason": null,
+  "address_space_limit_bytes_per_process": 3221225472,
+  "process_tree_RSS_limit_bytes": 2147483648,
+  "sampled_peak_tree_RSS_bytes": 318394368,
+  "sampling_seconds": 1,
+  "file_cache_hints": 0,
+  "cache_hint_interval_seconds": 5,
+  "cache_root": "runs/ts_r15_20261026",
+  "cache_hint": "fdatasync + POSIX_FADV_DONTNEED, task derived files only; advisory",
+  "elapsed_seconds": 4.011970058996667
+}

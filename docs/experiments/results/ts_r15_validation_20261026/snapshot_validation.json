@@ -1,0 +1,44 @@
+{
+  "revision": "TS-MG-STATIC-FAST-v1",
+  "complete": true,
+  "fixtures": [
+    {
+      "file": "runs/ts_r15_20261026/acceptance/Johnny_QP32_prefix17__R13-1/attempt_00/fixtures/tu_1.actions.json",
+      "snapshot_sha256": "7b39bbd552108cb76ec99a095df161b755bfc77d96425796d8370cb15283eec3",
+      "action_sha256": "0d3d7cd237c6e9b89b2ec1c707d0a1f1e3c2de72cabfdfe668a796dff50e9898",
+      "checks": 10752,
+      "rate_exact": true
+    },
+    {
+      "file": "runs/ts_r15_20261026/acceptance/Johnny_QP32_prefix17__R13-1/attempt_00/fixtures/tu_2.actions.json",
+      "snapshot_sha256": "60f91e387299793d38c483c30c4ef3057b784b442cd9e2a95be013e35ba5852b",
+      "action_sha256": "47b1154a4bfa13af93d4e5200c6635a648ef81aeb2f999389a4f3d265df2094a",
+      "checks": 1344,
+      "rate_exact": true
+    },
+    {
+      "file": "runs/ts_r15_20261026/acceptance/Johnny_QP32_prefix17__R13-2/attempt_00/fixtures/tu_1.actions.json",
+      "snapshot_sha256": "ea48b8357d262548a09ebbaeab955153e8fc788e07f20a7cad9b9a38ade9ea54",
+      "action_sha256": "becb02d4fe0f943378c1f0b3be19844b23151310fd3d33398bb6e2ae91a37e84",
+      "checks": 10752,
+      "rate_exact": true
+    },
+    {
+      "file": "runs/ts_r15_20261026/acceptance/Johnny_QP32_prefix17__R13-2/attempt_00/fixtures/tu_2.actions.json",
+      "snapshot_sha256": "0087d2950489d2462b6264c6ead15873ec5ac26d824bf5c9b52c4851a857d270",
+      "action_sha256": "96024952bc20e46b2be9a5ef4c47ab1e1c5e5220074dd344b36b876a28052d91",
+      "checks": 1344,
+      "rate_exact": true
+    }
+  ],
+  "rejected_cases": [
+    "protocol",
+    "q",
+    "scan",
+    "target",
+    "missing_method",
+    "id"
+  ],
+  "methods": 21,
+  "encoder_app_invoked": false
+}

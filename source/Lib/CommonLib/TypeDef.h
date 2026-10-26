@@ -67,6 +67,18 @@
 #ifndef JVET_BJUT_TS_FIXED_PREDICTOR
 #define JVET_BJUT_TS_FIXED_PREDICTOR                       1
 #endif
+// R15 / TS-MG-STATIC-FAST-v1: 0=compile out the new decoder-only observer.
+// 1=allow TS_R15_AUDIT=1 to replay all 18 R15 methods plus existing controls
+// (MG00 Current, MG02 STATIC_EQ, MG03 STATIC_SP). This is NOT a codec MODE:
+// source bitstreams still use R13-1/2, and no RDOQ/Writer/Reader rule changes.
+// R15-1..18 map to MG01,04..20; see the R15 implementation document.
+// No CMake selection option. Statistics/runtime observation remain opt-in.
+#ifndef JVET_BJUT_TS_R15_ANALYSIS
+#define JVET_BJUT_TS_R15_ANALYSIS                          0
+#endif
+#if JVET_BJUT_TS_R15_ANALYSIS && !JVET_BJUT_TS_FIXED_PREDICTOR
+#error "R15 audit requires the existing TS predictor infrastructure"
+#endif
 // 早期固定 predictor 实验（台账 TS-003/005/007），三者最多开启一个；不是旧统计阶段 M2..M5。
 // 1=固定 NoPred：p=0，identity remapping，保留其它 TSRC syntax；0=不选择此实验。
 #ifndef JVET_BJUT_TS_FIXED_NOPRED

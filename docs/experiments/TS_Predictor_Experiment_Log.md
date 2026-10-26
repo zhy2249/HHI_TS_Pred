@@ -6,6 +6,25 @@
 仅数值查询见 [实验结果台账](TS_Predictor_Results_Ledger.md) 和 [逐序列/逐 QP 明细](results/README.md)：记录码率、PSNR 与 BD-rate，不含分析。
 本文件继续记录实验过程、来源核验、分析与决策；收到新结果时同步更新结果台账。
 
+## R15 静态整数多目标映射实现（2026-10-26）
+
+同步远端至 `b56e30a`，按 `TS-MG-STATIC-FAST-v1` 实现 G/N/P/D/X 与等权/22111 消融。
+按用户要求原 MG00/02/03 仅复用对照，MG01、04～20 连续编为 R15-1～18。
+源码新增完整有序动作、正反双射、三种同语义引擎和 Decoder-only 私有回放；
+默认 `JVET_BJUT_TS_R15_ANALYSIS=0`，没有新的正式 codec MODE，没有改动 R13/R14、RDOQ 或真实反映射。
+
+本轮完成实现和小型验收；全 96 流命令已准备，尚未运行。每个来源短前缀 17 帧、10 个 TU、2112 个系数、41 个非零；
+全部 21 列齐全，原生 bin/概率/预算/三遍边界、on/off 与宏关闭重建、编码端 SEI MD5 一致。
+4 份快照由新进程重建同样动作和 rate，6 类损坏动作文件拒绝；R15-2/6 等价在每 TU 检查。
+新增数学/跨语言/局部语法测试、旧 R13/R14 和审计统计回归通过，详细人口见验证记录。
+
+文件输出即时聚合；每流至多 4MiB summary、限量日志，不保存全片动作展开或逐 bin 文件。
+单 worker 最终短测树 RSS 峰值约 304MiB（各次小测最高306MiB），未超 2GiB 监测阈值。完整运行默认单 worker、最多2；严格 SHA resume 和目录锁。
+固定合成 trace 的五次轮换计时中 PREFIX 通常快于 FAST，因此当前真实审计使用 PREFIX。
+这些微基准不等于生产编码器复杂度，短前缀也不用于判断新方法收益。正式 RD/BD-rate 表完全未变。
+
+[实现及编号](TS_Predictor_R15_Implementation.md) · [验收](TS_Predictor_R15_Validation.md) · [可执行命令](../../scripts/ts_multi_mapping/README.md)。
+
 ## 61组规则全量条件回放（2026-10-26）
 
 同步至`b082d93`，按`TS-RULE-SUITE-v1`冻结61组实现原生全量接入；未调整规则/阈值，未运行EncoderApp。

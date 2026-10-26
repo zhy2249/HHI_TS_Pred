@@ -1,0 +1,17 @@
+{
+  "observed": {
+    "frames": 34,
+    "target_tu": 20,
+    "positions": 4224,
+    "nonzero": 82
+  },
+  "historical_full96": {
+    "frames": 26000,
+    "target_tu": 754151,
+    "positions": 125949812,
+    "nonzero": 3856051
+  },
+  "scope": "paired_prefix17",
+  "matches_historical": null,
+  "status": "acceptance_prefix_not_full_population"
+}

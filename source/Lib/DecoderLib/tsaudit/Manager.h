@@ -8,6 +8,9 @@
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "Replay.h"
 #include "Corpus.h"
+#if JVET_BJUT_TS_R15_ANALYSIS
+#include "MultiMapping.h"
+#endif
 #include "Budget.h"
 #include <filesystem>
 namespace TsAudit
@@ -341,10 +344,25 @@ struct Manager
 };
 inline std::unique_ptr<Manager> &storage() { static std::unique_ptr<Manager> value; return value; }
 inline Manager &manager() { auto &value=storage(); if(!value) { value=std::make_unique<Manager>(); } return *value; }
-inline Native *begin(const TransformUnit &tu,CompID c,const Ctx &ctx) { if(TsCorpus::enabled()) return TsCorpus::begin(tu,c,ctx); return enabled()?manager().begin(tu,c,ctx):nullptr; }
-inline void end(const TransformUnit &tu,CompID c,const Ctx &ctx) { if(TsCorpus::enabled()) { TsCorpus::end(tu,c,ctx); return; } if(enabled()) { manager().end(tu,c,ctx); } }
+inline Native *begin(const TransformUnit &tu,CompID c,const Ctx &ctx)
+{
+#if JVET_BJUT_TS_R15_ANALYSIS
+  if(TsMultiAudit::enabled()) { return TsMultiAudit::collector().begin(tu,c,ctx); }
+#endif
+  if(TsCorpus::enabled()) { return TsCorpus::begin(tu,c,ctx); }return enabled()?manager().begin(tu,c,ctx):nullptr;
+}
+inline void end(const TransformUnit &tu,CompID c,const Ctx &ctx)
+{
+#if JVET_BJUT_TS_R15_ANALYSIS
+  if(TsMultiAudit::enabled()) { TsMultiAudit::collector().end(tu,c,ctx);return; }
+#endif
+  if(TsCorpus::enabled()) { TsCorpus::end(tu,c,ctx);return; }if(enabled()) { manager().end(tu,c,ctx); }
+}
 inline void finish(bool success)
 {
+#if JVET_BJUT_TS_R15_ANALYSIS
+  if(TsMultiAudit::enabled()) { TsMultiAudit::collector().finish(success);return; }
+#endif
   if(TsCorpus::enabled()) { TsCorpus::finish(success); return; }
   if(!enabled() || !storage()) { return; }
   if(success) { manager().finish(true); }
@@ -353,6 +371,9 @@ inline void finish(bool success)
 inline void picture(const Picture &pic)
 {
   static const auto hashPath=envString("TS_AUDIT_HASH");
+#if JVET_BJUT_TS_R15_ANALYSIS
+  if(TsMultiAudit::enabled()) { CHECK(pic.m_layerId!=0,"R15 supports only single-layer streams"); }
+#endif
   if(enabled() || TsCorpus::enabled()) { CHECK(pic.m_layerId!=0,"Audit/corpus supports only single-layer streams"); }
   if(!hashPath.empty())
   { PictureHash digest; const auto *sps=pic.m_cs->sps; const int chars=calcMD5(pic.getRecoBuf(),digest,sps->m_bitDepths);
