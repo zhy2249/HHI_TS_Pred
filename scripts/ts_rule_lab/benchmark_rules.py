@@ -6,7 +6,7 @@ Will NOT substitute CE01 or synthetic tests for missing formal streams.
 This file never launches an encoder.
 """
 from __future__ import annotations
-import argparse,csv,json,hashlib,math,heapq
+import argparse,csv,json,hashlib,math,heapq,concurrent.futures
 from pathlib import Path
 from collections import defaultdict
 import rule_suite as R
@@ -20,26 +20,69 @@ def catalogue_hash():
     return hashlib.sha256(json.dumps(R.catalogue(),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
-def make_schedules(index, output):
+def generator_identity():
+    return dict(generator_sha256=P.sha(__file__),rules_sha256=P.sha(R.__file__),scoring_sha256=P.sha(L.__file__))
+
+
+def full_predictions(tu, cfg, prepared, active=None, current=None):
+    # n<3 emits Current for every frozen policy, and neither state nor debt
+    # updates there. Skip only this causal condition, never current amplitude.
+    base=current if current is not None else [row['pred'][0] for row in prepared]
+    active=active if active is not None else [row for row in prepared if row['cache']]
+    if not active:return base
+    if cfg['kind']=='fixed':return [row['pred'][cfg['action']] for row in prepared]
+    selected,_,_=R.predict(tu,cfg,prepared=active)
+    base=base.copy()
+    for row,p in zip(active,selected):base[row['scan']]=p
+    return base
+
+
+def write_stream_schedule(record, output):
+    out=Path(output);rules=R.catalogue();task=record['task'];path=out/(task['key']+'.pred');nt=0
+    partial=path.with_suffix('.pred.partial')
+    with partial.open('w') as f:
+        f.write(f'TSCPRED 1 {len(rules)}\n')
+        for tu in P.records(record['data']):
+            if tu['kind']!='tu':continue
+            if not tu.get('native_verified'):raise ValueError('Unverified input TU')
+            rr=list(L.causal_rows(tu))
+            active=[row for row in rr if row['cache']];current=[row['pred'][0] for row in rr]
+            f.write(' '.join(str(tu[k]) for k in ('poc','component','x','y','w','h','q_hash','entry_hash'))+' '+str(len(tu['q']))+'\n')
+            for cfg in rules:
+                pred=full_predictions(tu,cfg,rr,active,current)
+                f.write(' '.join(map(str,pred))+'\n')
+            nt+=1
+    partial.rename(path)
+    proof=dict(task=task['key'],tu=nt,schedule_sha256=P.sha(path),source_sha256=record['data_sha256'])
+    P.save(path.with_suffix('.json'),dict(revision=R.REV,methods=[c['id'] for c in rules],catalogue_sha256=catalogue_hash(),**generator_identity(),**proof,causal_not_trained=True))
+    return proof
+
+
+def make_schedules(index, output, jobs=1, resume=False):
     idx=P.complete_index(index);out=Path(output)
-    if out.exists():raise ValueError('Use a fresh output directory')
-    out.mkdir(parents=True);rules=R.catalogue();proof=[]
-    P.save(out/'methods.json',dict(revision=R.REV,methods=rules))
+    if out.exists() and not resume:raise ValueError('Use a fresh output directory')
+    out.mkdir(parents=True,exist_ok=resume);rules=R.catalogue();proof=[];pending=[]
+    methods=dict(revision=R.REV,methods=rules)
+    if (out/'methods.json').exists() and P.readj(out/'methods.json')!=methods:raise ValueError('Resume catalogue mismatch')
+    P.save(out/'methods.json',methods)
     for record in idx['records']:
-        task=record['task']; path=out/(task['key']+'.pred');nt=0
-        with path.open('w') as f:
-            f.write(f'TSCPRED 1 {len(rules)}\n')
-            for tu in P.records(record['data']):
-                if tu['kind']!='tu':continue
-                if not tu.get('native_verified'):raise ValueError('Unverified input TU')
-                rr=list(L.causal_rows(tu))
-                f.write(' '.join(str(tu[k]) for k in ('poc','component','x','y','w','h','q_hash','entry_hash'))+' '+str(len(tu['q']))+'\n')
-                for cfg in rules:
-                    pred,_,_=R.predict(tu,cfg,prepared=rr)
-                    f.write(' '.join(map(str,pred))+'\n')
-                nt+=1
-        proof.append(dict(task=task['key'],tu=nt,schedule_sha256=P.sha(path),source_sha256=record['data_sha256']))
-        P.save(path.with_suffix('.json'),dict(revision=R.REV,methods=[c['id'] for c in rules],catalogue_sha256=catalogue_hash(),**proof[-1],causal_not_trained=True))
+        path=out/(record['task']['key']+'.pred');meta=path.with_suffix('.json')
+        if path.exists() or meta.exists():
+            if not (path.exists() and meta.exists()):raise ValueError('Incomplete schedule; use a fresh directory')
+            old=P.readj(meta)
+            expected=dict(task=record['task']['key'],source_sha256=record['data_sha256'],catalogue_sha256=catalogue_hash(),**generator_identity())
+            if any(old.get(k)!=v for k,v in expected.items()) or old['schedule_sha256']!=P.sha(path):raise ValueError('Schedule resume fingerprint mismatch')
+            proof.append({k:old[k] for k in ('task','tu','schedule_sha256','source_sha256')})
+        else:pending.append(record)
+    if jobs<1:raise ValueError('Positive jobs required')
+    if jobs==1:
+        for record in pending:proof.append(write_stream_schedule(record,out))
+    else:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as pool:
+            futures=[pool.submit(write_stream_schedule,record,out) for record in pending]
+            for future in concurrent.futures.as_completed(futures):
+                row=future.result();proof.append(row);print('SCHEDULE',row['task'],row['tu'],flush=True)
+    proof.sort(key=lambda r:r['task'])
     P.save(out/'schedule_manifest.json',dict(revision=R.REV,source_index_sha256=P.sha(index),streams=proof,
         model_count=len(rules),all_streams_complete=len(proof)==idx['expected_streams'],
         future_native_evaluation_required=True))
@@ -174,8 +217,10 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);s=p.add_subparsers(dest='cmd',required=True)
     for name in ('schedules','report'):
         q=s.add_parser(name);q.add_argument('--index',required=True);q.add_argument('--output',required=True)
+        if name=='schedules':
+            q.add_argument('--jobs',type=int,default=1);q.add_argument('--resume',action='store_true')
     a=p.parse_args()
-    if a.cmd=='schedules':make_schedules(a.index,a.output)
+    if a.cmd=='schedules':make_schedules(a.index,a.output,a.jobs,a.resume)
     else:report(a.index,a.output)
 
 

@@ -86,6 +86,8 @@ int getProcStatusValue(const char *key)
 int main(int argc, char *argv[])
 {
 #if JVET_BJUT_TS_FIXED_PREDICTOR
+  if(argc==2 && std::string(argv[1])=="--ts-corpus-version")
+  { std::cout<<TsCorpus::revision<<"\n"; return 0; }
   if(argc==2 && std::string(argv[1])=="--ts-audit-version")
   { std::cout<<TsAudit::revision<<"\n"; return 0; }
   if(argc>=2 && std::string(argv[1])=="--ts-audit-replay")

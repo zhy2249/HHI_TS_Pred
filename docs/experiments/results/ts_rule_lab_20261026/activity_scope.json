@@ -1,0 +1,31 @@
+{
+  "cases": [
+    [
+      "FourPeople",
+      32
+    ],
+    [
+      "Johnny",
+      27
+    ],
+    [
+      "Johnny",
+      32
+    ],
+    [
+      "Johnny",
+      37
+    ],
+    [
+      "KristenAndSara",
+      32
+    ]
+  ],
+  "source_index_sha256": "6f8b4b75ce5120c94bf80f5ff40212471ecdabd4656e55353d4a869bec379623",
+  "rules_sha256": "d19ad29515c87cd8b5d01a5ddd8acba8cc2bb69a1de3c1f83b5c72e68da09490",
+  "scoring_sha256": "c6e63148a4ba80f93e778690c427db0f9325d60558d021f4171204b5c595b1a3",
+  "full_streams_at_selected_points": true,
+  "no_decode": true,
+  "no_rate_accuracy_claim": true,
+  "remap_scope": "potential remapping before applying actual regular-bin budget; zero changes imply no policy coding effect"
+}

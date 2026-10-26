@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "nonzero_exit_is_recorded",
+      "passed": true
+    },
+    {
+      "name": "address_space_limit_fails_without_kernel_oom",
+      "passed": true
+    },
+    {
+      "name": "concurrent_launcher_is_rejected_across_distinct_receipts_in_one_root",
+      "passed": true
+    }
+  ],
+  "address_space_test_limit_mib": 128,
+  "attempted_allocation_mib": 200,
+  "expected_failure": "Python MemoryError, no kernel OOM required",
+  "task_root_lock": true,
+  "decoder_invoked": false,
+  "encoder_invoked": false
+}

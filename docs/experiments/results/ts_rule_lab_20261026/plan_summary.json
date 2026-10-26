@@ -1,0 +1,21 @@
+{
+  "revision": "TS-RULE-LAB-v1",
+  "manifest_sha256": "1452b01969e5ff1aba56a3348ed5dbfef05b6162f4ae5a520ae8a33b6a40379c",
+  "sequences": [
+    "BQMall",
+    "BQTerrace",
+    "BasketballDrill",
+    "BasketballDrive",
+    "Cactus",
+    "FourPeople",
+    "Johnny",
+    "KristenAndSara",
+    "MarketPlace",
+    "PartyScene",
+    "RaceHorsesC",
+    "RitualDance"
+  ],
+  "formal_pairs": 48,
+  "streams": 96,
+  "observation": "all final TSRC TUs; all file frames to EOF; no sample cap"
+}

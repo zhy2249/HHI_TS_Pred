@@ -1,0 +1,537 @@
+{
+  "revision": "TS-RULE-SUITE-v1",
+  "catalogue_sha256": "ac7d21c015dd77dab6625e86fa527eb322d024eccdf7a33ae79908c9beca5400",
+  "methods": [
+    {
+      "id": "CURRENT",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 0
+    },
+    {
+      "id": "STATIC_EQ",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 1
+    },
+    {
+      "id": "STATIC_SP",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 2
+    },
+    {
+      "id": "KEEP_F0",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 3
+    },
+    {
+      "id": "KEEP_F1",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 4
+    },
+    {
+      "id": "KEEP_F2",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 5
+    },
+    {
+      "id": "KEEP_F3",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 6
+    },
+    {
+      "id": "KEEP_F4",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 7
+    },
+    {
+      "id": "KEEP_EQ_H",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 8
+    },
+    {
+      "id": "KEEP_SP_H",
+      "family": "fixed",
+      "kind": "fixed",
+      "action": 9
+    },
+    {
+      "id": "GUARD_EXTRA_NEAR",
+      "family": "causal_gate",
+      "kind": "guard"
+    },
+    {
+      "id": "SINGLE_NEAR_F3",
+      "family": "causal_gate",
+      "kind": "single_near"
+    },
+    {
+      "id": "NEAR_AGREEMENT_ONLY",
+      "family": "causal_gate",
+      "kind": "agreement"
+    },
+    {
+      "id": "MARGIN_1_64",
+      "family": "causal_gate",
+      "kind": "margin",
+      "den": 64
+    },
+    {
+      "id": "MARGIN_1_16",
+      "family": "causal_gate",
+      "kind": "margin",
+      "den": 16
+    },
+    {
+      "id": "MARGIN_1_4",
+      "family": "causal_gate",
+      "kind": "margin",
+      "den": 4
+    },
+    {
+      "id": "S_K2_zero_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_zero_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_zero_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K2_zero_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_zero_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_zero_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_half_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 1,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K2_equal_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 2,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_zero_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_half_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P1_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 1,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P1_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 1,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P1_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P2_hit",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 2,
+      "feedback": "hit",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P2_cost",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 2,
+      "feedback": "cost",
+      "guard": false
+    },
+    {
+      "id": "S_K4_equal_P2_margin",
+      "family": "state",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": false
+    },
+    {
+      "id": "HYBRID_K4_zero_P1",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "HYBRID_K4_zero_P2",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 0,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "HYBRID_K4_half_P1",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "HYBRID_K4_half_P2",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 2,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "HYBRID_K4_equal_P1",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 1,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "HYBRID_K4_equal_P2",
+      "family": "hybrid",
+      "kind": "state",
+      "k": 4,
+      "initial": 4,
+      "phase": 2,
+      "feedback": "margin",
+      "guard": true
+    },
+    {
+      "id": "EXPERT_DEBT_B2",
+      "family": "expert_credit",
+      "kind": "expert",
+      "cap": 2
+    },
+    {
+      "id": "EXPERT_DEBT_B4",
+      "family": "expert_credit",
+      "kind": "expert",
+      "cap": 4
+    },
+    {
+      "id": "EXPERT_DEBT_B8",
+      "family": "expert_credit",
+      "kind": "expert",
+      "cap": 8
+    }
+  ]
+}

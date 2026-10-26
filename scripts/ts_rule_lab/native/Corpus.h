@@ -126,7 +126,8 @@ struct Collector {
         for(int p:d.c0)c0.push_back(costs.at(TsFixedPrediction::remap(a,p)).first-int64_t(nr.bins.bits));
         for(int p:d.plus)cp.push_back(costs.at(TsFixedPrediction::remap(a,p)).first-int64_t(nr.bins.bits));
         const auto eq=costs.at(TsFixedPrediction::remap(a,ps[7])),sp=costs.at(TsFixedPrediction::remap(a,ps[5]));
-        if(!first)o<<',';first=false;
+        if(!first) { o<<','; }
+        first=false;
         o<<"{\"scan\":"<<i<<",\"a\":"<<a<<",\"pred\":";arr(o,ps);o<<",\"delta_frac\":";arr(o,deltas);o<<",\"direct_delta_frac\":";arr(o,directDeltas);
         o<<",\"c0\":";arr(o,d.c0);o<<",\"cplus\":";arr(o,d.plus);o<<",\"c0_delta_frac\":";arr(o,c0);o<<",\"cplus_delta_frac\":";arr(o,cp);
         o<<",\"direct_sp_eq_frac\":"<<sp.second-eq.second<<",\"propagation_sp_eq_frac\":"<<(sp.first-eq.first)-(sp.second-eq.second)<<'}';

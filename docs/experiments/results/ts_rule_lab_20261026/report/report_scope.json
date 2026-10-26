@@ -1,0 +1,17 @@
+{
+  "revision": "TS-RULE-SUITE-v1",
+  "input_sha256": "06dc75d2e1da8be7824a2b6844c9bf982d6ab0d7122b3677d916a165725b0b81",
+  "complete_streams": 96,
+  "native_whole_TU": true,
+  "fixed_q_only": true,
+  "encoding_invoked": false,
+  "no_BDrate": true,
+  "best_descriptive": "HYBRID_K4_zero_P1",
+  "held_out_selected_mean_gain_bits_per_nonzero": 0.014611712919395609,
+  "limitations": [
+    "Known development contents are not a fresh blind test set.",
+    "Rule catalogue is predeclared; selecting on all-content ranking is still in-sample selection.",
+    "Leave-one-content selection prevents held-out labels from choosing the rule; it does not erase prior human knowledge.",
+    "No source-residual/RDOQ or encoder-search counterfactual can be inferred from final-q data."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "revision": "TS-RULE-LAB-v1",
+  "decoder_sha256": "f472ab82401da697123ff7b7f14970b773aa0ca7d317d75f6ed6201d685d3d83",
+  "manifest_sha256": "1452b01969e5ff1aba56a3348ed5dbfef05b6162f4ae5a520ae8a33b6a40379c",
+  "rules_sha256": "d19ad29515c87cd8b5d01a5ddd8acba8cc2bb69a1de3c1f83b5c72e68da09490",
+  "scoring_sha256": "c6e63148a4ba80f93e778690c427db0f9325d60558d021f4171204b5c595b1a3",
+  "checks": [
+    {
+      "test": "paired_prefix_fixed_controls_and_61_whole_TU_replays",
+      "origin": "R13-1",
+      "frames": 17,
+      "tu": 10,
+      "labels": 7,
+      "on_off_equal": true,
+      "all_61": true,
+      "first_ten_exact": true,
+      "sei_status": "all_frames_MD5_verified"
+    },
+    {
+      "test": "paired_prefix_fixed_controls_and_61_whole_TU_replays",
+      "origin": "R13-2",
+      "frames": 17,
+      "tu": 10,
+      "labels": 7,
+      "on_off_equal": true,
+      "all_61": true,
+      "first_ten_exact": true,
+      "sei_status": "all_frames_MD5_verified"
+    },
+    {
+      "test": "wrong_q",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 1, 'target_tu': 1, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 1, 'positions': 512, 'nonzero': 6, 'labeled_positions': 0, 'replays': 2, 'all_component': [1, 0, 0], 'target_component': [1, 0, 0]}"
+    },
+    {
+      "test": "wrong_context",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 1, 'target_tu': 1, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 1, 'positions': 512, 'nonzero': 6, 'labeled_positions': 0, 'replays': 2, 'all_component': [1, 0, 0], 'target_component': [1, 0, 0]}"
+    },
+    {
+      "test": "wrong_geometry",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 1, 'target_tu': 1, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 1, 'positions': 512, 'nonzero': 6, 'labeled_positions': 0, 'replays': 2, 'all_component': [1, 0, 0], 'target_component': [1, 0, 0]}"
+    },
+    {
+      "test": "short_schedule",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 10, 'target_tu': 10, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 10, 'positions': 2112, 'nonzero': 41, 'labeled_positions': 0, 'replays': 14, 'all_component': [10, 0, 0], 'target_component': [10, 0, 0]}"
+    },
+    {
+      "test": "extra_row",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 10, 'target_tu': 10, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 10, 'positions': 2112, 'nonzero': 41, 'labeled_positions': 0, 'replays': 14, 'all_component': [10, 0, 0], 'target_component': [10, 0, 0]}"
+    },
+    {
+      "test": "negative_predictor",
+      "rejected": true,
+      "error": "Incomplete decode/corpus: exit=1, footer={'kind': 'footer', 'complete': False, 'all_ts_tu': 1, 'target_tu': 1, 'bdpcm_tu': 0, 'unsupported_tu': 0, 'verified_tu': 1, 'positions': 512, 'nonzero': 6, 'labeled_positions': 0, 'replays': 2, 'all_component': [1, 0, 0], 'target_component': [1, 0, 0]}"
+    },
+    {
+      "test": "native_Python_fixed_prediction_sequences",
+      "tu": 68,
+      "positions": 14784,
+      "all_ten_exact": true
+    }
+  ],
+  "passed": true,
+  "scope": "paired 17-frame prefix and optional synthetic syntax fixtures; not full-dataset results",
+  "encoding_invoked": false
+}

@@ -1,0 +1,17 @@
+{
+  "groups": [
+    [
+      "CURRENT",
+      "KEEP_F0"
+    ],
+    [
+      "KEEP_F2",
+      "KEEP_SP_H"
+    ],
+    [
+      "KEEP_F4",
+      "KEEP_EQ_H"
+    ]
+  ],
+  "meaning": "same per-stream summed rate in this corpus; not proof of identical predictor/state or general algebraic equivalence"
+}

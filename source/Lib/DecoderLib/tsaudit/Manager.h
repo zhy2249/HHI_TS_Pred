@@ -7,6 +7,7 @@
 #include <fstream>
 #if JVET_BJUT_TS_FIXED_PREDICTOR
 #include "Replay.h"
+#include "Corpus.h"
 #include "Budget.h"
 #include <filesystem>
 namespace TsAudit
@@ -133,7 +134,7 @@ struct Manager
     CoeffCodingContext geom(tu,c,false,tu.cu->getBdpcmMode(c));
     for(int i=0;i<int(a.area());++i)
     {
-      const int v=std::abs(q[i]); pop.nz+=v!=0;
+      const int v=std::abs(q[geom.blockPos(i)]); pop.nz+=v!=0;
       if(target) { pop.targetNz+=v!=0; ++pop.targetCoeff; }
       if(valid) { pop.eligibleNz+=v!=0; ++pop.eligibleCoeff; }
       ++pop.amplitude[v<3?v:v<5?3:4];
@@ -340,10 +341,11 @@ struct Manager
 };
 inline std::unique_ptr<Manager> &storage() { static std::unique_ptr<Manager> value; return value; }
 inline Manager &manager() { auto &value=storage(); if(!value) { value=std::make_unique<Manager>(); } return *value; }
-inline Native *begin(const TransformUnit &tu,CompID c,const Ctx &ctx) { return enabled()?manager().begin(tu,c,ctx):nullptr; }
-inline void end(const TransformUnit &tu,CompID c,const Ctx &ctx) { if(enabled()) { manager().end(tu,c,ctx); } }
+inline Native *begin(const TransformUnit &tu,CompID c,const Ctx &ctx) { if(TsCorpus::enabled()) return TsCorpus::begin(tu,c,ctx); return enabled()?manager().begin(tu,c,ctx):nullptr; }
+inline void end(const TransformUnit &tu,CompID c,const Ctx &ctx) { if(TsCorpus::enabled()) { TsCorpus::end(tu,c,ctx); return; } if(enabled()) { manager().end(tu,c,ctx); } }
 inline void finish(bool success)
 {
+  if(TsCorpus::enabled()) { TsCorpus::finish(success); return; }
   if(!enabled() || !storage()) { return; }
   if(success) { manager().finish(true); }
   else { try { manager().finish(false); } catch(const std::exception &e) { std::cerr<<"Audit failure manifest: "<<e.what()<<'\n'; } }
@@ -351,7 +353,7 @@ inline void finish(bool success)
 inline void picture(const Picture &pic)
 {
   static const auto hashPath=envString("TS_AUDIT_HASH");
-  if(enabled()) { CHECK(pic.m_layerId!=0,"Audit supports only single-layer streams"); }
+  if(enabled() || TsCorpus::enabled()) { CHECK(pic.m_layerId!=0,"Audit/corpus supports only single-layer streams"); }
   if(!hashPath.empty())
   { PictureHash digest; const auto *sps=pic.m_cs->sps; const int chars=calcMD5(pic.getRecoBuf(),digest,sps->m_bitDepths);
     std::ofstream o(hashPath,std::ios::app); o<<pic.m_poc<<','<<hashToString(digest,chars)<<'\n'; CHECK(!o,"Cannot write audit reconstruction hash"); }

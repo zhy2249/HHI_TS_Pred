@@ -1,11 +1,12 @@
 """Protocol tests use synthetic records, never measured video rates."""
-import copy,gzip,json,tempfile,unittest
+import copy,gzip,json,tempfile,unittest,random,contextlib,io
 from pathlib import Path
 import benchmark_rules as B
 import rule_suite as R
 import ts_corpus as P
 import ts_learning as L
 import integrate
+import summarize_report as S
 
 class Pipeline(unittest.TestCase):
  def manifest(self,root):
@@ -57,6 +58,26 @@ class Pipeline(unittest.TestCase):
    row=next(r for r in rows if r['component']=='all' and r['method']=='GUARD_EXTRA_NEAR')
    self.assertEqual(row['rate_frac'],900);self.assertEqual(row['gain_vs_current_bits'],100/32768)
    self.assertEqual(row['cheaper_tu_vs_current'],1)
+ def test_parallel_schedules_are_byte_identical(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);index=self.index(root)
+   one=B.make_schedules(index,root/'serial');many=B.make_schedules(index,root/'parallel',2)
+   self.assertEqual(one,many)
+   for p in (root/'serial').iterdir():self.assertEqual(p.read_bytes(),(root/'parallel'/p.name).read_bytes())
+ def test_sparse_schedule_matches_frozen_reference(self):
+  fixture=json.loads((Path(__file__).parent/'ce01_tu.json').read_text());rng=random.Random(20261026)
+  cases=[fixture]
+  for density in (0,.1,.4,1):
+   cases.append(dict(fixture,q=[rng.randrange(-12,13) if rng.random()<density else 0 for _ in fixture['q']]))
+  for tu in cases:
+   rows=list(L.causal_rows(tu))
+   for cfg in R.catalogue():self.assertEqual(B.full_predictions(tu,cfg,rows),R.predict(tu,cfg,prepared=rows)[0],cfg['id'])
+ def test_schedule_resume_checks_code_source_and_bytes(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);index=self.index(root);out=root/'schedules';one=B.make_schedules(index,out)
+   self.assertEqual(one,B.make_schedules(index,out,resume=True))
+   p=next(out.glob('*.pred'));p.write_text(p.read_text()+'bad')
+   with self.assertRaisesRegex(ValueError,'fingerprint'):B.make_schedules(index,out,resume=True)
  def test_catalogue_order_mismatch_rejected(self):
   with tempfile.TemporaryDirectory() as d:
    index=self.index(Path(d));x=P.readj(index);x['records'][0]['request']['method_ids'].reverse();P.save(index,x)
@@ -67,6 +88,17 @@ class Pipeline(unittest.TestCase):
    scope=P.readj(root/'report/report_scope.json');self.assertTrue(scope['no_BDrate']);self.assertEqual(scope['best_descriptive'],'GUARD_EXTRA_NEAR')
    self.assertTrue((root/'report/worst_TU_cases.csv').exists())
    self.assertEqual(len(P.readj(root/'report/run_receipts.json')['streams']),8)
+ def test_derived_summary_keeps_primary_weights(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);index=self.index(root);B.report(index,root/'report')
+   with contextlib.redirect_stdout(io.StringIO()):S.summarize(root/'report',root/'analysis')
+   r=P.readj(root/'analysis/analysis_summary.json')
+   self.assertEqual(r['best_descriptive']['method'],'GUARD_EXTRA_NEAR')
+   self.assertAlmostEqual(r['best_descriptive']['current_balanced_gain_bits_per_nonzero'],100/32768/14)
+   increments=S.read(root/'analysis/pure_state_increment.csv')
+   self.assertEqual(len(increments),36)
+   self.assertEqual({x['matched_static_initial_rule'] for x in increments},{'KEEP_F0','KEEP_F2','KEEP_F4'})
+   self.assertTrue(all(float(x['balanced_increment_bits_per_nonzero'])==0 for x in increments))
  def test_exact_anchor_rejects_ambiguous_source(self):
   with self.assertRaises(ValueError):integrate.one('xx','x','y')
   self.assertEqual(integrate.one('axb','x','z'),'azb')

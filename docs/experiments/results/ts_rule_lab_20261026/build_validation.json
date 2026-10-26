@@ -1,0 +1,42 @@
+{
+  "source_head": "b082d9300f589d2f26a2f67ff915c3b06e53549e",
+  "decoder_sha256": "f472ab82401da697123ff7b7f14970b773aa0ca7d317d75f6ed6201d685d3d83",
+  "files": {
+    "source/Lib/DecoderLib/tsaudit/Corpus.h": "499a06724a78d5f590920ec2ebeed9314bf9ec07cfa77a3b670aa525038a4130",
+    "source/Lib/DecoderLib/tsaudit/Manager.h": "feaf1f25e2cbbb0f0c9d46af5aae93f1c3d29310d0d1ee2be14a60279e0f0776",
+    "source/App/DecoderApp/decmain.cpp": "ff3eb21aab39080f3c2164ed7f8a0d542caa8f304bc1cbfcd204e2519e5b97e8",
+    "scripts/ts_rule_lab/native/Corpus.h": "499a06724a78d5f590920ec2ebeed9314bf9ec07cfa77a3b670aa525038a4130",
+    "scripts/ts_rule_lab/rule_suite.py": "d19ad29515c87cd8b5d01a5ddd8acba8cc2bb69a1de3c1f83b5c72e68da09490",
+    "scripts/ts_rule_lab/ts_learning.py": "c6e63148a4ba80f93e778690c427db0f9325d60558d021f4171204b5c595b1a3",
+    "scripts/ts_rule_lab/benchmark_rules.py": "ae8dda172081c2234b6d50c7e5b901add08c6d30edddf400904d583445b1b429",
+    "scripts/ts_rule_lab/ts_corpus.py": "e9d416d914110a05575cd7c69b102ccbcf5b1796d6727b8febb4d7b55a005cb1",
+    "scripts/ts_rule_lab/validate_native.py": "6aa9acece9e24a92b77e26af2c8a7d3a131f1cc129b07c89c514e6322d6c7fb4",
+    "scripts/ts_dual_audit_native_test.cpp": "e41ca7ade144c796489421c7072413102d727935ee823b617fb09d9c22918b17",
+    "scripts/ts_rule_lab/summarize_report.py": "e1f7a23d00664be02198b4d7e29cd97ba9ee731e595c2b7d31e53481b3bbbb5d",
+    "scripts/ts_rule_lab/bounded_run.py": "37e62d263396916e32c8779c31c0ba389d5965ddcd26161ee649ada7f249dd35",
+    "scripts/ts_rule_lab/schedule_storage.py": "dfe8c323086dff21818e1c3f1ef3d5e26f6be3ac92b5eb9329f8d830b328fa67",
+    "scripts/ts_rule_lab/audit_rule_activity.py": "f3f659b606ea7694dedc9223ff10edaf16296d623317281006576013686d5b71"
+  },
+  "python_unit_tests": 55,
+  "rule_unit_tests": 32,
+  "old_audit_unit_tests": 14,
+  "native_fixture_trials_per_origin": 48,
+  "native_fixed_policy_compared_TU": 68,
+  "native_fixed_policy_compared_positions": 14784,
+  "encoder_app_invoked": false,
+  "all_point_labels": false,
+  "optimized_vs_reference_all_61_native_fixtures": true,
+  "parallel_schedule_byte_identical": true,
+  "macro_off_observer_header_compiled": true,
+  "build_commands": [
+    "cmake -S . -B build/ts-rule-lab -DCMAKE_BUILD_TYPE=Release -DNX2_OPT_TARGET_ARCH= -DNX2_ENABLE_TRACING=OFF -DNX2_TOPLEVEL_OUTPUT_DIRS=OFF",
+    "cmake --build build/ts-rule-lab --target DecoderApp -j 6"
+  ],
+  "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+  "initial_build_error": "Corpus.h misleading-indentation under -Werror; braces fixed in both source and template",
+  "full_dataset_status": "96/96 EOF streams and all 61 whole-TU policies complete; fixed-q conditional rate only",
+  "resource_unit_tests": 3,
+  "storage_unit_tests": 4,
+  "activity_unit_tests": 2,
+  "original_integration_patch_sha256": "413ae9e968f2a857d5829fd39d902c0301ca0b8aedf282fdf1d58c20eb51adcb"
+}

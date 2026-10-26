@@ -1,6 +1,7 @@
 // Native syntax fixtures, not frame encoding: independent Writer -> Reader,
 // complete bin trace -> replay, serialization -> replay, historical candidates.
 #include "DecoderLib/tsaudit/Replay.h"
+#include "DecoderLib/tsaudit/Corpus.h"
 #include "CommonLib/Rom.h"
 #include "EncoderLib/CABACWriter.h"
 #include "DecoderLib/CABACReader.h"
@@ -9,7 +10,9 @@
 int main(int argc,char **argv)
 {
   using namespace TsAudit;
-  CHECK(argc!=2,"Provide temporary snapshot output path");
+  CHECK(argc!=2 && argc!=3,"Provide temporary snapshot path and optional corpus fixture JSONL");
+  std::ofstream corpus;
+  if(argc==3) { corpus.open(argv[2]); CHECK(!corpus,"Cannot open corpus fixture output"); }
   initROM(); XuPool pool; CodingStructure cs(pool); SPS sps; PPS pps; Slice slice;
   sps.m_chromaFormatIdc=ChromaFormat::_420;sps.m_maxCuWidth=sps.m_maxCuHeight=128;sps.m_dualITree=false;
   sps.m_bitDepths[ChannelType::LUMA]=sps.m_bitDepths[ChannelType::CHROMA]=10;
@@ -45,6 +48,19 @@ int main(int argc,char **argv)
     for(int g=0;g<=dc.lastSubSet();++g) { dc.initSubblock(g);s.native.paths.push_back({});reader.residual_coding_subblockTS(dc,decoded.data(),s.rice);s.native.paths.back().end=dc.remRegBins; }
     dec.tsAudit=nullptr;s.exit=saveContext(dec.getCtx());CHECK(s.q!=decoded,"Native decoding changed coefficients");CHECK(dec.decodeBinTrm()!=1,"Native termination mismatch");dec.finish();
     auto d=decisions(s);auto r=replay(s,predictors(d,s.policy==98?3:4));validateNative(s,r);
+    if(argc==3 && cu.getBdpcmMode(comp)==BdpcmMode::NONE)
+    {
+      const auto ch=TsCorpus::choices(s); std::array<uint64_t,10> rates{};
+      for(int m=0;m<10;++m) { rates[m]=replay(s,ch.pred[m]).bins.bits; }
+      CHECK(rates[s.policy==98?7:5]!=r.bins.bits,"Corpus native control mismatch");
+      corpus<<"{\"kind\":\"tu\",\"trial\":"<<trial<<",\"component\":"<<int(comp)<<",\"w\":"<<w<<",\"h\":"<<h
+            <<",\"qp\":"<<s.qp<<",\"slice_type\":\""<<sliceName(s.sliceType)<<"\",\"is_intra_cu\":"<<s.isIntraCu
+            <<",\"rice\":"<<s.rice<<",\"range\":"<<s.g.range<<",\"rice_cutoff\":"<<COEF_REMAIN_BIN_REDUCTION<<",\"q\":";
+      TsCorpus::arr(corpus,s.q);corpus<<",\"scan\":";TsCorpus::arr(corpus,s.g.scan);
+      corpus<<",\"pred\":[";for(int m=0;m<10;++m) { if(m) { corpus<<','; } TsCorpus::arr(corpus,ch.pred[m]); }
+      corpus<<"],\"rates_frac\":";TsCorpus::arr(corpus,rates);corpus<<"}\n";
+      CHECK(!corpus,"Corpus fixture write failed");
+    }
     save(s,argv[1]);auto restored=load(argv[1]);auto loaded=replay(restored,predictors(decisions(restored),s.policy==98?3:4));validateNative(restored,loaded);CHECK(loaded.bins.bits!=r.bins.bits,"Offline rate differs");
     CHECK(restored.sliceType!=s.sliceType || restored.isIntraCu!=s.isIntraCu || restored.isInterCu!=s.isInterCu,"Snapshot lost Slice/CU metadata");
     // A disk limit must be checked before creating/truncating the destination.

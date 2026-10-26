@@ -1,0 +1,32 @@
+{
+  "streams": 96,
+  "decoded_frames": 26000,
+  "totals": {
+    "all_ts_tu": 754151,
+    "target_tu": 754151,
+    "bdpcm_tu": 0,
+    "unsupported_tu": 0,
+    "verified_tu": 754151,
+    "positions": 125949812,
+    "nonzero": 3856051
+  },
+  "per_sequence_frames": {
+    "BQMall": 300,
+    "BQTerrace": 300,
+    "BasketballDrill": 250,
+    "BasketballDrive": 250,
+    "Cactus": 250,
+    "FourPeople": 300,
+    "Johnny": 300,
+    "KristenAndSara": 300,
+    "MarketPlace": 300,
+    "PartyScene": 250,
+    "RaceHorsesC": 150,
+    "RitualDance": 300
+  },
+  "all_sei_verified": true,
+  "all_on_off_equal": true,
+  "all_point_labels": false,
+  "complete": true,
+  "decoder_sha256": "f472ab82401da697123ff7b7f14970b773aa0ca7d317d75f6ed6201d685d3d83"
+}

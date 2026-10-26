@@ -24,7 +24,8 @@
 - [impl2统计与交付验收](results/r13_dual_decoder_audit_impl2_20261025/README.md) · [impl1历史验收与96条复制清单](results/r13_dual_decoder_audit_20261025/README.md)
 - [R13真实码流与解码器Git交付（用户本次例外授权）](../../deliveries/r13_decode_audit_impl2/README.md) · [远端重新下载验收](results/r13_dual_decoder_audit_impl2_20261025/remote_delivery.json)
 - [全序列TS数据集与代价敏感训练：96流全量导出、内容留出、小树与状态更新](TS_Predictor_Full_Corpus_Training_Design.md)（TS-CORPUS-TRAIN-v1；参考代码会话交付，原生接入待验收，未训练真实数据）
-- [61组规则与状态转移本地测试设计](TS_Predictor_Rule_Lab_Design.md) · [Git源码、96流运行与结果回传说明](../../scripts/ts_rule_lab/README.md)（28项参考测试通过；原生编译/全量收益待本地验证）
+- [61组规则与状态转移本地测试设计](TS_Predictor_Rule_Lab_Design.md) · [Git源码、96流运行与结果回传说明](../../scripts/ts_rule_lab/README.md)
+- [61组规则全量结果：96流/754,151个TU，相对EQ的新增空间Weak](TS_Predictor_Rule_Lab_Results_20261026.md) · [全部表格、原生核验及资源记录](results/ts_rule_lab_20261026/README.md)（仅条件TSRC rate，非BD-rate）
 - [R13 逐序列 / 逐 QP 数据（仅结果）](results/r13.md)
 - [R14 早期部分结果与状态机制分析（历史快照）](TS_Predictor_R14_Partial_Analysis_20261024.md)
 - [R14 更新结果：14组完整CE、2的正确部分结果及QP分析](results/r14.md)
